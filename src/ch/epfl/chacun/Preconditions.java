@@ -1,5 +1,4 @@
 package ch.epfl.chacun;
-
 /**
  * Preconditions
  *
@@ -11,18 +10,15 @@ public final class Preconditions {
      * Classe non-instantiable qui offre la possibilité
      * de vérifier si la précondition pour certaines
      * méthodes et valide. En d'autres termes, si
-     * l'on peut éxécuter la méthode sans erreur.
+     * l'on peut exécuter la méthode sans erreurs.
      */
 
     private Preconditions() {}
-
-
     /**
-     * Vérifie si la condition d'éxécution est validé.
+     * Vérifie si la condition execution est validé.
      *
      * @param condition
-     *          condition d'éxécution
-     *
+     *          condition d'exécution
      * @throws IllegalArgumentException
      *          si la condition est fausse
      */
