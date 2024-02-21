@@ -22,7 +22,7 @@ public enum Direction {
      * @return TBD
      */
     public Direction rotates( ) {
-        //int rotatedDirectionIndex = ordinal() + rotation.ordinal();
+        int rotatedDirectionIndex = ordinal() + ();
         return null;
     }
 
