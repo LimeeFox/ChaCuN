@@ -9,23 +9,19 @@ import java.util.List;
  */
 
 public enum Rotation {
-    /**
-     * Toutes les rotations possibles pour une tuile.
-     */
+    //Toutes les rotations possibles pour une tuile.
     NONE,
     RIGHT,
     HALF_TURN,
     LEFT;
-    /**
-     * List des rotations énumérées ci-dessus.
-     */
+
+    //List des rotations énumérées ci-dessus.
     public static final List<Rotation> ALL = List.of(Rotation.values());
-    /**
-     * Nombre total de rotation possible. Soit la size de ALL.
-     */
+    // Nombre total de rotation possible. Soit la size de ALL.
     public  static final int COUNT = ALL.size();
 
     /**
+     * Ajout d'un rotation that à la rotation this
      *
      * @param that
      *          rotation ajoutée au récepteur
@@ -50,6 +46,7 @@ public enum Rotation {
 
     /**
      * Nombre de quarts de tour dans le sens horaire
+     *
      * @return ordinal()
      *          indice de la rotation selon l'ordre d'énumération
      */
