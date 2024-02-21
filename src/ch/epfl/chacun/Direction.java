@@ -8,22 +8,29 @@ import java.util.List;
  * @author Cyriac Philippe (360553)
  */
 public enum Direction {
+
+    // Directions cardinales, dans l'ordre horaire
     N,
     E,
     S,
     W;
 
+    // Liste des directions cardinales
     private final static List<Direction> ALL = List.of(Direction.values());
+    // Nombre total de directions cardinales: 4
     private final static int COUNT = ALL.size();
 
     /**
      * Direction après une rotation
      *
-     * @return TBD
+     * @return rotatedDirection
+     *          nouvelle direction obtenue par rotation
      */
-    public Direction rotates( ) {
-        int rotatedDirectionIndex = ordinal() + ();
-        return null;
+    public Direction rotates(Rotation rotation) {
+        Direction rotatedDirection;
+        int rotatedDirectionIndex = ordinal() + rotation.quarterTurnsCW();
+        rotatedDirection = ALL.get(rotatedDirectionIndex);
+        return rotatedDirection;
     }
 
     /**
@@ -32,6 +39,7 @@ public enum Direction {
      *          direction inverse de this
      */
     public Direction opposite() {
-        return ALL.get((ordinal()+COUNT/2)%COUNT);
+        Direction oppositeDirection = ALL.get((ordinal()+COUNT/2)%COUNT);
+        return oppositeDirection;
     }
 }
