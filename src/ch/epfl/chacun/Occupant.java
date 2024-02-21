@@ -5,6 +5,8 @@ import java.util.Objects;
 /**
  * Occupant d'une tuile identifiée
  *
+ * @author Cyriac Philippe (360553)
+ *
  * @param kind
  *          type d'occupant : pion, hutte
  * @param zoneId
