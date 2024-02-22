@@ -19,7 +19,7 @@ public record Pos(int x, int y) {
      * @param dY
      *          difference de coordonnée y
      * @return translatedPos
-     *          position obtenue après translation de x et de y
+     *          position obtenue après translation
      */
     public Pos translated(int dX, int dY) {
         Pos translatedPos = new Pos(this.x()
@@ -27,9 +27,25 @@ public record Pos(int x, int y) {
         return translatedPos;
     }
 
-
+    /**
+     * Tuile voisine
+     *
+     * @param direction
+     *          direction du voisin par rapport à this
+     * @return neighbourPosition
+     *          position de la tuile voisine
+     */
     public Pos neighbour(Direction direction) {
+        Pos neighbourPosition = this;
+        switch (direction) {
+            case N -> neighbourPosition = translated(0, -1);
 
+            case E -> neighbourPosition = translated(-1, 0);
+
+            case S -> neighbourPosition = translated(0, 1);
+
+            case W -> neighbourPosition = translated(1, 0);
+        }
+        return neighbourPosition;
     }
-
 }
