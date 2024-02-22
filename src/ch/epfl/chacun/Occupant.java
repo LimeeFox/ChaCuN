@@ -5,6 +5,8 @@ import java.util.Objects;
 /**
  * Occupant d'une tuile identifiée
  *
+ * @author Cyriac Philippe (360553)
+ *
  * @param kind
  *          type d'occupant : pion, hutte
  * @param zoneId
@@ -25,7 +27,8 @@ public record Occupant(Kind kind, int zoneId) {
     }
 
     /**
-     * Conte les occupants d'une même sorte que possède un joueur
+     * Compte les occupants d'une sorte spécifiée (pion ou hutte) que possède
+     * un joueur, par défaut
      *
      * @param kind
      *          type d'occupants
