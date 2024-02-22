@@ -22,6 +22,8 @@ public sealed interface Zone {
     }
 
     /**
+     * Obtention de l'ID de la tuile
+     *
      * @param zoneId
      * @return l'identité de la tuile, prête à être assignée à une tuile
      */
@@ -30,6 +32,8 @@ public sealed interface Zone {
     }
 
     /**
+     * Obtention de l'ID locale
+     *
      * @param zoneId
      * @return l'identité de la zone, prête à être assignée à une zone
      */
@@ -77,6 +81,7 @@ public sealed interface Zone {
 
     /**
      * Zone de pré dans laquelle on peut (ou pas) trouver des animaux
+     *
      * @param zoneId
      * @param animals
      * @param specialPower
@@ -125,6 +130,7 @@ public sealed interface Zone {
 
     /**
      * Zone de rivière qui peut posséder 0 ou plusieurs poissons, et qui peut (ou pas) faire partie d'un lac
+     *
      * @param zoneid
      * @param fishCount
      * @param lake
@@ -150,6 +156,4 @@ public sealed interface Zone {
             return 0;
         }
     }
-
-
 }
