@@ -9,7 +9,7 @@ package ch.epfl.chacun;
  * @param y
  */
 public record Pos(int x, int y) {
-    public final static Pos ORIGIN = new Pos(0, 0);
+    public static final Pos ORIGIN = new Pos(0, 0);
 
     /**
      * Translation de la position
@@ -28,7 +28,7 @@ public record Pos(int x, int y) {
     }
 
     /**
-     * Tuile voisine
+     * Trouver la tuile voisine en fonction de la direction donnée
      *
      * @param direction
      *          direction du voisin par rapport à this
@@ -40,11 +40,11 @@ public record Pos(int x, int y) {
         switch (direction) {
             case N -> neighbourPosition = translated(0, -1);
 
-            case E -> neighbourPosition = translated(-1, 0);
+            case E -> neighbourPosition = translated(1, 0);
 
             case S -> neighbourPosition = translated(0, 1);
 
-            case W -> neighbourPosition = translated(1, 0);
+            case W -> neighbourPosition = translated(-1, 0);
         }
         return neighbourPosition;
     }
