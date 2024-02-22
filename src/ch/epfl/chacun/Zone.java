@@ -28,7 +28,7 @@ public sealed interface Zone {
      * @return l'identité de la tuile, prête à être assignée à une tuile
      */
     static int tileId(int zoneId) {
-        return zoneId * 10;
+        return Math.floorDiv(zoneId, 10);
     }
 
     /**
@@ -38,7 +38,7 @@ public sealed interface Zone {
      * @return l'identité de la zone, prête à être assignée à une zone
      */
     static int localId(int zoneId) {
-        return tileId(zoneId) * 10;
+        return zoneId % 10;
     }
 
     int id();
@@ -53,6 +53,9 @@ public sealed interface Zone {
 
     /**
      * Zone de forêt dans laquelle on peut (ou pas) trouver des menhirs
+     *
+     * @param zoneId
+     * @param kind
      */
     final record Forest(int zoneId, Kind kind) implements Zone {
 
@@ -70,12 +73,12 @@ public sealed interface Zone {
 
         @Override
         public int tileId() {
-            return Zone.tileId(zoneId) + id();
+            return 0;
         }
 
         @Override
         public int localId() {
-            return tileId(); // @todo il y a qqch a faire la mais ils disent pas trop encore quoi. Ou sinon il faut que je relise xd
+            return 0; // @todo il y a qqch a faire la mais ils disent pas trop encore quoi. Ou sinon il faut que je relise xd
         }
     }
 
