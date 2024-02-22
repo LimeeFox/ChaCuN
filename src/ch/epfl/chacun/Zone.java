@@ -1,6 +1,6 @@
 package ch.epfl.chacun;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Interface pour les zones d'une tuile
@@ -89,7 +89,7 @@ public sealed interface Zone {
      * @param animals
      * @param specialPower
      */
-    record Meadow(int zoneId, ArrayList<Animal> animals, SpecialPower specialPower) implements Zone {
+    record Meadow(int zoneId, List<Animal> animals, SpecialPower specialPower) implements Zone {
 
         @Override
         public int id() {
@@ -114,7 +114,18 @@ public sealed interface Zone {
     /**
      * Zone aquatique qui peut contenir 1 ou 2 poissons
      */
-    record Water() implements Zone {
+    interface Water{
+        int fishCount();
+    }
+
+    /**
+     * Zone du lac qui peut posséder 0 ou plusieurs poissons, et qui peut (ou pas) contenir des pouvoirs spéciaux
+     *
+     * @param zoneId
+     * @param fishCount
+     * @param specialPower
+     */
+    record Lake(int zoneId, int fishCount, SpecialPower specialPower) implements Zone, Zone.Water {
         @Override
         public int id() {
             return 0;
@@ -138,7 +149,7 @@ public sealed interface Zone {
      * @param fishCount
      * @param lake
      */
-    record River(int zoneid, int fishCount, Lake lake) implements Zone {
+    record River(int zoneid, int fishCount, Lake lake) implements Zone, Zone.Water {
 
         public boolean hasLake() {
             return lake != null;
