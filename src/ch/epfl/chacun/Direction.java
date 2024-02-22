@@ -29,7 +29,7 @@ public enum Direction {
      */
     public Direction rotated(Rotation rotation) {
         Direction rotatedDirection;
-        int rotatedDirectionIndex = ordinal() + rotation.quarterTurnsCW();
+        int rotatedDirectionIndex = (ordinal() + rotation.quarterTurnsCW()) % COUNT;
         rotatedDirection = ALL.get(rotatedDirectionIndex);
         return rotatedDirection;
     }
