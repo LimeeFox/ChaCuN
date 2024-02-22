@@ -27,9 +27,9 @@ public record Pos(int x, int y) {
         return translatedPos;
     }
 
-    /*
+
     public Pos neighbour(Direction direction) {
 
     }
-    */
+
 }
