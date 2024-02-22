@@ -17,6 +17,7 @@ public enum Direction {
 
     // Liste des directions cardinales
     private final static List<Direction> ALL = List.of(Direction.values());
+
     // Nombre total de directions cardinales: 4
     private final static int COUNT = ALL.size();
 
@@ -39,7 +40,7 @@ public enum Direction {
      *          direction inverse de this
      */
     public Direction opposite() {
-        Direction oppositeDirection = ALL.get((ordinal()+COUNT/2)%COUNT);
+        Direction oppositeDirection = ALL.get((ordinal() + COUNT / 2) % COUNT);
         return oppositeDirection;
     }
 }
