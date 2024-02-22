@@ -16,10 +16,10 @@ public enum Direction {
     W;
 
     // Liste des directions cardinales
-    private static final List<Direction> ALL = List.of(Direction.values());
+    public static final List<Direction> ALL = List.of(Direction.values());
 
     // Nombre total de directions cardinales: 4
-    private static final int COUNT = ALL.size();
+    public static final int COUNT = ALL.size();
 
     /**
      * Direction après une rotation

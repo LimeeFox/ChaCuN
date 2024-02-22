@@ -1,6 +1,6 @@
 package ch.epfl.chacun;
 
-import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Interface pour les zones d'une tuile
