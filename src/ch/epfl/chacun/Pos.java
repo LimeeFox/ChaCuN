@@ -35,7 +35,7 @@ public record Pos(int x, int y) {
      * @return neighbourPosition
      *          position de la tuile voisine
      */
-    public Pos neighbour(Direction direction) {
+    public Pos neighbor(Direction direction) {
         Pos neighbourPosition = this;
         switch (direction) {
             case N -> neighbourPosition = translated(0, -1);

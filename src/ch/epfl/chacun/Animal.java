@@ -12,7 +12,7 @@ package ch.epfl.chacun;
  *          cerf, smilodon
  */
 public record Animal(int id, Kind kind) {
-    enum Kind {
+    public enum Kind {
         MAMMOTH,
         AUROCHS,
         DEER,

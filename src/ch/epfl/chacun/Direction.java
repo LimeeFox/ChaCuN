@@ -27,7 +27,7 @@ public enum Direction {
      * @return rotatedDirection
      *          nouvelle direction obtenue par rotation
      */
-    public Direction rotates(Rotation rotation) {
+    public Direction rotated(Rotation rotation) {
         Direction rotatedDirection;
         int rotatedDirectionIndex = ordinal() + rotation.quarterTurnsCW();
         rotatedDirection = ALL.get(rotatedDirectionIndex);

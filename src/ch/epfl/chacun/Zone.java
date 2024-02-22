@@ -60,7 +60,7 @@ public sealed interface Zone {
     final record Forest(int zoneId, Kind kind) implements Zone {
 
         // les types de forêts différentes qui existent dans le jeu
-        enum Kind {
+        public enum Kind {
             PLAIN,
             WITH_MENHIR,
             WITH_MUSHROOMS;
