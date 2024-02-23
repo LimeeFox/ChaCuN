@@ -18,13 +18,14 @@ public sealed interface Zone {
         HUNTING_TRAP,
         PIT_TRAP,
         WILD_FIRE,
-        RAFT;
+        RAFT
     }
 
     /**
      * Obtention de l'ID de la tuile
      *
      * @param zoneId
+     *          identifiant de la zone sur le plateau de jeu
      * @return l'identité de la tuile, prête à être assignée à une tuile
      */
     static int tileId(int zoneId) {
@@ -35,6 +36,7 @@ public sealed interface Zone {
      * Obtention de l'ID locale
      *
      * @param zoneId
+     *          identifiant de la zone sur le plateau de jeu
      * @return l'identité de la zone, prête à être assignée à une zone
      */
     static int localId(int zoneId) {
@@ -63,7 +65,7 @@ public sealed interface Zone {
         public enum Kind {
             PLAIN,
             WITH_MENHIR,
-            WITH_MUSHROOMS;
+            WITH_MUSHROOMS
         }
 
         @Override
@@ -83,13 +85,17 @@ public sealed interface Zone {
     }
 
     /**
-     * Zone de pré dans laquelle on peut (ou pas) trouver des animaux
+     * Zone de type pré dans laquelle on peut (ou pas) trouver des animaux
      *
      * @param zoneId
      * @param animals
      * @param specialPower
      */
     record Meadow(int zoneId, List<Animal> animals, SpecialPower specialPower) implements Zone {
+
+        public Meadow {
+            animals = List.copyOf(animals);
+        }
 
         @Override
         public int id() {
