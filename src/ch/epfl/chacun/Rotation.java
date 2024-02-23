@@ -36,12 +36,13 @@ public enum Rotation {
     /**
      * Negation de la rotation
      *
-     * @return ALL.get(indexNegate)
-     *      la rotation inverse a this
+     * @return negationRotation
+     *          rotation négative par rapport à la rotation initiale
      */
     public Rotation negated() {
-        int indexNegate = (ordinal() + 2)%4;
-        return ALL.get(indexNegate);
+        int negationIndex = (4 - ordinal()) % COUNT;
+        Rotation negationRotation = ALL.get(negationIndex);
+        return negationRotation;
     }
 
     /**
