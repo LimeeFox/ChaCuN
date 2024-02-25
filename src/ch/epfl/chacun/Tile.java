@@ -64,12 +64,13 @@ public record Tile(int id, Kind kind, TileSide n, TileSide e, TileSide s, TileSi
      */
     public Set<Zone> zones() {
         Set<Zone> tileZones = new HashSet<>(Set.of());
-        for (Zone sZone : sideZones()) {
+        for (Zone sZone : sideZones() instanceof Zone.River) {
             if (sZone instanceof Zone.River) {
-                if (((Zone.River) sZone).hasLake()) {
-                    tileZones.add(((Zone.River) sZone).lake());}
+                if (sZone.hasLake()) {
+                    tileZones.add(sZone.lake());
                 }
             }
+        }
         return tileZones;
     }
 }
