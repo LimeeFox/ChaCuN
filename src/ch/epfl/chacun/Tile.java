@@ -17,7 +17,11 @@ import java.util.Set;
  * @param w
  */
 public record Tile(int id, Kind kind, TileSide n, TileSide e, TileSide s, TileSide w) {
-    enum Kind {
+
+    /**
+     * Les 3 types de tuile : début, normal, avec menhir
+     */
+    public enum Kind {
         START,
         NORMAL,
         MENHIR
@@ -38,12 +42,12 @@ public record Tile(int id, Kind kind, TileSide n, TileSide e, TileSide s, TileSi
      * Zones en bordure de tuile
      *
      * @return tileSideZones
-     *          set des zones en bordure tuile
+     *          set des zones en bord de tuile
      */
-    public Set<Zone> sideZones(){
+    public Set<Zone> sideZones() {
         Set<Zone> tileSideZones = new HashSet<>(Set.of());
         for (TileSide side : sides()) {
-            for (Zone zone:side.zones()) {
+            for (Zone zone : side.zones()) {
                 if (!(zone instanceof Zone.Lake)) {
                     tileSideZones.add(zone);
                 }
@@ -62,8 +66,8 @@ public record Tile(int id, Kind kind, TileSide n, TileSide e, TileSide s, TileSi
         Set<Zone> tileZones = new HashSet<>(Set.of());
         for (Zone sZone : sideZones()) {
             if (sZone instanceof Zone.River) {
-                    if (((Zone.River) sZone).hasLake()) {
-                        tileZones.add(((Zone.River) sZone).lake());}
+                if (((Zone.River) sZone).hasLake()) {
+                    tileZones.add(((Zone.River) sZone).lake());}
                 }
             }
         return tileZones;
