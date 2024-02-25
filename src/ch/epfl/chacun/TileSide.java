@@ -17,10 +17,10 @@ public sealed interface TileSide {
     public abstract List<Zone> zones();
 
     /**
-     * Vérifié si un bord de tuile et du même type que this
+     * Méthode qui vérifie si un bord de tuile adjacente est du même type que this
      *
      * @param that
-     *          bord de tuile voisin
+     *          bord de tuile voisine
      */
     public abstract boolean isSameKindAs(TileSide that);
 
@@ -49,13 +49,12 @@ public sealed interface TileSide {
          *
          * @param that
          *          un bord de tuile voisin à la zone this
-         * @return sameKind
+         * @return that instanceof TileSide.Forest
          *          si le bord de tuile est de type forêt
          */
         @Override
         public boolean isSameKindAs(TileSide that) {
-            boolean sameKind = that instanceof TileSide.Forest;
-            return sameKind;
+            return that instanceof TileSide.Forest;
         }
     }
 
@@ -84,13 +83,12 @@ public sealed interface TileSide {
          *
          * @param that
          *          un bord de tuile voisin à la zone this
-         * @return sameKind
+         * @return that instanceof TileSide.Meadow
          *          si le bord de tuile est de type pré
          */
         @Override
         public boolean isSameKindAs(TileSide that) {
-            boolean sameKind = that instanceof TileSide.Meadow;
-            return sameKind;
+            return that instanceof TileSide.Meadow;
         }
     }
 
@@ -104,8 +102,7 @@ public sealed interface TileSide {
      * @param meadow2
      *          seconde zone pré qui entoure la rivière et touche le bord
      */
-    public record River(Zone.Meadow meadow1, Zone.River river, Zone.Meadow meadow2)
-            implements TileSide {
+    public record River(Zone.Meadow meadow1, Zone.River river, Zone.Meadow meadow2) implements TileSide {
 
         /**
          * Les zones qui touchent le bord représenté par this
