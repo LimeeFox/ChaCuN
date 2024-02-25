@@ -8,6 +8,7 @@ import java.util.Set;
  * Tuile pas encore placée sur le plateau de jeu
  *
  * @author Cyriac Philipe (360553)
+ * @author Vladislav Yarkovoy (362242)
  *
  * @param id
  * @param kind
@@ -63,11 +64,11 @@ public record Tile(int id, Kind kind, TileSide n, TileSide e, TileSide s, TileSi
      *          set de zones que possède la tuile
      */
     public Set<Zone> zones() {
-        Set<Zone> tileZones = new HashSet<>(Set.of());
-        for (Zone sZone : sideZones() instanceof Zone.River) {
-            if (sZone instanceof Zone.River) {
-                if (sZone.hasLake()) {
-                    tileZones.add(sZone.lake());
+        Set<Zone> tileZones = new HashSet<>(sideZones());
+        for (Zone sZone : sideZones()) {
+            if (sZone instanceof Zone.River river) {
+                if (river.hasLake()) {
+                    tileZones.add(river.lake());
                 }
             }
         }
