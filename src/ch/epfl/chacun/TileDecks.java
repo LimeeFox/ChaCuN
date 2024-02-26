@@ -2,6 +2,7 @@ package ch.epfl.chacun;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 /**
  * Les 3 piles de tuile des 3 sortes différentes : début, normal, avec menhir
@@ -62,6 +63,14 @@ public final record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, Lis
         return tTile;
     }
 
+    /**
+     * Elimination de la première tuile d'un pile d'un type demandé
+     *
+     * @param kind
+     *          type de pile demandé
+     * @return drawnDecks
+     *          nouveau triplé de pile de tuiles
+     */
     public TileDecks withTopTileDrawn(Tile.Kind kind) {
         TileDecks drawnDecks = null;
         switch (kind) {
@@ -74,6 +83,32 @@ public final record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, Lis
             case MENHIR :
                 Preconditions.checkArgument(!menhirTiles.isEmpty());
                 drawnDecks = new TileDecks(startTiles, normalTiles, menhirTiles.subList(1, menhirTiles.size() - 1));
+        }
+        return drawnDecks;
+    }
+
+    /**
+     * Elimination des premières tuiles d'une pile d'un type demandé jusqu'à complétion d'une condition donnée
+     *
+     * @param kind
+     *          type de pile demandé
+     * @param predicate
+     *          condition à remplir pour arrêter la pioche
+     * @return drawnDecks
+     *          nouveau triplé de piles de tuiles
+     */
+    public TileDecks withTopTileDrawnUntil(Tile.Kind kind, Predicate<Tile> predicate) {
+        TileDecks drawnDecks = new TileDecks(List.of(), List.of(), List.of());
+        switch (kind) {
+            case START : while (!startTiles.isEmpty() && !predicate.test(startTiles.getFirst())){
+                drawnDecks = withTopTileDrawn(kind);
+            }
+            case NORMAL : while (!startTiles.isEmpty() && predicate.test(startTiles.getFirst())){
+                drawnDecks = withTopTileDrawn(kind);
+            }
+            case MENHIR : while (!startTiles.isEmpty() && predicate.test(startTiles.getFirst())){
+                drawnDecks = withTopTileDrawn(kind);
+            }
         }
         return drawnDecks;
     }
