@@ -17,6 +17,7 @@ import java.util.function.Predicate;
  *          tas qui contient les tuiles menhir
  */
 public final record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, List<Tile> menhirTiles) {
+
     public TileDecks {
         startTiles = List.copyOf(startTiles);
         normalTiles = List.copyOf(normalTiles);
@@ -35,9 +36,7 @@ public final record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, Lis
         int deckKindSize = 0;
         switch (kind) {
             case START -> deckKindSize = startTiles.size();
-
             case NORMAL -> deckKindSize = normalTiles.size();
-
             case MENHIR -> deckKindSize = menhirTiles.size();
         }
         return deckKindSize;
@@ -55,9 +54,7 @@ public final record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, Lis
         Tile tTile = null;
         switch (kind) {
             case START : if (!startTiles.isEmpty()) {tTile = startTiles.getFirst();}
-
             case NORMAL : tTile = normalTiles.getFirst();
-
             case MENHIR : tTile = menhirTiles.getFirst();
         }
         return tTile;
@@ -69,7 +66,7 @@ public final record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, Lis
      * @param kind
      *          type de pile demandé
      * @return drawnDecks
-     *          nouveau triplé de pile de tuiles
+     *          nouveau triplet de pile de tuiles
      */
     public TileDecks withTopTileDrawn(Tile.Kind kind) {
         TileDecks drawnDecks = new TileDecks(startTiles, normalTiles, menhirTiles);
@@ -95,7 +92,7 @@ public final record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, Lis
      * @param predicate
      *          condition à remplir pour arrêter la pioche
      * @return drawnDecks
-     *          nouveau triplé de piles de tuiles
+     *          nouveau triplet de piles de tuiles
      */
     public TileDecks withTopTileDrawnUntil(Tile.Kind kind, Predicate<Tile> predicate) {
         TileDecks drawnDecks = new TileDecks(startTiles, normalTiles, menhirTiles);
