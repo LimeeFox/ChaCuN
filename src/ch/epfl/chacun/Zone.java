@@ -70,7 +70,7 @@ public sealed interface Zone {
 
         @Override
         public int id() {
-            return 0; // @todo il y a qqch a faire la mais ils disent pas trop encore quoi. Ou sinon il faut que je relise xd
+            return zoneId % 10;
         }
 
         @Override
