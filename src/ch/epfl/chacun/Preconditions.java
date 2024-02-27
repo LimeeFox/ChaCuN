@@ -17,13 +17,13 @@ public final class Preconditions {
     /**
      * Vérifie si la condition execution est validé.
      *
-     * @param condition
-     *          condition d'exécution
+     * @param mustBeTrue
+     *          condition pour continuer correctement le programme
      * @throws IllegalArgumentException
      *          si la condition est fausse
      */
-    public static void checkArgument(boolean condition) {
-        if (!condition) {
+    public static void checkArgument(boolean mustBeTrue) {
+        if (!mustBeTrue) {
             throw new IllegalArgumentException();
         }
     }
