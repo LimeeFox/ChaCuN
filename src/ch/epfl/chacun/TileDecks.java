@@ -64,7 +64,7 @@ public final record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, Lis
     }
 
     /**
-     * Elimination de la première tuile d'un pile d'un type demandé
+     * Elimination de la première tuile d'une pile d'un type demandé
      *
      * @param kind
      *          type de pile demandé
@@ -72,7 +72,7 @@ public final record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, Lis
      *          nouveau triplé de pile de tuiles
      */
     public TileDecks withTopTileDrawn(Tile.Kind kind) {
-        TileDecks drawnDecks = null;
+        TileDecks drawnDecks = new TileDecks(startTiles, normalTiles, menhirTiles);
         switch (kind) {
             case START :
                 Preconditions.checkArgument(!startTiles.isEmpty());
@@ -98,15 +98,15 @@ public final record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, Lis
      *          nouveau triplé de piles de tuiles
      */
     public TileDecks withTopTileDrawnUntil(Tile.Kind kind, Predicate<Tile> predicate) {
-        TileDecks drawnDecks = new TileDecks(List.of(), List.of(), List.of());
+        TileDecks drawnDecks = new TileDecks(startTiles, normalTiles, menhirTiles);
         switch (kind) {
             case START : while (!startTiles.isEmpty() && !predicate.test(startTiles.getFirst())){
                 drawnDecks = withTopTileDrawn(kind);
             }
-            case NORMAL : while (!startTiles.isEmpty() && predicate.test(startTiles.getFirst())){
+            case NORMAL : while (!normalTiles.isEmpty() && predicate.test(normalTiles.getFirst())){
                 drawnDecks = withTopTileDrawn(kind);
             }
-            case MENHIR : while (!startTiles.isEmpty() && predicate.test(startTiles.getFirst())){
+            case MENHIR : while (!menhirTiles.isEmpty() && predicate.test(menhirTiles.getFirst())){
                 drawnDecks = withTopTileDrawn(kind);
             }
         }
