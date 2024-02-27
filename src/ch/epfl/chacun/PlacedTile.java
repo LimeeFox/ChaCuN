@@ -55,10 +55,10 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
     public TileSide side(Direction direction) {
         Direction newDirection = direction.rotated(rotation);
         return switch (newDirection) {
-            case E -> tile.e();
             case N -> tile.n();
-            case W -> tile.w();
+            case E -> tile.e();
             case S -> tile.s();
+            case W -> tile.w();
         };
     }
 
@@ -66,6 +66,7 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
      * Trouve la zone d'une tuile à partir d'un identifient de zone
      *
      * @param id
+     *          l'identifiant de zone qu'on recherche
      * @return la zone de la tuile qui a le même ID spécifié, ou null si aucune zone avec cette ID existe dans la tuile.
      * @throws IllegalArgumentException
      */
@@ -82,7 +83,7 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
     /**
      * Recherche d'une zone contenant un pouvoir spécial, et null si il n'y a aucune zone avec un pouvoir spécial
      *
-     * @return
+     * @return le pouvoir spécial de la zone, et null si la zone n'en a aucun
      */
     public Zone specialPowerZone() {
         for (Zone zone : tile.zones()) {
@@ -185,9 +186,8 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
      * @throws IllegalArgumentException
      */
     public PlacedTile withOccupant(Occupant occupant) throws IllegalArgumentException {
-        if (this.occupant == null) return new PlacedTile(tile, placer, rotation, pos, occupant);
-
-        throw new IllegalArgumentException();
+        Preconditions.checkArgument(this.occupant == null);
+        return new PlacedTile(tile, placer, rotation, pos, occupant);
     }
 
     /**

@@ -14,6 +14,7 @@ public final class Preconditions {
      */
 
     private Preconditions() {}
+
     /**
      * Vérifie si la condition execution est validé.
      *
