@@ -14,7 +14,7 @@ public sealed interface TileSide {
     /**
      * Les zones qui touchent le bord représenté par this
      */
-    public abstract List<Zone> zones();
+    List<Zone> zones();
 
     /**
      * Méthode qui vérifie si un bord de tuile adjacente est du même type que this
@@ -22,7 +22,7 @@ public sealed interface TileSide {
      * @param that
      *          bord de tuile voisine
      */
-    public abstract boolean isSameKindAs(TileSide that);
+    boolean isSameKindAs(TileSide that);
 
     /**
      * Bord de tuile de type forêt
@@ -30,7 +30,7 @@ public sealed interface TileSide {
      * @param forest
      *          zone forêt qui touche le bord
      */
-    public record Forest(Zone.Forest forest) implements TileSide {
+    record Forest(Zone.Forest forest) implements TileSide {
 
         /**
          * Les zones qui touchent le bord représenté par this
@@ -64,7 +64,7 @@ public sealed interface TileSide {
      * @param meadow
      *          zone pré qui touche un bord
      */
-    public record Meadow(Zone.Meadow meadow) implements TileSide {
+    record Meadow(Zone.Meadow meadow) implements TileSide {
 
         /**
          * Les zones qui touchent le bord représenté par this
@@ -102,7 +102,7 @@ public sealed interface TileSide {
      * @param meadow2
      *          seconde zone pré qui entoure la rivière et touche le bord
      */
-    public record River(Zone.Meadow meadow1, Zone.River river, Zone.Meadow meadow2) implements TileSide {
+    record River(Zone.Meadow meadow1, Zone.River river, Zone.Meadow meadow2) implements TileSide {
 
         /**
          * Les zones qui touchent le bord représenté par this
