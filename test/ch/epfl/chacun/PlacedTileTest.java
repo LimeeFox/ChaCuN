@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-import static org.junit.jupiter.api.Assertions.*;
-class PlacedTileTest {
-  
-=======
 package ch.epfl.chacun;
 
 import org.junit.jupiter.api.Test;
@@ -174,5 +169,4 @@ class PlacedTileTest {
     }
 
      */
->>>>>>> 8836fdc (working on placedTileTest)
 }
