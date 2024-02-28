@@ -54,8 +54,8 @@ public final record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, Lis
         Tile tTile = null;
         switch (kind) {
             case START : if (!startTiles.isEmpty()) {tTile = startTiles.getFirst();}
-            case NORMAL : tTile = normalTiles.getFirst();
-            case MENHIR : tTile = menhirTiles.getFirst();
+            case NORMAL : if (!normalTiles.isEmpty()) {tTile = normalTiles.getFirst();}
+            case MENHIR : if (!menhirTiles.isEmpty()) {tTile = menhirTiles.getFirst();}
         }
         return tTile;
     }
