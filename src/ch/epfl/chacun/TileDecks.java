@@ -54,8 +54,11 @@ public final record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, Lis
         Tile tTile = null;
         switch (kind) {
             case START : if (!startTiles.isEmpty()) {tTile = startTiles.getFirst();}
+                break;
             case NORMAL : if (!normalTiles.isEmpty()) {tTile = normalTiles.getFirst();}
+                break;
             case MENHIR : if (!menhirTiles.isEmpty()) {tTile = menhirTiles.getFirst();}
+                break;
         }
         return tTile;
     }
@@ -71,15 +74,18 @@ public final record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, Lis
     public TileDecks withTopTileDrawn(Tile.Kind kind) {
         TileDecks drawnDecks = new TileDecks(startTiles, normalTiles, menhirTiles);
         switch (kind) {
-            case START :
+            case START -> {
                 Preconditions.checkArgument(!startTiles.isEmpty());
-                drawnDecks = new TileDecks(startTiles.subList(1, startTiles.size() - 1), normalTiles, menhirTiles);
-            case NORMAL :
+                drawnDecks = new TileDecks(startTiles.subList(1, startTiles.size()), normalTiles, menhirTiles);
+            }
+            case NORMAL -> {
                 Preconditions.checkArgument(!normalTiles.isEmpty());
-                drawnDecks = new TileDecks(startTiles, normalTiles.subList(1, normalTiles.size() - 1), menhirTiles);
-            case MENHIR :
+                drawnDecks = new TileDecks(startTiles, normalTiles.subList(1, normalTiles.size()), menhirTiles);
+            }
+            case MENHIR -> {
                 Preconditions.checkArgument(!menhirTiles.isEmpty());
-                drawnDecks = new TileDecks(startTiles, normalTiles, menhirTiles.subList(1, menhirTiles.size() - 1));
+                drawnDecks = new TileDecks(startTiles, normalTiles, menhirTiles.subList(1, menhirTiles.size()));
+            }
         }
         return drawnDecks;
     }
@@ -97,15 +103,18 @@ public final record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, Lis
     public TileDecks withTopTileDrawnUntil(Tile.Kind kind, Predicate<Tile> predicate) {
         TileDecks drawnDecks = new TileDecks(startTiles, normalTiles, menhirTiles);
         switch (kind) {
-            case START : while (!startTiles.isEmpty() && !predicate.test(startTiles.getFirst())) {
+            case START : while (!startTiles.isEmpty() && predicate.test(startTiles.getFirst())) {
                 drawnDecks = withTopTileDrawn(kind);
             }
+                break;
             case NORMAL : while (!normalTiles.isEmpty() && predicate.test(normalTiles.getFirst())) {
                 drawnDecks = withTopTileDrawn(kind);
             }
+                break;
             case MENHIR : while (!menhirTiles.isEmpty() && predicate.test(menhirTiles.getFirst())) {
                 drawnDecks = withTopTileDrawn(kind);
             }
+                break;
         }
         return drawnDecks;
     }
