@@ -183,9 +183,8 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
      *
      * @param occupant
      * @return une copie de la tuile placée, mais avec le nouveau occupant passé en paramètre. Erreur si la tuile a déjà un occupant
-     * @throws IllegalArgumentException
      */
-    public PlacedTile withOccupant(Occupant occupant) throws IllegalArgumentException {
+    public PlacedTile withOccupant(Occupant occupant) {
         Preconditions.checkArgument(this.occupant == null);
         return new PlacedTile(tile, placer, rotation, pos, occupant);
     }
