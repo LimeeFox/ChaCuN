@@ -90,9 +90,11 @@ public class TileDecksTest {
     }
 
     @Test void withTopTileDrawnUntilWorks() {
-        Predicate<Tile> containsLake = tile -> tile.zones().contains((Zone.Lake) lake);
 
-        assertEquals(new TileDecks(List.of(startTile), List.of(normalTile1, normalTile2), List.of()),
+        Predicate<Tile> containsLake = tile -> tile.equals(normalTile2);
+
+
+        assertEquals(new TileDecks(List.of(), List.of(normalTile1, normalTile2), List.of()),
                 testDecks1.withTopTileDrawnUntil(Tile.Kind.START, containsLake));
         assertEquals(new TileDecks(List.of(startTile), List.of(normalTile2), List.of()),
                 testDecks1.withTopTileDrawnUntil(Tile.Kind.NORMAL, containsLake));
