@@ -1,6 +1,7 @@
 package ch.epfl.chacun;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * Aire formée par un ensemble de zones du même type connéctés
@@ -32,8 +33,11 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * @param <Z>
      */
     public static <Z extends Zone> boolean hasMenhir(Area<Zone.Forest> forest) {
-        //return si la foret contient un menhir;
-        // todo
+        for (Zone.Forest zone : forest.zones()) {
+            if (zone.kind().equals(Zone.Forest.Kind.WITH_MENHIR)) return true;
+        }
+
+        return false;
     }
 
     /**
@@ -44,8 +48,14 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * @return le nombre de groupes de champignons trouvés dans la forêt
      */
     public static int mushroomGroupCount(Area<Zone.Forest> forest) {
-        //return le nombre de champignongs
-        // todo
+        int count = 0;
+        for (Zone.Forest zone : forest.zones()) {
+            if (zone.kind().equals(Zone.Forest.Kind.WITH_MUSHROOMS)) {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     /**
@@ -59,7 +69,17 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      *         les animaux annulés pouvant p. ex. être des cerfs dévorés par des smilodons
      */
     public static Set<Animal> animals(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
-        // todo
+        Set<Animal> animals = new HashSet<>();
+
+        // Condition qu'on doit respecter (la liste qu'on veut retourner ne doit pas contenir le paramètre "cancelledAnimals")
+        Predicate<Animal> animalFilter = animal -> !cancelledAnimals.contains(animal);
+
+        // On rajoute tous les animaux qui respectent les critères donnés dans une nouvelle liste
+        for (Zone.Meadow zone : meadow.zones) {
+            zone.animals().stream().filter(animalFilter).forEach(animals::add);
+        }
+
+        return animals;
     }
 
     /**
