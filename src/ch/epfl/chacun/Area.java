@@ -205,7 +205,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
     public Set<Integer> tileIds() {
         Set<Integer> Ids = new HashSet<>();
         for (Zone zone : zones) {
-            Ids.add(zone.id());
+            Ids.add(zone.tileId());
         }
 
         return Ids;
