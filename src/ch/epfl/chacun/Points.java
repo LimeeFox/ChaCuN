@@ -6,7 +6,7 @@ package ch.epfl.chacun;
  * @author Cyriac Philippe (360553)
  */
 public final class Points {
-    private Points(){}
+    private Points() {}
 
     /**
      * Calcul des points pour une forêt fermée
@@ -38,7 +38,7 @@ public final class Points {
      */
     public static int forClosedRiver(int tileCount, int fishCount) {
         Preconditions.checkArgument(tileCount > 1);
-        Preconditions.checkArgument(fishCount >= 1);
+        Preconditions.checkArgument(fishCount >= 0);
         int points = tileCount;
         points += fishCount;
         return points;
@@ -60,8 +60,8 @@ public final class Points {
         Preconditions.checkArgument(mammothCount >= 0);
         Preconditions.checkArgument(aurochsCount >= 0);
         Preconditions.checkArgument(deerCount >= 0);
-        int points = mammothCount*3;
-        points += aurochsCount*2;
+        int points = mammothCount * 3;
+        points += aurochsCount * 2;
         points += deerCount;
         return points;
     }

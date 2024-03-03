@@ -42,9 +42,9 @@ class PlacedTileTest {
                 new TileSide.Forest(new Zone.Forest(1, Zone.Forest.Kind.PLAIN)),
                 meadowZone,
                 new TileSide.Forest(new Zone.Forest(3, Zone.Forest.Kind.WITH_MENHIR)));
-        PlacedTile placedTile = new PlacedTile(tile, PlayerColor.GREEN, Rotation.NONE, Pos.ORIGIN);
+        PlacedTile placedTile = new PlacedTile(tile, PlayerColor.GREEN, Rotation.LEFT, Pos.ORIGIN);
 
-        assertEquals(placedTile.side(Direction.S), meadowZone);
+        assertEquals(placedTile.side(Direction.E), meadowZone);
     }
 
     @Test
@@ -171,61 +171,80 @@ class PlacedTileTest {
 
     @Test
     void withOccupant() {
-        /*
-        @Test
-        public void testPotentialOccupants() {
-            // Création d'une tuile placée avec des occupants potentiels
-            Zone.Forest forest1 = new Zone.Forest(560, Zone.Forest.Kind.PLAIN);
-            Zone.Meadow meadow1 = new Zone.Meadow(561, new ArrayList<>(), null);
-            Zone.Meadow meadow2 = new Zone.Meadow(563, new ArrayList<>(), null);
-            Zone.River river1 = new Zone.River(562, 2, new Zone.Lake(568, 3, Zone.SpecialPower.LOGBOAT));
-            Zone.River river2 = new Zone.River(256, 2, null);
-            PlacedTile placedTile1 = new PlacedTile(new Tile(1, Tile.Kind.NORMAL,
-                    new TileSide.Forest(forest1),
-                    new TileSide.Meadow(meadow1),
-                    new TileSide.River(meadow1, river1, meadow2),
-                    new TileSide.Meadow(new Zone.Meadow(563, new ArrayList<>(), null))),
-                    PlayerColor.RED, Rotation.NONE, new Pos(0, 0), null);
-            PlacedTile placedTile2 = new PlacedTile(new Tile(1, Tile.Kind.NORMAL,
-                    new TileSide.Forest(forest1),
-                    new TileSide.Meadow(meadow1),
-                    new TileSide.River(meadow1, river2, meadow2),
-                    new TileSide.Meadow(meadow2)),
-                    PlayerColor.RED, Rotation.NONE, new Pos(0, 0), null);
+        Zone.Meadow meadowZone1 = new Zone.Meadow(1, List.of(), Zone.SpecialPower.SHAMAN);
+        Zone.Meadow meadowZone2 = new Zone.Meadow(2, List.of(), null);
+        Zone.Meadow meadowZone3 = new Zone.Meadow(4, List.of(), null);
 
+        Zone.Lake lake = new Zone.Lake(8, 0, null);
+        Zone.River riverZone2 = new Zone.River(3, 1, lake);
 
-            // Vérification des occupants potentiels de la tuile placée
-            Set<Occupant> potentialOccupants1 = placedTile1.potentialOccupants();
-            Set<Occupant> potentialOccupants2 = placedTile2.potentialOccupants();
-            // Vérifiez ici les occupants potentiels attendus en fonction de la configuration de la tuile
-            assertEquals(5, potentialOccupants1.size());
-            assertEquals(5, potentialOccupants2.size());
-            assertTrue(potentialOccupants1.contains(new Occupant(Occupant.Kind.HUT, 568)));
-            assertTrue(potentialOccupants2.contains(new Occupant(Occupant.Kind.HUT, 256)));
-            assertTrue(potentialOccupants1.contains(new Occupant(Occupant.Kind.PAWN, 562)));
-            assertTrue(potentialOccupants2.contains(new Occupant(Occupant.Kind.PAWN, 256)));
-            assertTrue(potentialOccupants1.contains(new Occupant(Occupant.Kind.PAWN, 560)));
-            assertTrue(potentialOccupants2.contains(new Occupant(Occupant.Kind.PAWN, 560)));
-            assertTrue(potentialOccupants1.contains(new Occupant(Occupant.Kind.PAWN, 561)));
-            assertTrue(potentialOccupants2.contains(new Occupant(Occupant.Kind.PAWN, 561)));
-            assertTrue(potentialOccupants1.contains(new Occupant(Occupant.Kind.PAWN, 563)));
-            assertTrue(potentialOccupants2.contains(new Occupant(Occupant.Kind.PAWN, 563)));
-        }
+        Tile tile = new Tile(56, Tile.Kind.NORMAL,
+                new TileSide.Meadow(meadowZone1),
+                new TileSide.Forest(new Zone.Forest(0, Zone.Forest.Kind.PLAIN)),
+                new TileSide.River(meadowZone2, riverZone2, meadowZone3),
+                new TileSide.Forest(new Zone.Forest(5, Zone.Forest.Kind.WITH_MENHIR)));
+        PlacedTile placedTile = new PlacedTile(tile, PlayerColor.GREEN, Rotation.NONE, Pos.ORIGIN);
 
-         */
+        Set<Occupant> actual2 = new HashSet<>();
+        actual2.add(new Occupant(Occupant.Kind.PAWN, 1));
+        actual2.add(new Occupant(Occupant.Kind.PAWN, 2));
+        actual2.add(new Occupant(Occupant.Kind.PAWN, 3));
+        actual2.add(new Occupant(Occupant.Kind.PAWN, 0));
+        actual2.add(new Occupant(Occupant.Kind.PAWN, 4));
+        final Occupant occupant1 = new Occupant(Occupant.Kind.HUT, 8);
+        final Occupant occupant2 = new Occupant(Occupant.Kind.PAWN, 3);
 
+        actual2.add(occupant1);
+        actual2.add(new Occupant(Occupant.Kind.PAWN, 5));
+
+        assertEquals(placedTile.withOccupant(occupant1), new PlacedTile(tile, PlayerColor.GREEN, Rotation.NONE, Pos.ORIGIN, occupant1));
+        assertEquals(placedTile.withOccupant(occupant2), new PlacedTile(tile, PlayerColor.GREEN, Rotation.NONE, Pos.ORIGIN, occupant2));
     }
 
     @Test
     void withNoOccupant() {
+        Zone.Meadow meadowZone1 = new Zone.Meadow(1, List.of(), Zone.SpecialPower.SHAMAN);
+        Zone.Meadow meadowZone2 = new Zone.Meadow(2, List.of(), null);
+        Zone.Meadow meadowZone3 = new Zone.Meadow(4, List.of(), null);
+
+        Zone.Lake lake = new Zone.Lake(8, 0, null);
+        Zone.River riverZone2 = new Zone.River(3, 1, lake);
+
+        final Occupant occupant1 = new Occupant(Occupant.Kind.HUT, 8);
+
+        Tile tile = new Tile(56, Tile.Kind.NORMAL,
+                new TileSide.Meadow(meadowZone1),
+                new TileSide.Forest(new Zone.Forest(0, Zone.Forest.Kind.PLAIN)),
+                new TileSide.River(meadowZone2, riverZone2, meadowZone3),
+                new TileSide.Forest(new Zone.Forest(5, Zone.Forest.Kind.WITH_MENHIR)));
+        PlacedTile placedTile = new PlacedTile(tile, PlayerColor.GREEN, Rotation.NONE, Pos.ORIGIN, occupant1);
+
+        assertEquals(placedTile.withNoOccupant(), new PlacedTile(tile, PlayerColor.GREEN, Rotation.NONE, Pos.ORIGIN));
     }
 
     @Test
     void idOfZoneOccupiedBy() {
+        Zone.Meadow meadowZone1 = new Zone.Meadow(1, List.of(), Zone.SpecialPower.SHAMAN);
+        Zone.Meadow meadowZone2 = new Zone.Meadow(2, List.of(), null);
+        Zone.Meadow meadowZone3 = new Zone.Meadow(4, List.of(), null);
+
+        Zone.Lake lake = new Zone.Lake(8, 0, null);
+        Zone.River riverZone2 = new Zone.River(3, 1, lake);
+
+        Tile tile = new Tile(56, Tile.Kind.NORMAL,
+                new TileSide.Meadow(meadowZone1),
+                new TileSide.Forest(new Zone.Forest(0, Zone.Forest.Kind.PLAIN)),
+                new TileSide.River(meadowZone2, riverZone2, meadowZone3),
+                new TileSide.Forest(new Zone.Forest(5, Zone.Forest.Kind.WITH_MENHIR)));
+        PlacedTile placedTile = new PlacedTile(tile, PlayerColor.GREEN, Rotation.NONE, Pos.ORIGIN, new Occupant(Occupant.Kind.HUT, 8));
+
+        assertEquals(placedTile.idOfZoneOccupiedBy(Occupant.Kind.HUT), 8);
+        assertEquals(placedTile.idOfZoneOccupiedBy(Occupant.Kind.PAWN), -1);
     }
 
     @Test
     void tile() {
+
     }
 
     @Test
