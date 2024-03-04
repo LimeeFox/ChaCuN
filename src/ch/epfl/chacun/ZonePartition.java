@@ -8,13 +8,34 @@ import java.util.Set;
  * @author Cyriac Philippe (360553)
  * @author Vladislav Yarkovoy (362242)
  *
- * @param Set<Area<Z>>
+ * @param areas
+ *          ensemble d'aires données
  */
 
-public record ZonePartition(Set<Area<Z>>) {
+public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
 
     public ZonePartition {
-        this.Set<Area<Z>> = Set.copyOf(Set<Area<Z>>);
+        areas = Set.copyOf(areas);
     }
 
+    // TODO: 04/03/2024 secondary constructeur
+
+    /**
+     * Aire contenant une zone demandée
+     *
+     * @param zone
+     *          zone qui doit contenir l'aire recherchée
+     * @return area
+     *          l'air qui contient la zone demandée
+     * @throws IllegalArgumentException
+     *          si aucune des aires ne contient la zone demandée
+     */
+    Area<Z> areaContaining(Z zone) {
+        for (Area<Z> area : areas) {
+            if (area.zones().contains(zone)) {
+                return area;
+            }
+        }
+        throw new IllegalArgumentException();
+    }
 }
