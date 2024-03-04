@@ -10,10 +10,15 @@ import java.util.Set;
  * @author Vladislav Yarkovoy (362242)
  *
  * @param tile
+ *          la tuile qui a été placée
  * @param placer
+ *          le placeur de la tuile, ou null pour la tuile de départ
  * @param rotation
+ *          la rotation appliquée à la tuile lors de son placement
  * @param pos
+ *          la position à laquelle la tuile a été placée
  * @param occupant
+ *          l'occupant de la tuile, ou null si elle n'est pas occupée
  */
 public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos pos, Occupant occupant) {
 
@@ -53,13 +58,8 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
      * @return le bord de tuile selon la direction spécifiée, en tenant compte de la rotation actuelle de la tuile
      */
     public TileSide side(Direction direction) {
-        Direction newDirection = direction.rotated(rotation);
-        return switch (newDirection) {
-            case N -> tile.n();
-            case E -> tile.e();
-            case S -> tile.s();
-            case W -> tile.w();
-        };
+        Direction newDirection = direction.rotated(rotation.negated());
+        return tile.sides().get(newDirection.ordinal());
     }
 
     /**
@@ -183,9 +183,8 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
      *
      * @param occupant
      * @return une copie de la tuile placée, mais avec le nouveau occupant passé en paramètre. Erreur si la tuile a déjà un occupant
-     * @throws IllegalArgumentException
      */
-    public PlacedTile withOccupant(Occupant occupant) throws IllegalArgumentException {
+    public PlacedTile withOccupant(Occupant occupant) {
         Preconditions.checkArgument(this.occupant == null);
         return new PlacedTile(tile, placer, rotation, pos, occupant);
     }
@@ -206,7 +205,7 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
      * @return l'identification de la zone où un occupent se situe
      */
     public int idOfZoneOccupiedBy(Occupant.Kind occupantKind) {
-        return occupant.kind().equals(occupantKind) ? occupant.zoneId() : -1;
+        return (occupant != null && occupant.kind().equals(occupantKind)) ? occupant.zoneId() : -1;
     }
 
 }
