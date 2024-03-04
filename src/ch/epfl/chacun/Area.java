@@ -84,13 +84,27 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
 
     /**
      * Déterminer la quantité de poissons dans une aire de rivière (avec lacs)
+     * les poissons d'un lac donné ne devant être comptés qu'une seule fois même dans le cas où un unique lac termine la rivière aux deux bouts
      *
      * @param river
      * @return le nombre de poissons nageant dans la rivière donnée ou dans l'un des éventuels lacs se trouvant à ses extrémités
-     *         les poissons d'un lac donné ne devant être comptés qu'une seule fois même dans le cas où un unique lac termine la rivière aux deux bouts
      */
     public static int riverFishCount(Area<Zone.River> river) {
-        // todo
+        Set<Zone.Lake> lakes = new HashSet<>();
+        int fishCount = 0;
+
+        for (Zone.River zone : river.zones()) {
+            fishCount += zone.fishCount();
+
+            // Verifier si on a deja compté les poissons dans ce lac
+            Zone.Lake lake = zone.lake();
+            if (lakes.contains(lake)) continue;
+
+            lakes.add(lake);
+            fishCount += lake.fishCount();
+        }
+
+        return fishCount;
     }
 
     /**
@@ -101,7 +115,32 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * @return le nombre de poissons nageant dans un système hydrographique donné
      */
     public static int riverSystemFishCount(Area<Zone.Water> riverSystem) {
-        // todo
+        Set<Zone.Water> lakes = new HashSet<>();
+        int fishCount = 0;
+
+        for (Zone.Water zone : riverSystem.zones()) {
+            // Ne pas re-compter les mêmes poissons dans un lac plusieurs fois
+            if (lakes.contains(zone)) continue;
+
+            if (zone instanceof Zone.Lake lake) {
+                lakes.add(lake);
+                fishCount += lake.fishCount();
+            } else {
+                fishCount += zone.fishCount();
+                }
+            /*
+            if (zone instanceof Zone.River river) {
+                // Verifier si on a deja compté les poissons dans ce lac
+                Zone.Lake lake = river.lake();
+                if (lakes.contains(lake)) continue;
+
+                lakes.add(lake);
+                fishCount += lake.fishCount();
+            }
+             */
+
+        return fishCount;
+        }
     }
 
     /**
@@ -149,9 +188,9 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
         // Trouver les couleurs de joueurs qui apparaissent le plus souvent
         int max = 0;
 
-        for (int i = 0; i < occurrence.length; i++) {
-            if (occurrence[i] > max) {
-                max = occurrence[i];
+        for (int j : occurrence) {
+            if (j > max) {
+                max = j;
             }
         }
 

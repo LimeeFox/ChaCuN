@@ -120,7 +120,7 @@ public sealed interface Zone {
     /**
      * Zone aquatique qui peut contenir 1 ou 2 poissons
      */
-    interface Water{
+    sealed interface Water extends Zone {
         int fishCount();
     }
 
