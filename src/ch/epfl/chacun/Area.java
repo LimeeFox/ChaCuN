@@ -19,8 +19,8 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
         Preconditions.checkArgument(openConnections > 0);
 
         Collections.sort(occupants);
-        //this.zones = Set.copyOf(zones);
-        //this.occupants = List.copyOf(occupants);
+        // this.zones = Set.copyOf(zones);
+        // this.occupants = List.copyOf(occupants);
         // todo
     }
 
@@ -115,32 +115,13 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * @return le nombre de poissons nageant dans un système hydrographique donné
      */
     public static int riverSystemFishCount(Area<Zone.Water> riverSystem) {
-        Set<Zone.Water> lakes = new HashSet<>();
         int fishCount = 0;
 
         for (Zone.Water zone : riverSystem.zones()) {
-            // Ne pas re-compter les mêmes poissons dans un lac plusieurs fois
-            if (lakes.contains(zone)) continue;
-
-            if (zone instanceof Zone.Lake lake) {
-                lakes.add(lake);
-                fishCount += lake.fishCount();
-            } else {
-                fishCount += zone.fishCount();
-                }
-            /*
-            if (zone instanceof Zone.River river) {
-                // Verifier si on a deja compté les poissons dans ce lac
-                Zone.Lake lake = river.lake();
-                if (lakes.contains(lake)) continue;
-
-                lakes.add(lake);
-                fishCount += lake.fishCount();
-            }
-             */
+            fishCount += zone.fishCount();
+        }
 
         return fishCount;
-        }
     }
 
     /**
@@ -151,7 +132,15 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * @return le nombre de lacs dans l'air donnée
      */
     public static int lakeCount(Area<Zone.Water> riverSystem) {
-        // todo
+        int lakeCount = 0;
+
+        for (Zone.Water zone : riverSystem.zones()) {
+            if (zone instanceof Zone.Lake) {
+                lakeCount++;
+            }
+        }
+
+        return lakeCount;
     }
 
     /**
