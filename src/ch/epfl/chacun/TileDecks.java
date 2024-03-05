@@ -102,19 +102,8 @@ public final record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, Lis
      */
     public TileDecks withTopTileDrawnUntil(Tile.Kind kind, Predicate<Tile> predicate) {
         TileDecks drawnDecks = new TileDecks(startTiles, normalTiles, menhirTiles);
-        switch (kind) {
-            case START : while (!drawnDecks.startTiles.isEmpty() && !predicate.test(drawnDecks.startTiles.getFirst())) {
-                drawnDecks = withTopTileDrawn(kind);
-            }
-                break;
-            case NORMAL : while (!drawnDecks.normalTiles.isEmpty() && !predicate.test(drawnDecks.normalTiles.getFirst())) {
-                drawnDecks = withTopTileDrawn(kind);
-            }
-                break;
-            case MENHIR : while (!drawnDecks.menhirTiles.isEmpty() && !predicate.test(drawnDecks.menhirTiles.getFirst())) {
-                drawnDecks = withTopTileDrawn(kind);
-            }
-                break;
+        while(drawnDecks.deckSize(kind) > 0 && !predicate.test(topTile(kind))) {
+            drawnDecks = drawnDecks.withTopTileDrawn(kind);
         }
         return drawnDecks;
     }
