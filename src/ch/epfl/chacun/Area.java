@@ -19,9 +19,8 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
         Preconditions.checkArgument(openConnections > 0);
 
         Collections.sort(occupants);
-        // this.zones = Set.copyOf(zones);
-        // this.occupants = List.copyOf(occupants);
-        // todo
+        zones = Set.copyOf(zones);
+        occupants = List.copyOf(occupants);
     }
 
     /**
@@ -205,6 +204,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
     public Area<Z> connectTo(Area<Z> that) {
         // Je crois qu'il faut regarder les cotes libres et les supprimer dans les deux tuiles, mais attention car la tuile elle meme peut se passer en parametre
         // todo
+        return null;
     }
 
     /**
