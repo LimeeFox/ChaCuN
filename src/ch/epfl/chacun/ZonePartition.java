@@ -1,6 +1,7 @@
 package ch.epfl.chacun;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -87,13 +88,19 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
             // TODO: 04/03/2024 Finish connect to method 
             areaContaining(zone1).connectTo(areaContaining(zone2));
         }
+
+        ZonePartition<Z> build() {
+            return new ZonePartition<Z>(areas);
+        }
     }
 
     public ZonePartition {
         areas = Set.copyOf(areas);
     }
 
-    // TODO: 04/03/2024 secondary constructeur
+    public ZonePartition() {
+        this(new HashSet<Area<Z>>());
+    }
 
     /**
      * Aire contenant une zone demandée
