@@ -153,26 +153,26 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
 
         // On récupère les occupents qu'on peut placer dans la forêt
         for (Zone.Forest zone : forestZones()) {
-            occupants.add(new Occupant(Occupant.Kind.PAWN, zone.zoneId()));
+            occupants.add(new Occupant(Occupant.Kind.PAWN, zone.id()));
         }
 
         // On récupère les occupents qu'on peut placer dans un pré
         for (Zone.Meadow zone : meadowZones()) {
-            occupants.add(new Occupant(Occupant.Kind.PAWN, zone.zoneId()));
+            occupants.add(new Occupant(Occupant.Kind.PAWN, zone.id()));
         }
 
         // On récupère les occupents qu'on peut placer dans la rivière
         for (Zone.River zone : riverZones()) {
-            final int zoneId = zone.zoneId();
+            final int id = zone.id();
             // Les rivières connectées à des lacs ne peuvent pas avoir de huttes
             if (zone.hasLake()) {
-                occupants.add(new Occupant(Occupant.Kind.PAWN, zoneId));
-                occupants.add(new Occupant(Occupant.Kind.HUT, zone.lake().zoneId()));
+                occupants.add(new Occupant(Occupant.Kind.PAWN, id));
+                occupants.add(new Occupant(Occupant.Kind.HUT, zone.lake().id()));
                 continue;
             }
             // Sinon, elle peut contenir une hutte ou un pion
-            occupants.add(new Occupant(Occupant.Kind.HUT, zoneId));
-            occupants.add(new Occupant(Occupant.Kind.PAWN, zoneId));
+            occupants.add(new Occupant(Occupant.Kind.HUT, id));
+            occupants.add(new Occupant(Occupant.Kind.PAWN, id));
         }
 
         return occupants;

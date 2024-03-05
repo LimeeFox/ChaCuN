@@ -45,9 +45,13 @@ public sealed interface Zone {
 
     int id();
 
-    int tileId();
+    default int tileId() {
+        return tileId(id());
+    }
 
-    int localId();
+    default int localId() {
+        return localId(id());
+    }
 
     default SpecialPower specialPower() {
         return null;
@@ -56,10 +60,10 @@ public sealed interface Zone {
     /**
      * Zone de forêt dans laquelle on peut (ou pas) trouver des menhirs
      *
-     * @param zoneId
+     * @param id
      * @param kind
      */
-    record Forest(int zoneId, Kind kind) implements Zone {
+    record Forest(int id, Kind kind) implements Zone {
 
         // les types de forêts différentes qui existent dans le jeu
         public enum Kind {
@@ -67,49 +71,19 @@ public sealed interface Zone {
             WITH_MENHIR,
             WITH_MUSHROOMS
         }
-
-        @Override
-        public int id() {
-            return zoneId % 10;
-        }
-
-        @Override
-        public int tileId() {
-            return Zone.tileId(zoneId);
-        }
-
-        @Override
-        public int localId() {
-            return Zone.localId(zoneId);
-        }
     }
 
     /**
      * Zone de type pré dans laquelle on peut (ou pas) trouver des animaux
      *
-     * @param zoneId
+     * @param id
      * @param animals
      * @param specialPower
      */
-    record Meadow(int zoneId, List<Animal> animals, SpecialPower specialPower) implements Zone {
+    record Meadow(int id, List<Animal> animals, SpecialPower specialPower) implements Zone {
 
         public Meadow {
             animals = List.copyOf(animals);
-        }
-
-        @Override
-        public int id() {
-            return zoneId % 10;
-        }
-
-        @Override
-        public int tileId() {
-            return Zone.tileId(zoneId);
-        }
-
-        @Override
-        public int localId() {
-            return Zone.localId(zoneId);
         }
 
         public SpecialPower SpecialPower() {
@@ -127,53 +101,24 @@ public sealed interface Zone {
     /**
      * Zone du lac qui peut posséder 0 ou plusieurs poissons, et qui peut (ou pas) contenir des pouvoirs spéciaux
      *
-     * @param zoneId
+     * @param id
      * @param fishCount
      * @param specialPower
      */
-    record Lake(int zoneId, int fishCount, SpecialPower specialPower) implements Zone, Zone.Water {
-        @Override
-        public int id() {
-            return zoneId % 10;
-        }
-
-        @Override
-        public int tileId() {
-            return Zone.tileId(zoneId);
-        }
-
-        @Override
-        public int localId() {
-            return Zone.localId(zoneId);
-        }
+    record Lake(int id, int fishCount, SpecialPower specialPower) implements Zone, Zone.Water {
     }
 
     /**
      * Zone de rivière qui peut posséder 0 ou plusieurs poissons, et qui peut (ou pas) faire partie d'un lac
      *
-     * @param zoneId
+     * @param id
      * @param fishCount
      * @param lake
      */
-    record River(int zoneId, int fishCount, Lake lake) implements Zone, Zone.Water {
+    record River(int id, int fishCount, Lake lake) implements Zone, Zone.Water {
 
         public boolean hasLake() {
             return lake != null;
-        }
-
-        @Override
-        public int id() {
-            return zoneId % 10;
-        }
-
-        @Override
-        public int tileId() {
-            return Zone.tileId(zoneId);
-        }
-
-        @Override
-        public int localId() {
-            return Zone.localId(zoneId);
         }
     }
 }
