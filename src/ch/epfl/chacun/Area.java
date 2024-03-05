@@ -203,8 +203,15 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      */
     public Area<Z> connectTo(Area<Z> that) {
         // Je crois qu'il faut regarder les cotes libres et les supprimer dans les deux tuiles, mais attention car la tuile elle meme peut se passer en parametre
-        // todo
-        return null;
+        Set<Z> newZones = new HashSet<>();
+        newZones.addAll(zones);
+        newZones.addAll(that.zones);
+
+        List<PlayerColor> newOccupants = new ArrayList<>();
+        newOccupants.addAll(occupants);
+        newOccupants.addAll(that.occupants);
+
+        return new Area<Z>(newZones, newOccupants, openConnections - 1);
     }
 
     /**
