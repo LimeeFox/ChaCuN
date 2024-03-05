@@ -17,7 +17,7 @@ import java.util.Set;
 
 public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
 
-    public class Builder {
+    public final class Builder {
         private Set<Area<Z>> areas;
 
         /**
@@ -30,7 +30,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          *          nombre de connections ouvertes de l'aire inoccupée
          */
         public void addSingleton(Z zone, int openConnections) {
-            areas.add(new Area<>(Set.of(zone), List.of(), openConnections));
+            areas.add(new Area<Z>(Set.of(zone), List.of(), openConnections));
         }
 
         /**
@@ -89,7 +89,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
             areaContaining(zone1).connectTo(areaContaining(zone2));
         }
 
-        ZonePartition<Z> build() {
+        public ZonePartition<Z> build() {
             return new ZonePartition<Z>(areas);
         }
     }
@@ -112,7 +112,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
      * @throws IllegalArgumentException
      *          si aucune des aires ne contient la zone demandée
      */
-    Area<Z> areaContaining(Z zone) {
+    public Area<Z> areaContaining(Z zone) {
         for (Area<Z> area : areas) {
             if (area.zones().contains(zone)) {
                 return area;
