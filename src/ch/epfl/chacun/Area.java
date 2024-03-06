@@ -215,7 +215,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
     }
 
     /**
-     * Méthode qui permet d'obtenir une aire identique à this, mais avec un occupent initial donné
+     * Méthode qui permet d'obtenir une aire identique à this, mais avec un occupant initial donné
      *
      * @param occupant
      *          la couleur du joueur qu'on aimerait ajouter en tant qu'occupent à l'aire
