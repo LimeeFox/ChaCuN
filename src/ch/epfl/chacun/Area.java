@@ -18,9 +18,10 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
     public Area {
         Preconditions.checkArgument(openConnections > 0);
 
-        Collections.sort(occupants);
+        List<PlayerColor> sortedOccupants = new ArrayList<>(occupants);
+        Collections.sort(sortedOccupants);
         zones = Set.copyOf(zones);
-        occupants = List.copyOf(occupants);
+        occupants = List.copyOf(sortedOccupants);
     }
 
     /**
@@ -130,16 +131,21 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      *          aire de rivières qui possèdent un ou plusieurs lacs
      * @return le nombre de lacs dans l'air donnée
      */
-    public static int lakeCount(Area<Zone.Water> riverSystem) {
-        int lakeCount = 0;
+    public static int lakeCount(Area<Zone.Water> riverSystem) { // TODO: ask others if that's how they did this cuz it's a question of understanding the instructions, rather than coding lol
+        Set<Zone.Lake> lakes = new HashSet<>();
 
         for (Zone.Water zone : riverSystem.zones()) {
-            if (zone instanceof Zone.Lake) {
-                lakeCount++;
+            if (zone instanceof Zone.Lake lake) {
+                lakes.add(lake);
+            } else if (zone instanceof Zone.River river) {
+                Zone.Lake lake = river.lake();
+                if (lake != null) {
+                    lakes.add(lake);
+                }
             }
         }
 
-        return lakeCount;
+        return lakes.size();
     }
 
     /**
@@ -201,7 +207,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      *          la tuile à laquelle on aimerait connecter le récepteur (this)
      * @return l'aire résultant de la connexion du récepteur (this) à l'aire donnée (that)
      */
-    public Area<Z> connectTo(Area<Z> that) {
+    public Area<Z> connectTo(Area<Z> that) { // TODO: ask others if that's how they did this cuz it's a question of understanding the instructions, rather than coding lol
         // Je crois qu'il faut regarder les cotes libres et les supprimer dans les deux tuiles, mais attention car la tuile elle meme peut se passer en parametre
         Set<Z> newZones = new HashSet<>();
         newZones.addAll(zones);

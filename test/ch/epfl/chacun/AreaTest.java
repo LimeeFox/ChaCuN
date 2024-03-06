@@ -2,6 +2,8 @@ package ch.epfl.chacun;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -56,7 +58,7 @@ class AreaTest {
 
         Area<Zone.Meadow> area1 = new Area<>(Set.of(meadowZone1, meadowZone2, meadowZone3), List.of(PlayerColor.RED, PlayerColor.YELLOW), 3);
 
-        assertEquals(Area.animals(area1, Set.of()), Set.of());
+        assertEquals(Set.of(), Area.animals(area1, Set.of()));
 
         //
         // Verifier avec des animaux, sans filtre
@@ -73,13 +75,13 @@ class AreaTest {
 
         Area<Zone.Meadow> area2 = new Area<>(Set.of(meadowZone4, meadowZone5), List.of(PlayerColor.BLUE), 2);
 
-        assertEquals(Area.animals(area2, Set.of()), Set.of(animal1, animal2, animal3, animal4));
+        assertEquals(Set.of(animal1, animal2, animal3, animal4), Area.animals(area2, Set.of()));
 
         //
         // Verifier avec des animaux, avec des filtres
         //
 
-        assertEquals(Area.animals(area2, Set.of(animal2, animal3)), Set.of(animal1, animal4));
+        assertEquals(Set.of(animal1, animal4), Area.animals(area2, Set.of(animal2, animal3)));
     }
 
     @Test
@@ -99,7 +101,7 @@ class AreaTest {
         //
         // Avec une liste vide
         //
-        assertEquals(Area.lakeCount(new Area<Zone.Water>(Set.of(), List.of(), 0)), 0);
+        assertEquals(Area.lakeCount(new Area<Zone.Water>(new HashSet<>(), new ArrayList<>(), 1)), 0);
 
         //
         // Avec 0 lac
@@ -108,16 +110,16 @@ class AreaTest {
 
         Area<Zone.Water> area1 = new Area<>(Set.of(riverZone1), List.of(PlayerColor.BLUE), 2);
 
-        assertEquals(Area.lakeCount(area1), 0);
+        assertEquals(0, Area.lakeCount(area1));
 
         //
-        // Avec 1 lac
+        // Avec 1 lac attribué à une rivière
         //
         Zone.River riverZone2 = new Zone.River(3, 1, new Zone.Lake(8, 0, null));
 
         Area<Zone.Water> area2 = new Area<>(Set.of(riverZone1, riverZone2), List.of(PlayerColor.BLUE), 2);
 
-        assertEquals(Area.lakeCount(area2), 1);
+        assertEquals(1, Area.lakeCount(area2));
 
         //
         // Avec plusieurs lacs
@@ -126,11 +128,12 @@ class AreaTest {
 
         Area<Zone.Water> area3 = new Area<>(Set.of(riverZone1, riverZone2, lakeZone1), List.of(PlayerColor.BLUE), 2);
 
-        assertEquals(Area.lakeCount(area3), 2);
+        assertEquals(2, Area.lakeCount(area3));
     }
 
     @Test
     void isClosed() {
+
     }
 
     @Test
@@ -143,7 +146,7 @@ class AreaTest {
         // No occupants
         //
 
-        assertEquals();
+        //assertEquals();
 
         //
         // 1 Occupant
