@@ -73,7 +73,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          * @param area
          *          aire dont la totalité des occupants seront supprimés
          */
-        public void removeAllOccupant(Area<Z> area) {
+        public void removeAllOccupantsOf(Area<Z> area) {
             area.withoutOccupants();
         }
 
