@@ -2,29 +2,57 @@ package ch.epfl.chacun;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ZonePartitionTest {
+// TODO: 07/03/2024 Test builder methods
+
+public class ZonePartitionTest0 {
+
+    private final Zone.Meadow meadow1 = new Zone.Meadow(2,
+            List.of(new Animal(1, Animal.Kind.TIGER)), Zone.SpecialPower.PIT_TRAP);
+    private final Zone.Meadow meadow2 = new Zone.Meadow(0,
+            List.of(new Animal(0, Animal.Kind.AUROCHS)), null);
+    private final Zone.Forest forest1 = new Zone.Forest(0, Zone.Forest.Kind.PLAIN);
+    private final Zone.River river1 = new Zone.River(1, 2, null);
+    private final Zone.Lake lake = new Zone.Lake(1, 0, Zone.SpecialPower.LOGBOAT);
+    private final Zone.River river2 = new Zone.River(1, 2, lake);
+
+    private final Area<Zone.Meadow> meadowArea1 = new Area<>(Set.of(meadow1),
+            List.of(PlayerColor.BLUE), 2);
+    private final Area<Zone.Meadow> meadowArea2 = new Area<>(Set.of(meadow2),
+            List.of(PlayerColor.RED), 1);
+
+
+    ZonePartition<Zone.Meadow> emptyPartition = new ZonePartition<>();
+    ZonePartition<Zone.Meadow> partition1 = new ZonePartition<>(Set.of(meadowArea1, meadowArea2));
 
     @Test
     public void testAreaContaining() {
-        // Create some zones and areas
-        Zone zone1 = new Zone(/* zone details */);
-        Zone zone2 = new Zone(/* zone details */);
-        Area<Zone> area1 = new Area<>(/* area details */);
-        Area<Zone> area2 = new Area<>(/* area details */);
-
-        // Create a ZonePartition with the areas
-        ZonePartition<Zone> partition = new ZonePartition<>(Set.of(area1, area2));
-
         // Test if the method correctly returns the area containing zone1
-        assertEquals(area1, partition.areaContaining(zone1));
+        assertEquals(meadowArea2, partition1.areaContaining(meadow2));
 
         // Test if the method throws an exception when no area contains zone2
-        assertThrows(IllegalArgumentException.class, () -> partition.areaContaining(zone2));
+        assertThrows(IllegalArgumentException.class, () -> emptyPartition.areaContaining(meadow1));
     }
 
-    // Add more test methods for other functionalities such as Builder class methods
+    @Test
+    public void testBuilder() {
+        ZonePartition.Builder<Zone.Meadow> zonePartitionBuilder = new ZonePartition.Builder<>();
+
+        zonePartitionBuilder.addSingleton(meadow1, 2);
+        zonePartitionBuilder.addInitialOccupant(meadow1, PlayerColor.BLUE);
+
+        zonePartitionBuilder.union(meadow1, meadow2);
+        zonePartitionBuilder.addInitialOccupant(meadow2, PlayerColor.BLUE);
+        zonePartitionBuilder.removeOccupant(meadow2,PlayerColor.BLUE);
+        zonePartitionBuilder.addInitialOccupant(meadow2, PlayerColor.RED);
+
+        ZonePartition<Zone.Meadow> partition2 = zonePartitionBuilder.build();
+
+        assertEquals(partition1, partition2);
+
+    }
 }

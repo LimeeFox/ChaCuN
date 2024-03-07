@@ -228,7 +228,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * @return une aire identique au récepteur, si ce n'est qu'elle est occupée par l'occupant donné
      */
     public Area<Z> withInitialOccupant(PlayerColor occupant) {
-        Preconditions.checkArgument(!occupants.isEmpty());
+        Preconditions.checkArgument(occupants.isEmpty());
 
         return new Area<Z>(zones, List.of(occupant), openConnections);
     }
