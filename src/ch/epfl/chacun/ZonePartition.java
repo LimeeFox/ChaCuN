@@ -20,6 +20,10 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
     public static final class Builder<Z extends Zone> {
         private Set<Area<Z>> builderAreas = new HashSet<>();
 
+        public Builder(ZonePartition<Z> partition) {
+            this.builderAreas = new HashSet<>(partition.areas());
+        }
+
         /**
          * Ajout d'une nouvelle aire inoccupée, constitué d'une zone donnée et d'un nombre de connections ouvertes
          * donné, à la partition en cours de construction
@@ -74,7 +78,13 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          *          aire dont la totalité des occupants seront supprimés
          */
         public void removeAllOccupantsOf(Area<Z> area) {
-            area.withoutOccupants();
+            if (builderAreas.contains(area)) {
+                Area<Z> unoccupiedArea = area.withoutOccupants();
+                builderAreas.remove(area);
+                builderAreas.add(unoccupiedArea);
+            } else {
+                throw new IllegalArgumentException();
+            }
         }
 
         /**
@@ -89,7 +99,10 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          *          si une des deux aires n'est pas contenue dans une aire
          */
         public void union(Z zone1, Z zone2) {
-            areaContaining(zone1).connectTo(areaContaining(zone2));
+            Area<Z> connectedArea = areaContaining(zone1).connectTo(areaContaining(zone2));
+            builderAreas.remove(areaContaining(zone1));
+            builderAreas.remove(areaContaining(zone2));
+            builderAreas.add(connectedArea);
         }
 
         private Area<Z> areaContaining(Z zone) {
