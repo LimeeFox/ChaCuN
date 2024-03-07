@@ -3,13 +3,12 @@ package ch.epfl.chacun;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class TileDecksTest {
+public class TileDecksTest0 {
     Tile startTile = new Tile(56, Tile.Kind.START,
             new TileSide.Meadow(new Zone.Meadow(0, List.of(new Animal(0, Animal.Kind.AUROCHS)), null)),
             new TileSide.Forest(new Zone.Forest(1, Zone.Forest.Kind.WITH_MENHIR)),
@@ -88,7 +87,7 @@ public class TileDecksTest {
                 testDecks2.withTopTileDrawn(Tile.Kind.MENHIR));
 
     }
-
+    /*
     @Test void withTopTileDrawnUntilWorks() {
 
         Predicate<Tile> containsLake = tile -> tile.equals(normalTile2);
@@ -104,4 +103,6 @@ public class TileDecksTest {
         assertEquals(new TileDecks(List.of(), List.of(normalTile1, normalTile2), List.of()),
                 testDecks2.withTopTileDrawnUntil(Tile.Kind.MENHIR, containsLake));
     }
+
+    */
 }

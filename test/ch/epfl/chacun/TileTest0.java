@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class TileTest {
+public class TileTest0 {
 
     @Test
     void tileSideZonesWorks() {

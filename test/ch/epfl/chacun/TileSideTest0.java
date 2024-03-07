@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TileSideTest {
+public class TileSideTest0 {
 
     Zone.Meadow meadow1 = new Zone.Meadow(2,
             List.of(new Animal(1, Animal.Kind.TIGER)), Zone.SpecialPower.PIT_TRAP);
