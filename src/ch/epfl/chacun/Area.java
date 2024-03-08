@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, int openConnections) {
 
     public Area {
-        Preconditions.checkArgument(openConnections > 0);
+        Preconditions.checkArgument(openConnections >= 0);
 
         List<PlayerColor> sortedOccupants = new ArrayList<>(occupants);
         Collections.sort(sortedOccupants);
@@ -98,6 +98,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
 
             // Verifier si on a deja compté les poissons dans ce lac
             Zone.Lake lake = zone.lake();
+            if (lake == null) continue;
             if (lakes.contains(lake)) continue;
 
             lakes.add(lake);
@@ -176,24 +177,21 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
 
         // D'abord compter les occurrences de chaque couleur
         for (PlayerColor occupant : occupants) {
-            occurrence[PlayerColor.ALL.indexOf(occupant)]++;
+            occurrence[occupant.ordinal()]++;
         }
 
-        // Trouver les couleurs de joueurs qui apparaissent le plus souvent
-        int max = 0;
-
-        for (int j : occurrence) {
-            if (j > max) {
-                max = j;
-            }
-        }
+        // Trouver le max
+        int max = Arrays.stream(occurrence).max().orElse(0);
 
         // Filtrer les joueurs qui n'ont pas autant d'occupants que "max"
         Set<PlayerColor> dominators = new HashSet<>();
 
+        if (max == 0) return dominators; // "Early-return" afin de traiter le cas ou il y a 0 occupants
+
         for (int i = 0; i < occurrence.length; i++) {
             if (occurrence[i] == max) {
-                dominators.add(PlayerColor.ALL.get(i));
+                PlayerColor playerColor = PlayerColor.ALL.get(i);
+                dominators.add(playerColor);
             }
         }
 
@@ -207,17 +205,20 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      *          la tuile à laquelle on aimerait connecter le récepteur (this)
      * @return l'aire résultant de la connexion du récepteur (this) à l'aire donnée (that)
      */
-    public Area<Z> connectTo(Area<Z> that) { // TODO: ask others if that's how they did this cuz it's a question of understanding the instructions, rather than coding lol
-        // Je crois qu'il faut regarder les cotes libres et les supprimer dans les deux tuiles, mais attention car la tuile elle meme peut se passer en parametre
-        Set<Z> newZones = new HashSet<>();
-        newZones.addAll(zones);
-        newZones.addAll(that.zones);
+    public Area<Z> connectTo(Area<Z> that) {
+        if (this == that) {
+            return new Area<Z>(zones, occupants, openConnections - 2);
+        } else {
+            Set<Z> newZones = new HashSet<>();
+            newZones.addAll(zones);
+            newZones.addAll(that.zones);
 
-        List<PlayerColor> newOccupants = new ArrayList<>();
-        newOccupants.addAll(occupants);
-        newOccupants.addAll(that.occupants);
+            List<PlayerColor> newOccupants = new ArrayList<>();
+            newOccupants.addAll(occupants);
+            newOccupants.addAll(that.occupants);
 
-        return new Area<Z>(newZones, newOccupants, openConnections - 1);
+            return new Area<Z>(newZones, newOccupants, openConnections - 2);
+        }
     }
 
     /**
@@ -228,7 +229,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * @return une aire identique au récepteur, si ce n'est qu'elle est occupée par l'occupant donné
      */
     public Area<Z> withInitialOccupant(PlayerColor occupant) {
-        Preconditions.checkArgument(!occupants.isEmpty());
+        Preconditions.checkArgument(occupants.isEmpty());
 
         return new Area<Z>(zones, List.of(occupant), openConnections);
     }
@@ -281,7 +282,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      */
     public Zone zoneWithSpecialPower(Zone.SpecialPower specialPower) {
         for (Zone zone : zones) {
-            if (zone.specialPower() != null) {
+            if (zone.specialPower() == specialPower) {
                 return zone;
             }
         }
