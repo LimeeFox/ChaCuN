@@ -241,7 +241,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      *          la couleur du joueur dont on aimerait se débarasser dans l'aire donnée
      * @return une aire identique au récepteur, mais qui comporte un occupant de la couleur donnée en moins
      */
-    Area<Z> withoutOccupant(PlayerColor occupant) {
+    public Area<Z> withoutOccupant(PlayerColor occupant) {
         Preconditions.checkArgument(occupants.contains(occupant));
 
         List<PlayerColor> updatedOccupants = new ArrayList<>(occupants);
