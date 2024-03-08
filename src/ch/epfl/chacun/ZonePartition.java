@@ -17,8 +17,8 @@ import java.util.Set;
 
 public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
 
-    public final class Builder {
-        private Set<Area<Z>> areas;
+    public static final class Builder<Z extends Zone> {
+        private Set<Area<Z>> builderAreas = new HashSet<>();
 
         /**
          * Ajout d'une nouvelle aire inoccupée, constitué d'une zone donnée et d'un nombre de connections ouvertes
@@ -30,7 +30,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          *          nombre de connections ouvertes de l'aire inoccupée
          */
         public void addSingleton(Z zone, int openConnections) {
-            areas.add(new Area<Z>(Set.of(zone), List.of(), openConnections));
+            builderAreas.add(new Area<>(Set.of(zone), List.of(), openConnections));
         }
 
         /**
@@ -45,7 +45,9 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          *          si aucune aire de la partition en construction ne contient la zone donnée
          */
         public void addInitialOccupant(Z zone, PlayerColor color) {
-            areaContaining(zone).withInitialOccupant(color);
+            Area<Z> occupiedArea = areaContaining(zone).withInitialOccupant(color);
+            builderAreas.remove(areaContaining(zone));
+            builderAreas.add(occupiedArea);
         }
 
         /**
@@ -60,7 +62,9 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          *          si aucune aire de la partition en construction ne contient la zone donnée
          */
         public void removeOccupant(Z zone, PlayerColor color) {
-            areaContaining(zone).withoutOccupant(color);
+            Area<Z> unoccupiedArea = areaContaining(zone).withoutOccupant(color);
+            builderAreas.remove(areaContaining(zone));
+            builderAreas.add(unoccupiedArea);
         }
 
         /**
@@ -85,12 +89,20 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          *          si une des deux aires n'est pas contenue dans une aire
          */
         public void union(Z zone1, Z zone2) {
-            // TODO: 04/03/2024 Finish connect to method 
             areaContaining(zone1).connectTo(areaContaining(zone2));
         }
 
+        private Area<Z> areaContaining(Z zone) {
+            for (Area<Z> area : builderAreas) {
+                if (area.zones().contains(zone)) {
+                    return area;
+                }
+            }
+            throw new IllegalArgumentException();
+        }
+
         public ZonePartition<Z> build() {
-            return new ZonePartition<Z>(areas);
+            return new ZonePartition<Z>(builderAreas);
         }
     }
 
