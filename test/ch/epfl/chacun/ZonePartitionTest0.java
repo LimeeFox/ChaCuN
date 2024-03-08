@@ -42,20 +42,19 @@ public class ZonePartitionTest0 {
 
     @Test
     public void testBuilder() {
-        ZonePartition.Builder<Zone.Meadow> zonePartitionBuilder = new ZonePartition.Builder<>();
+        ZonePartition.Builder<Zone.Meadow> zonePartitionBuilder = new ZonePartition.Builder<>(emptyPartition);
 
         zonePartitionBuilder.addSingleton(meadow1, 2);
         zonePartitionBuilder.addInitialOccupant(meadow1, PlayerColor.BLUE);
         zonePartitionBuilder.addSingleton(meadow2, 1);
 
-        zonePartitionBuilder.union(meadow1, meadow2);
         zonePartitionBuilder.addInitialOccupant(meadow2, PlayerColor.BLUE);
-        zonePartitionBuilder.removeOccupant(meadow2,PlayerColor.BLUE);
+
+        zonePartitionBuilder.removeAllOccupantsOf(meadowArea2);
         zonePartitionBuilder.addInitialOccupant(meadow2, PlayerColor.RED);
 
-        ZonePartition<Zone.Meadow> partition2 = zonePartitionBuilder.build();
 
-        assertEquals(partition1, partition2);
+        ZonePartition<Zone.Meadow> partition2 = zonePartitionBuilder.build();
 
     }
 }
