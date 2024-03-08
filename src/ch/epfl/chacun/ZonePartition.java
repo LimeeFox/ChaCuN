@@ -95,10 +95,15 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          *          si une des deux aires n'est pas contenue dans une aire
          */
         public void union(Z zone1, Z zone2) {
-            Area<Z> connectedArea = areaContaining(zone1).connectTo(areaContaining(zone2));
-            builderAreas.remove(areaContaining(zone1));
-            builderAreas.remove(areaContaining(zone2));
-            builderAreas.add(connectedArea);
+            Area<Z> area1 = areaContaining(zone1);
+            Area<Z> area2 = areaContaining(zone2);
+
+            builderAreas.remove(area1);
+            if (!area1.equals(area2)) {
+                builderAreas.remove(area2);
+            }
+
+            builderAreas.add(area1.connectTo(area2));
         }
 
         private Area<Z> areaContaining(Z zone) {
