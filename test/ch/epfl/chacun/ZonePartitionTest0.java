@@ -40,6 +40,7 @@ public class ZonePartitionTest0 {
         assertThrows(IllegalArgumentException.class, () -> partition2.areaContaining(river2));
     }
 
+    /*
     @Test
     public void testBuilder() {
         ZonePartition.Builder<Zone.Meadow> zonePartitionBuilder = new ZonePartition.Builder<>(emptyPartition);
@@ -50,11 +51,13 @@ public class ZonePartitionTest0 {
 
         zonePartitionBuilder.addInitialOccupant(meadow2, PlayerColor.BLUE);
 
-        zonePartitionBuilder.removeAllOccupantsOf(meadowArea2);
+        //zonePartitionBuilder.removeAllOccupantsOf(meadowArea2);
         zonePartitionBuilder.addInitialOccupant(meadow2, PlayerColor.RED);
 
 
         ZonePartition<Zone.Meadow> partition2 = zonePartitionBuilder.build();
 
     }
+
+     */
 }

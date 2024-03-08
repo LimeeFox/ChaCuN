@@ -132,7 +132,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      *          aire de rivières qui possèdent un ou plusieurs lacs
      * @return le nombre de lacs dans l'air donnée
      */
-    public static int lakeCount(Area<Zone.Water> riverSystem) { // TODO: ask others if that's how they did this cuz it's a question of understanding the instructions, rather than coding lol
+    public static int lakeCount(Area<Zone.Water> riverSystem) {
         Set<Zone.Lake> lakes = new HashSet<>();
 
         for (Zone.Water zone : riverSystem.zones()) {
@@ -206,7 +206,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * @return l'aire résultant de la connexion du récepteur (this) à l'aire donnée (that)
      */
     public Area<Z> connectTo(Area<Z> that) {
-        if (this == that) {
+        if (this.equals(that)) {
             return new Area<Z>(zones, occupants, openConnections - 2);
         } else {
             Set<Z> newZones = new HashSet<>();
@@ -217,7 +217,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
             newOccupants.addAll(occupants);
             newOccupants.addAll(that.occupants);
 
-            return new Area<Z>(newZones, newOccupants, openConnections - 2);
+            return new Area<>(newZones, newOccupants, openConnections + that.openConnections - 2);
         }
     }
 

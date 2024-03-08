@@ -78,13 +78,9 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          *          aire dont la totalité des occupants seront supprimés
          */
         public void removeAllOccupantsOf(Area<Z> area) {
-            if (builderAreas.contains(area)) {
-                Area<Z> unoccupiedArea = area.withoutOccupants();
-                builderAreas.remove(area);
-                builderAreas.add(unoccupiedArea);
-            } else {
-                throw new IllegalArgumentException();
-            }
+            Preconditions.checkArgument(builderAreas.contains(area));
+            builderAreas.remove(area);
+            builderAreas.add(area.withoutOccupants());
         }
 
         /**
