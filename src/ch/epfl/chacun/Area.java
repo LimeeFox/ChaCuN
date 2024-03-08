@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, int openConnections) {
 
     public Area {
-        Preconditions.checkArgument(openConnections > 0);
+        Preconditions.checkArgument(openConnections >= 0);
 
         List<PlayerColor> sortedOccupants = new ArrayList<>(occupants);
         Collections.sort(sortedOccupants);
