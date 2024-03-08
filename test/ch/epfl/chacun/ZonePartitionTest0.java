@@ -24,18 +24,20 @@ public class ZonePartitionTest0 {
             List.of(PlayerColor.BLUE), 2);
     private final Area<Zone.Meadow> meadowArea2 = new Area<>(Set.of(meadow2),
             List.of(PlayerColor.RED), 1);
+    private final Area<Zone.Water> waterArea1 = new Area<>(Set.of(river1, lake), List.of(), 1);
+    private final Area<Zone.Water> waterArea2 = new Area<>(Set.of(river2), List.of(PlayerColor.BLUE), 2);
 
 
     ZonePartition<Zone.Meadow> emptyPartition = new ZonePartition<>();
     ZonePartition<Zone.Meadow> partition1 = new ZonePartition<>(Set.of(meadowArea1, meadowArea2));
+    ZonePartition<Zone.Water> partition2 = new ZonePartition<>(Set.of(waterArea1));
 
     @Test
     public void testAreaContaining() {
-        // Test if the method correctly returns the area containing zone1
         assertEquals(meadowArea2, partition1.areaContaining(meadow2));
 
-        // Test if the method throws an exception when no area contains zone2
         assertThrows(IllegalArgumentException.class, () -> emptyPartition.areaContaining(meadow1));
+        assertThrows(IllegalArgumentException.class, () -> partition2.areaContaining(river2));
     }
 
     @Test
@@ -44,6 +46,7 @@ public class ZonePartitionTest0 {
 
         zonePartitionBuilder.addSingleton(meadow1, 2);
         zonePartitionBuilder.addInitialOccupant(meadow1, PlayerColor.BLUE);
+        zonePartitionBuilder.addSingleton(meadow2, 1);
 
         zonePartitionBuilder.union(meadow1, meadow2);
         zonePartitionBuilder.addInitialOccupant(meadow2, PlayerColor.BLUE);

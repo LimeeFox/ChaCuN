@@ -45,7 +45,9 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          *          si aucune aire de la partition en construction ne contient la zone donnée
          */
         public void addInitialOccupant(Z zone, PlayerColor color) {
-            areaContaining(zone).withInitialOccupant(color);
+            Area<Z> occupiedArea = areaContaining(zone).withInitialOccupant(color);
+            builderAreas.remove(areaContaining(zone));
+            builderAreas.add(occupiedArea);
         }
 
         /**
@@ -60,7 +62,9 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          *          si aucune aire de la partition en construction ne contient la zone donnée
          */
         public void removeOccupant(Z zone, PlayerColor color) {
-            areaContaining(zone).withoutOccupant(color);
+            Area<Z> unoccupiedArea = areaContaining(zone).withoutOccupant(color);
+            builderAreas.remove(areaContaining(zone));
+            builderAreas.add(unoccupiedArea);
         }
 
         /**
