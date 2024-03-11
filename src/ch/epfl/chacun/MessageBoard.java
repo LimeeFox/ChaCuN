@@ -39,16 +39,70 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return pointsMap;
     }
 
+    /**
+     * Mise à jour du tableau suite à la fermeture d'une forêt
+     *
+     * @param forest
+     *          forêt fermée par un joueur
+     * @return un tableau de message contenant un nouveau message pour les joueurs ayant remporté des points ou
+     *          un tableau identique au récepteur si la forêt est inoccupée
+     */
     public MessageBoard withScoredForest(Area<Zone.Forest> forest) {
-
+        if (forest.isOccupied()) {
+            List<Message> forestMessages = new ArrayList<>(List.copyOf(messages));
+            forestMessages.add(new Message(textMaker.playersScoredForest(forest.majorityOccupants(),
+                    Points.forClosedForest(forest.tileIds().size(),
+                            Area.mushroomGroupCount(forest)),
+                    Area.mushroomGroupCount(forest), forest.tileIds().size()),
+                    Points.forClosedForest(forest.tileIds().size(), Area.mushroomGroupCount(forest)),
+                    forest.majorityOccupants(),
+                    forest.tileIds()
+            ));
+            return new MessageBoard(this.textMaker, forestMessages);
+        }
+        return this;
     }
 
+    // TODO: 11/03/2024 Check coherence of having "majorityOccupants" and "tildeIds argument in new Message
+
+    /**
+     * Mise à jour du tableau suite à la fermeture d'une forêt contenant un menhir
+     *
+     * @param player
+     *          joueur ayant fermé la forêt contenant un menhir
+     * @param forest
+     *          aire de type forêt qui a été fermée
+     * @return un tableau d'affichage avec un nouveau message indiquant au joueur qu'il peut jouer un second tour
+     */
     public MessageBoard withClosedForestWithMenhir(PlayerColor player, Area<Zone.Forest> forest) {
+        List<Message> menhirMessages = new ArrayList<>(List.copyOf(messages));
+        menhirMessages.add(new Message(textMaker.playerClosedForestWithMenhir(player),
+                0, forest.majorityOccupants(), forest.tileIds() ));
+        return new MessageBoard(this.textMaker, menhirMessages);
 
     }
 
+    /**
+     * Mise à jour du tableau suite à la fermeture d'une rivière
+     *
+     * @param river
+     *          rivière fermée par un joueur
+     * @return un tableau de message contenant un nouveau message pour les joueurs ayant remporté des points ou
+     *          un tableau identique au récepteur si la rivière est inoccupée
+     */
     public MessageBoard withScoredRiver(Area<Zone.River> river) {
-
+        if (river.isOccupied()) {
+            List<Message> riverMessages = new ArrayList<>(List.copyOf(messages));
+            riverMessages.add(new Message(textMaker.playersScoredRiver(river.majorityOccupants(),
+                    Points.forClosedRiver(river.tileIds().size(),
+                            Area.riverFishCount(river)), Area.riverFishCount(river),
+                    river.tileIds().size()),
+                            Points.forClosedRiver(river.tileIds().size(), Area.riverFishCount(river)),
+                            river.majorityOccupants(),
+                            river.tileIds()));
+            return new MessageBoard(this.textMaker, riverMessages);
+        }
+        return this;
     }
 
     public MessageBoard withScoredHuntingTrap(PlayerColor scorer, Area<Zone.Meadow> adjacentMeadow) {
