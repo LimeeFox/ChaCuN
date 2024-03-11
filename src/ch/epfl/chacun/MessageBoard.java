@@ -105,16 +105,59 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return this;
     }
 
+    /**
+     *
+     * @param scorer
+     * @param adjacentMeadow
+     * @return
+     */
+    // TODO: 11/03/2024 check optimisation of following method (and others with regard to this one)
     public MessageBoard withScoredHuntingTrap(PlayerColor scorer, Area<Zone.Meadow> adjacentMeadow) {
+        Set<Animal> cancelledAnimals = new HashSet<>();
+        for (Zone.Meadow meadowZone : adjacentMeadow.zones()) {
+            cancelledAnimals.addAll(meadowZone.animals());
+        }
+        int mammothCount = (int) cancelledAnimals.stream()
+                .filter(animal -> animal.kind().equals(Animal.Kind.MAMMOTH))
+                .count();
 
+        int aurochsCount = (int) cancelledAnimals.stream()
+                .filter(animal -> animal.kind().equals(Animal.Kind.AUROCHS))
+                .count();
+
+        int deerCount = (int) cancelledAnimals.stream()
+                .filter(animal -> animal.kind().equals(Animal.Kind.DEER))
+                .count();
+
+        int scorerPoints = Points.forMeadow(mammothCount, aurochsCount, deerCount);
+
+        if (scorerPoints > 0) {
+            List<Message> messageList = new ArrayList<>(List.copyOf(this.messages));
+            messageList.add(new Message(textMaker.playerScoredHuntingTrap(scorer,
+                    scorerPoints, Map.of(Animal.Kind.MAMMOTH, mammothCount,
+                            Animal.Kind.AUROCHS, aurochsCount,
+                            Animal.Kind.DEER, deerCount)),
+                    scorerPoints, Set.of(scorer), adjacentMeadow.tileIds())))
+            return new MessageBoard(this.textMaker, messageList);
+        }
+        return this;
     }
 
     public MessageBoard withScoredLogboat(PlayerColor scorer, Area<Zone.Water> riverSystem) {
 
     }
 
+    /**
+     *
+     * @param meadow
+     * @param cancelledAnimals
+     * @return
+     */
     public MessageBoard withScoredMeadow(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
+        if (meadow.isOccupied()) {
 
+        }
+        return this;
     }
 
     public MessageBoard withScoredRiverSystem(Area<Zone.Water> riverSystem) {
