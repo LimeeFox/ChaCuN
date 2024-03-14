@@ -132,19 +132,26 @@ public class MyMessageBoardTest {
                 new Zone.Forest(190, Zone.Forest.Kind.PLAIN)),
                 List.of(), 0);
         updatedMessageBoard = updatedMessageBoard.withScoredForest(forest3);
-
         assertEquals(expectedMessageBoard, updatedMessageBoard);
     }
 
     @Test
     void testWithClosedForestWithMenhir() {
         Area<Zone.Forest> forest = new Area<>(Set.of(new Zone.Forest(863, Zone.Forest.Kind.WITH_MENHIR)), List.of(), 0);
-        MessageBoard updatedMessageBoard = messageBoard.withClosedForestWithMenhir(PlayerColor.BLUE, forest);
+        MessageBoard updatedMessageBoard =  messageBoard.withClosedForestWithMenhir(PlayerColor.BLUE, forest);
         MessageBoard expectedMessageBoard = new MessageBoard(textMaker,
                 List.of(new MessageBoard.Message(textMaker.playerClosedForestWithMenhir(PlayerColor.BLUE), 0, Set.of(), Set.of(86))));
-
         assertEquals(expectedMessageBoard, updatedMessageBoard);
 
+        Area<Zone.Forest> emptyForest = new Area<>(Set.of(), List.of(), 0);
+        List<MessageBoard.Message> expMessages = new ArrayList<>(List.copyOf(expectedMessageBoard.messages()));
+        expMessages.add(new MessageBoard.Message(textMaker.playerClosedForestWithMenhir(PlayerColor.BLUE),
+                0, Set.of(), emptyForest.tileIds()));
+        expectedMessageBoard = new MessageBoard(textMaker, expMessages);
+
+        updatedMessageBoard = updatedMessageBoard.withClosedForestWithMenhir(PlayerColor.BLUE, emptyForest);
+
+        assertEquals(expectedMessageBoard, updatedMessageBoard);
 
     }
 
@@ -194,10 +201,21 @@ public class MyMessageBoardTest {
         animals.put(Animal.Kind.MAMMOTH, 1);
         animals.put(Animal.Kind.AUROCHS, 0);
         Area<Zone.Meadow> meadow = new Area<>(Set.of(meadow1, meadow2, meadow3), List.of(PlayerColor.PURPLE, PlayerColor.GREEN, PlayerColor.GREEN, PlayerColor.YELLOW), 4);
+        Area<Zone.Meadow> noAnimalsMeadow = new Area<>(Set.of(meadow3), List.of(PlayerColor.BLUE, PlayerColor.RED), 3);
+        Area<Zone.Meadow> emptyMeadow = new Area<>(Set.of(), List.of(), 0);
+
         MessageBoard updatedMessageBoard = messageBoard.withScoredHuntingTrap(PlayerColor.RED, meadow);
         MessageBoard expectedMessageBoard = new MessageBoard(textMaker, List.of(new MessageBoard.Message(
                 textMaker.playerScoredHuntingTrap(PlayerColor.RED, Points.forMeadow(1, 0 , 1), animals),
                 Points.forMeadow(1, 0, 1), Set.of(PlayerColor.RED), Set.of(97, 25, 46))));
+        assertEquals(expectedMessageBoard, updatedMessageBoard);
+
+        updatedMessageBoard = updatedMessageBoard.withScoredHuntingTrap(PlayerColor.BLUE, noAnimalsMeadow);
+
+        assertEquals(expectedMessageBoard, updatedMessageBoard);
+
+        updatedMessageBoard = updatedMessageBoard.withScoredHuntingTrap(PlayerColor.BLUE, emptyMeadow);
+
         assertEquals(expectedMessageBoard, updatedMessageBoard);
     }
 
@@ -212,6 +230,8 @@ public class MyMessageBoardTest {
         List<PlayerColor> occupants = List.of(PlayerColor.BLUE, PlayerColor.GREEN, PlayerColor.RED);
 
         Area<Zone.Water> riverSystem = new Area<Zone.Water>(waterSet, occupants, 1);
+        Area<Zone.Water> noLakeSystem = new Area<>(Set.of(river1, river2), occupants, 2);
+        Area<Zone.Water> emptySystem = new Area<>(Set.of(), List.of(), 0);
 
         MessageBoard updatedMessageBoard = messageBoard.withScoredLogboat(PlayerColor.BLUE, riverSystem);
         MessageBoard expectedMessageBoard = new MessageBoard(textMaker,
@@ -222,6 +242,25 @@ public class MyMessageBoardTest {
                         riverSystem.tileIds())));
 
         assertEquals(expectedMessageBoard, updatedMessageBoard);
+
+        updatedMessageBoard = updatedMessageBoard.withScoredLogboat(PlayerColor.RED, noLakeSystem);
+        /*
+        Trivial because a riverSystem MUST have at least 1 lake
+
+        List<MessageBoard.Message> expectedMessages = new ArrayList<>(List.copyOf(expectedMessageBoard.messages()));
+        expectedMessages.add(new MessageBoard.Message(textMaker.playerScoredLogboat(PlayerColor.RED,
+                 Points.forLogboat(0), 0),
+                Points.forLogboat(0), Set.of(PlayerColor.RED), noLakeSystem.tileIds()));
+
+        expectedMessageBoard = new MessageBoard(textMaker, expectedMessages);
+
+        assertEquals(expectedMessageBoard, updatedMessageBoard);
+
+        updatedMessageBoard = updatedMessageBoard.withScoredLogboat(PlayerColor.GREEN, emptySystem);
+
+        assertEquals(expectedMessageBoard, updatedMessageBoard);
+
+         */
     }
 
     @Test
@@ -351,6 +390,22 @@ public class MyMessageBoardTest {
         MessageBoard expectedMessageBoard = new MessageBoard(textMaker,
                 List.of(new MessageBoard.Message(textMaker.playersWon(winners, 1809),
                         0, Set.of(), Set.of())));
+        assertEquals(expectedMessageBoard, updatedMessageBoard);
+
+        winners.addAll(PlayerColor.ALL);
+
+        updatedMessageBoard = updatedMessageBoard.withWinners(winners, 0);
+        List<MessageBoard.Message> expectedMessages = new ArrayList<>(List.copyOf(expectedMessageBoard.messages()));
+        expectedMessages.add(new MessageBoard.Message(textMaker.playersWon(winners, 0),
+                0, Set.of(), Set.of()));
+        expectedMessageBoard = new MessageBoard(textMaker, expectedMessages);
+
+        assertEquals(expectedMessageBoard, updatedMessageBoard);
+
+        updatedMessageBoard = updatedMessageBoard.withWinners(Set.of(), 0);
+        expectedMessages.add(new MessageBoard.Message(textMaker.playersWon(Set.of(),
+                0), 0, Set.of(), Set.of()));
+        expectedMessageBoard = new MessageBoard(textMaker, expectedMessages);
 
         assertEquals(expectedMessageBoard, updatedMessageBoard);
     }
