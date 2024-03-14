@@ -195,30 +195,30 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     // TODO: 12/03/2024 I don't like how I've had to duplicate code here, is there a better way?
     public MessageBoard withScoredMeadow(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
         if (meadow.isOccupied()) {
+
             Set<Animal> validAnimals = Area.animals(meadow, cancelledAnimals);
 
-            int mammothCount = (int) validAnimals.stream()
-                    .filter(animal -> animal.kind().equals(Animal.Kind.MAMMOTH))
-                    .count();
+            Map<Animal.Kind, Integer> animalIntegerMap = new HashMap<>();
+            for (Animal.Kind kind : Animal.Kind.values()) {
+                int animalKindCount = (int) (validAnimals.stream()
+                                .filter(animal -> animal.kind().equals(kind))
+                                .count());
+                if (animalKindCount > 0) {
+                    animalIntegerMap.put(kind, animalIntegerMap.getOrDefault(kind, 0)
+                            + animalKindCount);
+                }
+            }
 
-            int aurochsCount = (int) validAnimals.stream()
-                    .filter(animal -> animal.kind().equals(Animal.Kind.AUROCHS))
-                    .count();
-
-            int deerCount = (int) validAnimals.stream()
-                    .filter(animal -> animal.kind().equals(Animal.Kind.DEER))
-                    .count();
-
-            int scoredPoints = Points.forMeadow(mammothCount, aurochsCount, deerCount);
+            int scoredPoints = Points.forMeadow(animalIntegerMap.getOrDefault(Animal.Kind.MAMMOTH, 0),
+                    animalIntegerMap.getOrDefault(Animal.Kind.AUROCHS, 0),
+                    animalIntegerMap.getOrDefault(Animal.Kind.DEER, 0) -
+                            animalIntegerMap.getOrDefault(Animal.Kind.TIGER, 0));
 
             if (scoredPoints > 0) {
-                Map<Animal, Integer> animalIntegerMap = new HashMap<>();
 
                 List<Message> messageList = new ArrayList<>(List.copyOf(this.messages));
                 messageList.add(new Message(textMaker.playersScoredMeadow(meadow.majorityOccupants(),
-                        scoredPoints, Map.of(Animal.Kind.MAMMOTH, mammothCount,
-                                Animal.Kind.AUROCHS, aurochsCount,
-                                Animal.Kind.DEER, deerCount)),
+                        scoredPoints, animalIntegerMap),
                         scoredPoints, meadow.majorityOccupants(), meadow.tileIds()));
 
                 return new MessageBoard(this.textMaker, messageList);
@@ -260,31 +260,30 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * @return un tableau d'affichage identique au récepteur contentant un nouveau message indiquant les joueurs
      *          ayant rapporté des points
      */
-    // TODO: 12/03/2024 Compate with HuntingTrap, there's a similar vibe, so could we use one in the other?
+    // TODO: 12/03/2024 Compare with HuntingTrap, there's a similar vibe, so could we use one in the other?
     public MessageBoard withScoredPitTrap(Area<Zone.Meadow> adjacentMeadow, Set<Animal> cancelledAnimals) {
         if (adjacentMeadow.isOccupied()) {
             Set<Animal> validAnimals = Area.animals(adjacentMeadow, cancelledAnimals);
 
-            int mammothCount = (int) validAnimals.stream()
-                    .filter(animal -> animal.kind().equals(Animal.Kind.MAMMOTH))
-                    .count();
+            Map<Animal.Kind, Integer> animalIntegerMap = new HashMap<>();
+            for (Animal.Kind kind : Animal.Kind.values()) {
+                int animalKindCount = (int) (validAnimals.stream()
+                        .filter(animal -> animal.kind().equals(kind))
+                        .count());
+                if (animalKindCount > 0) {
+                    animalIntegerMap.put(kind, animalIntegerMap.getOrDefault(kind, 0)
+                            + animalKindCount);
+                }
+            }
 
-            int aurochsCount = (int) validAnimals.stream()
-                    .filter(animal -> animal.kind().equals(Animal.Kind.AUROCHS))
-                    .count();
-
-            int deerCount = (int) validAnimals.stream()
-                    .filter(animal -> animal.kind().equals(Animal.Kind.DEER))
-                    .count();
-
-            int scoredPoints = Points.forMeadow(mammothCount, aurochsCount, deerCount);
+            int scoredPoints = Points.forMeadow(animalIntegerMap.getOrDefault(Animal.Kind.MAMMOTH, 0),
+                    animalIntegerMap.getOrDefault(Animal.Kind.AUROCHS, 0),
+                    animalIntegerMap.getOrDefault(Animal.Kind.DEER, 0));
 
             if (scoredPoints > 0) {
                 List<Message> messageList = new ArrayList<>(List.copyOf(this.messages));
                 messageList.add(new Message(textMaker.playersScoredPitTrap(adjacentMeadow.majorityOccupants(),
-                        scoredPoints, Map.of(Animal.Kind.MAMMOTH, mammothCount,
-                                Animal.Kind.AUROCHS, aurochsCount,
-                                Animal.Kind.DEER, deerCount)),
+                        scoredPoints, animalIntegerMap),
                         scoredPoints, adjacentMeadow.majorityOccupants(), adjacentMeadow.tileIds()));
 
                 return new MessageBoard(this.textMaker, messageList);
