@@ -1,6 +1,9 @@
 package ch.epfl.chacun;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author Vladislav Yarkovoy (362242)
@@ -32,13 +35,52 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
         }
 
         /**
-         * connecte les deux bords de tuiles donnés, en connectant entre elles les aires correspondantes
-         * ou lève IllegalArgumentException si les deux bords ne sont pas de la même sorte
+         * Ajoute aux quatre partitions les aires correspondant aux zones de la tuile donnée
          *
          * @param tile
          */
         public void addTile(Tile tile) {
+            // Ici le problème c'est que nous devons calculer le nombre de connexions ouvertes de
+            // chaque zone. Ce qu'on va faire, c'est itérer sur tout les TileSide (côtés de la tuile) [1]
+            // et regarder quelles sont les zones qui appartiennent à ce côté [2]. Pour chaque telle zone, nous allons
+            // incrémenter le nombre de connexion ouvertes de 1. [3]
+            int[] nbOpenings = new int[10];
 
+            // On va parcourir d'abord toutes les zones sur les côtés de la tuile [1]
+            final Set<Zone.Lake> countedLakes = new HashSet<>();
+            for (Zone sideZone : tile.sideZones()) {
+                for (TileSide tileSide : tile.sides()) {
+                    if (tileSide.zones().contains(sideZone)) { // [2]
+                        nbOpenings[sideZone.localId()] += 1; // [3]
+
+                        // N'oublions pas les lacs
+                        if (sideZone instanceof Zone.River river && river.hasLake()) {
+                            Zone.Lake lake = river.lake();
+                            if (countedLakes.contains(lake)) continue;
+
+                            countedLakes.add(lake);
+                            nbOpenings[river.lake().localId()] += 1;
+                        }
+                    }
+                }
+                // Ajouter les zones en tant qu'aires, inoccupées, à nos partitions
+                switch(sideZone) {
+                    case Zone.Forest forest -> forestBuilder.addSingleton(forest, nbOpenings[forest.localId()]);
+                    case Zone.Meadow meadow -> meadowBuilder.addSingleton(meadow, nbOpenings[meadow.localId()]);
+                    case Zone.River river -> {
+                        if (river.hasLake()) {
+                            final Zone.Lake lake = river.lake();
+                            riverSystemBuilder.addSingleton(river, nbOpenings[river.localId()] + 1);
+                            riverSystemBuilder.addSingleton(lake, nbOpenings[lake.localId()]);
+                            riverSystemBuilder.union(river, lake); // Avant de creer l'aire hydrographique, il faut d'abord ajouter les zones river et son lac séparément (conception de union())
+                        } else {
+                            riverSystemBuilder.addSingleton(river, nbOpenings[river.localId()]);
+                        }
+                        riverBuilder.addSingleton(river, nbOpenings[river.localId()]);
+                    }
+                    default -> {}
+                }
+            }
         }
 
         /**
