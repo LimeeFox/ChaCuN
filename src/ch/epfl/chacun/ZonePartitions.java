@@ -168,8 +168,7 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
                 case Zone.River m1:
                     riverBuilder.removeOccupant(m1, player);
                     break;
-                default:
-                    break;
+                default: {}
             }
         }
 
