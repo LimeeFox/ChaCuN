@@ -275,14 +275,11 @@ public class MyMessageBoardTest {
         animalIntegerMap.put(Animal.Kind.DEER, 1);
         animalIntegerMap.put(Animal.Kind.TIGER, 1);
 
-        Set<Animal> animals = new HashSet<>();
-        for (Zone.Meadow meadow : meadows) {
-            animals.addAll(meadow.animals());
-        }
-
         List<PlayerColor> occupants = List.of(PlayerColor.BLUE, PlayerColor.RED);
 
         Area<Zone.Meadow> meadowArea = new Area<>(meadows, occupants, 4);
+        Area<Zone.Meadow> emptyMeadowArea = new Area<>(Set.of(meadow3), occupants, 4);
+
         MessageBoard updatedMessageBoard = messageBoard.withScoredMeadow(meadowArea, Set.of());
         MessageBoard expectedMessageBoard = new MessageBoard(textMaker,
                 List.of(new MessageBoard.Message(textMaker.playersScoredMeadow(meadowArea.majorityOccupants(),
@@ -290,6 +287,24 @@ public class MyMessageBoardTest {
                         animalIntegerMap),
                         Points.forMeadow(1, 0, 0),
                         Set.copyOf(occupants), meadowArea.tileIds())));
+        List<MessageBoard.Message> messages = new ArrayList<>(List.copyOf(expectedMessageBoard.messages()));
+
+        assertEquals(expectedMessageBoard, updatedMessageBoard);
+
+        updatedMessageBoard = updatedMessageBoard.withScoredMeadow(emptyMeadowArea,
+                Set.of(new Animal(9730, Animal.Kind.MAMMOTH)));
+
+        assertEquals(expectedMessageBoard, updatedMessageBoard);
+
+
+        updatedMessageBoard = updatedMessageBoard.withScoredMeadow(meadowArea,
+                Set.of(new Animal(8005, Animal.Kind.AUROCHS)));
+        messages.add(new MessageBoard.Message(textMaker.playersScoredMeadow(Set.copyOf(occupants),
+                Points.forMeadow(1, 0, 0),
+                animalIntegerMap),
+                Points.forMeadow(1, 0, 0),
+                Set.copyOf(occupants), meadowArea.tileIds()));
+        expectedMessageBoard = new MessageBoard(textMaker, messages);
 
         assertEquals(expectedMessageBoard, updatedMessageBoard);
     }
@@ -301,13 +316,11 @@ public class MyMessageBoardTest {
         Zone.River river2 = new Zone.River(1, 2, lake);
 
         Set<Zone.Water> waterSet = Set.of(lake, river1, river2);
-        Set<Zone.Water> noLakeSet = Set.of(river1, river2);
 
         List<PlayerColor> occupants = List.of(PlayerColor.BLUE, PlayerColor.GREEN, PlayerColor.RED);
 
         Area<Zone.Water> riverSystem = new Area<Zone.Water>(waterSet, occupants, 1);
         Area<Zone.Water> emptyRiverSystem = new Area<>(waterSet, List.of(), 1);
-        Area<Zone.Water> noLakeRiverSystem = new Area<>(noLakeSet, occupants, 1);
 
         MessageBoard updatedMessageBoard = messageBoard.withScoredRiverSystem(riverSystem);
         MessageBoard expectedMessageBoard = new MessageBoard(textMaker,
@@ -318,11 +331,10 @@ public class MyMessageBoardTest {
                         Set.copyOf(occupants),
                         riverSystem.tileIds())));
 
-        MessageBoard emptyMessageBoard = messageBoard.withScoredRiverSystem(emptyRiverSystem);
-        MessageBoard noLakeMessageBoard = messageBoard.withScoredRiverSystem(noLakeRiverSystem);
-
         assertEquals(expectedMessageBoard, updatedMessageBoard);
 
+        updatedMessageBoard = updatedMessageBoard.withScoredRiverSystem(emptyRiverSystem);
+        assertEquals(expectedMessageBoard, updatedMessageBoard);
     }
 
     @Test
@@ -330,11 +342,6 @@ public class MyMessageBoardTest {
         Zone.Meadow meadow1 = new Zone.Meadow(973, List.of(new Animal(9730, Animal.Kind.MAMMOTH), new Animal(9731, Animal.Kind.DEER)), null);
         Zone.Meadow meadow2 = new Zone.Meadow(257, List.of(new Animal(2570, Animal.Kind.TIGER)), null);
         Zone.Meadow meadow3 = new Zone.Meadow(461, List.of(), null);
-
-        Set<Animal> animalSet = new HashSet<>();
-        animalSet.addAll(meadow1.animals());
-        animalSet.addAll(meadow2.animals());
-        animalSet.addAll(meadow3.animals());
 
         Map<Animal.Kind, Integer> animals = new HashMap<>();
         animals.put(Animal.Kind.TIGER, 1);
@@ -370,6 +377,8 @@ public class MyMessageBoardTest {
         List<PlayerColor> occupants = List.of(PlayerColor.BLUE, PlayerColor.GREEN, PlayerColor.RED);
 
         Area<Zone.Water> riverSystem = new Area<Zone.Water>(waterSet, occupants, 1);
+        Area<Zone.Water> emptySystem = new Area<>(waterSet, List.of(), 1);
+        Area<Zone.Water> fullSystem = new Area<>(waterSet, PlayerColor.ALL, 1);
 
         MessageBoard updatedMessageBoard = messageBoard.withScoredRaft(riverSystem);
         MessageBoard expectedMessageBoard = new MessageBoard(textMaker,
@@ -378,6 +387,21 @@ public class MyMessageBoardTest {
                         Points.forRaft(1),
                         riverSystem.majorityOccupants(),
                         riverSystem.tileIds())));
+
+        assertEquals(expectedMessageBoard, updatedMessageBoard);
+
+        updatedMessageBoard = updatedMessageBoard.withScoredRaft(emptySystem);
+        List<MessageBoard.Message> expectedMessages = new ArrayList<>(List.copyOf(expectedMessageBoard.messages()));
+
+        expectedMessageBoard = new MessageBoard(textMaker, expectedMessages);
+
+        assertEquals(expectedMessageBoard, updatedMessageBoard);
+
+        expectedMessages.add(new MessageBoard.Message(textMaker.playersScoredRaft(new HashSet<>(Set.copyOf(PlayerColor.ALL)),
+                Points.forRaft(1), 1),
+                Points.forRaft(1), new HashSet<>(Set.copyOf(PlayerColor.ALL)), fullSystem.tileIds()));
+        updatedMessageBoard = updatedMessageBoard.withScoredRaft(fullSystem);
+        expectedMessageBoard = new MessageBoard(textMaker, expectedMessages);
 
         assertEquals(expectedMessageBoard, updatedMessageBoard);
     }

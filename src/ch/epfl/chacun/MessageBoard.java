@@ -191,7 +191,6 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * @return un tableau d'affichage identique au récepteur avec un nouveau message indiquant les nombre de points
      *          remportés aux joueurs concernés, à moins que le pré soit inoccupé ou qu'il ne rapporte pas de points
      */
-    // TODO: 12/03/2024 I don't like how I've had to duplicate code here, is there a better way?
     public MessageBoard withScoredMeadow(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
         if (meadow.isOccupied()) {
 
@@ -298,7 +297,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     public MessageBoard withScoredRaft(Area<Zone.Water> riverSystem) {
         if (riverSystem.isOccupied()) {
             final int lakeCount = Area.lakeCount(riverSystem);
-            final Set<PlayerColor> majorityOccupants = riverSystem.majorityOccupants();
+            final Set<PlayerColor> majorityOccupants = new HashSet<>(riverSystem.majorityOccupants());
 
             int scoredPoints = Points.forRaft(Area.lakeCount(riverSystem));
             
@@ -309,7 +308,6 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
             
             return new MessageBoard(this.textMaker, messageList);
         }
-        
         return this;
     }
 
