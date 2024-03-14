@@ -115,6 +115,11 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
             throw new IllegalArgumentException();
         }
 
+        /**
+         * Finaliser la construction d'une ZonePartition<Z>
+         *
+         * @return la ZonePartition<Z> finalisée
+         */
         public ZonePartition<Z> build() {
             return new ZonePartition<Z>(builderAreas);
         }

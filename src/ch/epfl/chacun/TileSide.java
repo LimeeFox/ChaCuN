@@ -126,8 +126,7 @@ public sealed interface TileSide {
          */
         @Override
         public boolean isSameKindAs(TileSide that) {
-            boolean sameKind = that instanceof TileSide.River;
-            return sameKind;
+            return that instanceof TileSide.River;
         }
     }
 }
