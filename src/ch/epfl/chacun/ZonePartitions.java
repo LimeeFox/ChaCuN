@@ -94,9 +94,9 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
 
             switch (s1) {
                 // Connecter les deux zones forêt
-                case TileSide.Meadow(Zone.Meadow m1) when s2 instanceof TileSide.Meadow(Zone.Meadow m2):
+                case TileSide.Meadow(Zone.Meadow m1) when s2 instanceof TileSide.Meadow(Zone.Meadow m2) -> {
                     meadowBuilder.union(m1, m2);
-                    break;
+                }
                     // Connecter les deux zones meadow
                 case TileSide.Forest(Zone.Forest m1) when s2 instanceof TileSide.Forest(Zone.Forest m2):
                     forestBuilder.union(m1, m2);
