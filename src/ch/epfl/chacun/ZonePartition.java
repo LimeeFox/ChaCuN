@@ -43,10 +43,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          * @param zone
          *          zone à laquelle un occupant sera ajouter
          * @param color
-         *          couleur de l'occupant à ajouter
-         *
-         * @throws IllegalArgumentException
-         *          si aucune aire de la partition en construction ne contient la zone donnée
+         *          couleur de l'occupant à ajouter si aucune aire de la partition en construction ne contient la zone donnée
          */
         public void addInitialOccupant(Z zone, PlayerColor color) {
             Area<Z> occupiedArea = areaContaining(zone).withInitialOccupant(color);
@@ -90,9 +87,6 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          *          zone contenue dans la première aire
          * @param zone2
          *          zone contenue dans la deuxième aire
-         *
-         * @throws IllegalArgumentException
-         *          si une des deux aires n'est pas contenue dans une aire
          */
         public void union(Z zone1, Z zone2) {
             Area<Z> area1 = areaContaining(zone1);

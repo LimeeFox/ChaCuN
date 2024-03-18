@@ -90,23 +90,22 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
          * @param s2
          */
         public void connectSides(TileSide s1, TileSide s2){
-            Preconditions.checkArgument(s1.isSameKindAs(s2));
-
             switch (s1) {
                 // Connecter les deux zones forêt
-                case TileSide.Meadow(Zone.Meadow m1) when s2 instanceof TileSide.Meadow(Zone.Meadow m2):
-                    meadowBuilder.union(m1, m2);
-                    break;
-                    // Connecter les deux zones meadow
-                case TileSide.Forest(Zone.Forest m1) when s2 instanceof TileSide.Forest(Zone.Forest m2):
-                    forestBuilder.union(m1, m2);
-                    break;
-                    // Connecter les deux zones rivière
-                case TileSide.River riverTile1 when s2 instanceof TileSide.River riverTile2:
+                case TileSide.Forest(Zone.Forest m1) when s2 instanceof TileSide.Forest(Zone.Forest m2)
+                    -> forestBuilder.union(m1, m2);
+                // Connecter les deux zones meadow
+                case TileSide.Meadow(Zone.Meadow m1) when s2 instanceof TileSide.Meadow(Zone.Meadow m2)
+                        -> meadowBuilder.union(m1, m2);
+                // Connecter les deux zones rivière
+                case TileSide.River riverTile1 when s2 instanceof TileSide.River riverTile2
+                    -> {
                     riverBuilder.union(riverTile1.river(), riverTile2.river());
-                    break;
-                default:
-                    break;
+                    riverSystemBuilder.union(riverTile1.river(), riverTile2.river());
+                    meadowBuilder.union(riverTile1.meadow1(), riverTile2.meadow2());
+                    meadowBuilder.union(riverTile1.meadow2(), riverTile2.meadow1());
+                }
+                default -> Preconditions.checkArgument(s1.isSameKindAs(s2));
             }
         }
 
@@ -120,6 +119,7 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
          * @throws IllegalArgumentException si la sorte d'occupant donnée ne peut pas occuper une zone de la sorte donnée
          */
         public void addInitialOccupant(PlayerColor player, Occupant.Kind occupantKind, Zone occupiedZone) throws IllegalArgumentException {
+            /*
             switch (occupantKind) {
                 case PAWN:
                     switch (occupiedZone) {
@@ -139,12 +139,34 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
                     }
                     break;
                 case HUT:
-                    if (Objects.requireNonNull(occupiedZone) instanceof Zone.Water m1) {
+                    if (occupiedZone instanceof Zone.Water m1) {
                         riverSystemBuilder.addInitialOccupant(m1, player);
                     } else {
                         throw new IllegalArgumentException();
                     }
                     break;
+            }
+             */
+
+            switch(occupiedZone) {
+                case Zone.Forest f1 when occupantKind == Occupant.Kind.PAWN
+                    -> forestBuilder.addInitialOccupant(f1, player);
+                case Zone.Meadow m1 when occupantKind == Occupant.Kind.PAWN
+                    -> meadowBuilder.addInitialOccupant(m1, player);
+                case Zone.River r1 when occupantKind == Occupant.Kind.PAWN
+                    -> riverBuilder.addInitialOccupant(r1, player);
+                        /*
+                    -> {
+                        if (water instanceof Zone.River river) {
+                            riverBuilder.addInitialOccupant(river, player);
+                            //riverSystemBuilder.addInitialOccupant(water, player);
+                        }
+                }
+
+                         */
+                case Zone.Water water when occupantKind == Occupant.Kind.HUT
+                    -> riverSystemBuilder.addInitialOccupant(water, player);
+                default -> throw new IllegalArgumentException();
             }
         }
 
@@ -178,7 +200,7 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
          * @param forest
          */
         public void clearGatherers(Area<Zone.Forest> forest) {
-            forest.occupants().clear();
+            forestBuilder.removeAllOccupantsOf(forest);
         }
 
         /**
@@ -187,7 +209,7 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
          * @param river
          */
         public void clearFishers(Area<Zone.River> river) {
-            river.occupants().clear();
+            riverBuilder.removeAllOccupantsOf(river);
         }
 
         /**
