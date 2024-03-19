@@ -47,38 +47,50 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
             int[] nbOpenings = new int[10];
 
             // On va parcourir d'abord toutes les zones sur les côtés de la tuile [1]
-            final Set<Zone.Lake> countedLakes = new HashSet<>();
             for (Zone sideZone : tile.sideZones()) {
                 for (TileSide tileSide : tile.sides()) {
-                    if (tileSide.zones().contains(sideZone)) { // [2]
-                        nbOpenings[sideZone.localId()] += 1; // [3]
+
+                    List<Zone> tileSideZones = tileSide.zones();
+                    if (tileSideZones.contains(sideZone)) { // [2]
+                        int nbConnections = 0;
+                        for (Zone zone : tileSideZones) {
+                            if (zone.equals(sideZone)) {
+                                nbConnections++;
+                            }
+                        }
+
+                        nbOpenings[sideZone.localId()] += nbConnections; // [3]
 
                         // N'oublions pas les lacs
                         if (sideZone instanceof Zone.River river && river.hasLake()) {
-                            Zone.Lake lake = river.lake();
-                            if (countedLakes.contains(lake)) continue;
-
-                            countedLakes.add(lake);
+                            nbOpenings[river.localId()] += 1;
                             nbOpenings[river.lake().localId()] += 1;
                         }
                     }
                 }
-                // Ajouter les zones en tant qu'aires, inoccupées, à nos partitions
-                switch(sideZone) {
+            }
+
+            // Ajouter les zones en tant qu'aires, inoccupées, à nos partitions
+            for (Zone sideZone : tile.sideZones()) {
+                switch (sideZone) {
                     case Zone.Forest forest -> forestBuilder.addSingleton(forest, nbOpenings[forest.localId()]);
                     case Zone.Meadow meadow -> meadowBuilder.addSingleton(meadow, nbOpenings[meadow.localId()]);
                     case Zone.River river -> {
                         if (river.hasLake()) {
-                            final Zone.Lake lake = river.lake();
-                            riverSystemBuilder.addSingleton(river, nbOpenings[river.localId()] + 1);
-                            riverSystemBuilder.addSingleton(lake, nbOpenings[lake.localId()]);
-                            riverSystemBuilder.union(river, lake); // Avant de creer l'aire hydrographique, il faut d'abord ajouter les zones river et son lac séparément (conception de union())
+                            riverSystemBuilder.addSingleton(river.lake(), nbOpenings[river.lake().localId()]);
+                            riverBuilder.addSingleton(river,nbOpenings[river.localId()] - 1);
                         } else {
-                            riverSystemBuilder.addSingleton(river, nbOpenings[river.localId()]);
+                            riverBuilder.addSingleton(river, nbOpenings[river.localId()]);
                         }
-                        riverBuilder.addSingleton(river, nbOpenings[river.localId()]);
+                        riverSystemBuilder.addSingleton(river, nbOpenings[river.localId()]);
                     }
                     default -> {}
+                }
+            }
+
+            for (Zone zone : tile.sideZones()) {
+                if (zone instanceof Zone.River river && river.hasLake()) {
+                    riverSystemBuilder.union(river, river.lake());
                 }
             }
         }
