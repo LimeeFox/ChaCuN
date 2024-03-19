@@ -2,6 +2,7 @@ package ch.epfl.chacun;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import static ch.epfl.chacun.Zone.Forest;
 import static ch.epfl.chacun.Zone.River;
@@ -78,19 +79,38 @@ public final class Board {
      * @return ensemble des animaux annulés
      */
     public Set<Animal> cancelledAnimals() {
-        return Collections.unmodifiableSet(); // ça permet de retourner le set inmodifiable sans faire de copies
+        Set<Animal> cancelledAnimalSet = new HashSet<>();
+        for (int index : placedTileIndices) {
+            cancelledAnimalSet.add();
+        }
+        return Collections.unmodifiableSet(cancelledAnimalSet); // ça permet de retourner le set immodifiable sans faire de copies
     }
 
+    /**
+     * Occupants présents sur le tableau
+     *
+     * @return boardOccupants
+     *          la totalité des occupants présents sur le tableau
+     */
     public Set<Occupant> occupants() {
-
+        Set<Occupant> boardOccupants = new HashSet<>();
+        for(int index : placedTileIndices) {
+            boardOccupants.add(placedTiles[index].occupant());
+        }
+        return boardOccupants;
     }
 
     public Area<Zone.Forest> forestArea(Zone.Forest forest) {
-
+        for (int index : placedTileIndices) {
+            for (Zone.Forest forestZone : placedTiles[index]) {
+                if (forestZone.equals(forest)) {
+                    return forestZone.
+                }
+            }
+        }
     }
 
     public Area<Zone.Meadow> meadowArea(Zone.Meadow meadow) {
-
     }
 
     public Area<Zone.River> riverArea(Zone.River riverZone) {
