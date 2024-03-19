@@ -1,5 +1,8 @@
 package ch.epfl.chacun;
 
+import java.util.Arrays;
+import java.util.Set;
+
 /**
  * Le tableau de jeu
  *
@@ -27,11 +30,44 @@ public class Board {
         this.boardPartitions = boardPartitions;
     }
 
+    /**
+     * Tuile placée dans une position donnée
+     *
+     * @param pos
+     *          position à laquelle la tuile est placée
+     * @return la tuile placée à la position donnée, ou bien null si aucune tuile n'est placée à la position donnée ou
+     *          si la position donnée n'appartient pas au plateau
+     */
     public PlacedTile tileAt(Pos pos) {
         if (pos.x() >= -12 && pos.x() <= 12
                 && pos.y() >= -12 && pos.y() <= 12) {
-
-            int index = pos.x() + pos.y() * 12;
+            int index = pos.x() + 12 + (pos.y() + 12) * 12;
+            return placedTiles[index];
         }
+        return null;
+    }
+
+    /**
+     * Tuile placée possédant une identité donnée
+     *
+     * @param tileId
+     *          identité de la tuile recherchée
+     * @return la tuile placée dont l'identité correspond avec celle passée en argument
+     *
+     * @throws IllegalArgumentException
+     *          si la tuile n'est pas présente sur le plateau, autrement dit, la tuile recherchée n'est pas encore placé
+     *          ou l'identité donnée n'existe pas
+     */
+    public PlacedTile tileWithId(int tileId) {
+        for (int index : placedTileIndices) {
+            if (placedTiles[index].id() == tileId) {
+                return placedTiles[index];
+            }
+        }
+        throw new IllegalArgumentException();
+    }
+
+    public Set<Animal> cancelledAnimals() {
+
     }
 }
