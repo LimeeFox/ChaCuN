@@ -26,4 +26,12 @@ public class Board {
         this.placedTileIndices = placedTileIndices;
         this.boardPartitions = boardPartitions;
     }
+
+    public PlacedTile tileAt(Pos pos) {
+        if (pos.x() >= -12 && pos.x() <= 12
+                && pos.y() >= -12 && pos.y() <= 12) {
+
+            int index = pos.x() + pos.y() * 12;
+        }
+    }
 }
