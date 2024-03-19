@@ -1,7 +1,12 @@
 package ch.epfl.chacun;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
+import static ch.epfl.chacun.Zone.Forest;
+import static ch.epfl.chacun.Zone.River;
+import static ch.epfl.chacun.Zone.Meadow;
+import static ch.epfl.chacun.Zone.Water;
 
 /**
  * Le tableau de jeu
@@ -9,23 +14,23 @@ import java.util.Set;
  * @author Cyriac Philippe (360553)
  * @author Vladislav Yarkovoy (362242)
  */
+public final class Board {
 
-public class Board {
-    //Are they really all "final"?
     private final PlacedTile[] placedTiles = new PlacedTile[625];
     //placedTileIndices may not have to be so big, considering there's only 96 total possible tiles
     private final int[] placedTileIndices = new int[625];
-    private final ZonePartitions boardPartitions = new ZonePartitions(new ZonePartition<Zone.Forest>(),
-            new ZonePartition<Zone.Meadow>(),
-            new ZonePartition<Zone.River>(),
-            new ZonePartition<Zone.Water>());
+    private final ZonePartitions boardPartitions = new ZonePartitions(
+            new ZonePartition<>(),
+            new ZonePartition<>(),
+            new ZonePartition<>(),
+            new ZonePartition<>()
+    );
 
     public static final int REACH = 12;
-    public static final Board EMPTY = new Board(new PlacedTile[625], new int[625],
-            ZonePartitions.EMPTY);
+    public static final Board EMPTY = new Board(new PlacedTile[625], new int[625], ZonePartitions.EMPTY);
 
     private Board(PlacedTile[] placedTiles, int[] placedTileIndices, ZonePartitions boardPartitions) {
-        this.placedTiles =  placedTiles;
+        this.placedTiles = placedTiles;
         this.placedTileIndices = placedTileIndices;
         this.boardPartitions = boardPartitions;
     }
@@ -67,7 +72,102 @@ public class Board {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * Obtenir l'ensemble des animaux annulés
+     *
+     * @return ensemble des animaux annulés
+     */
     public Set<Animal> cancelledAnimals() {
+        return Collections.unmodifiableSet(); // ça permet de retourner le set inmodifiable sans faire de copies
+    }
+
+    public Set<Occupant> occupants() {
+
+    }
+
+    public Area<Zone.Forest> forestArea(Zone.Forest forest) {
+
+    }
+
+    public Area<Zone.Meadow> meadowArea(Zone.Meadow meadow) {
+
+    }
+
+    public Area<Zone.River> riverArea(Zone.River riverZone) {
+
+    }
+
+    public Area<Zone.Water> riverSystemArea(Zone.Water water) {
+
+    }
+
+    public Set<Area<Zone.Meadow>> meadowAreas() {
+
+    }
+
+    public Set<Area<Zone.Water>> riverSystemAreas() {
+
+    }
+
+    public Area<Zone.Meadow> adjacentMeadow(Pos pos, Zone.Meadow meadowZone) {
+
+    }
+
+    public int occupantCount(PlayerColor player, Occupant.Kind occupantKind) {
+
+    }
+
+    public Set<Pos> insertionPositions() {
+
+    }
+
+    public PlacedTile lastPlacedTile(){
+
+    }
+
+    public Set<Area<Zone.Forest>> forestsClosedByLastTile() {
+
+    }
+
+    public Set<Area<Zone.River>> riversClosedByLastTile() {
+
+    }
+
+    public boolean canAddTile(PlacedTile tile) {
+
+    }
+
+    public boolean couldPlaceTile(Tile tile) {
+
+    }
+
+    public Board withNewTile(PlacedTile tile) {
+
+    }
+
+    public Board withOccupant(Occupant occupant) {
+
+    }
+
+    public Board withoutOccupant(Occupant occupant) {
+
+    }
+
+    public Board withoutGatherersOrFishersIn(Set<Area<Forest>> forests, Set<Area<River>> rivers) {
+
+    }
+
+    public Board withMoreCancelledAnimals(Set<Animal> newlyCancelledAnimals) {
+        return new Board(placedTiles, placedTileIndices, boardPartitions);
+    }
+
+    @Override
+    public Board equals() {
+
+    }
+
+    @Override
+    public int hashCode() {
 
     }
 }
