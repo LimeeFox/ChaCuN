@@ -1,9 +1,6 @@
 package ch.epfl.chacun;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 /**
  * @author Vladislav Yarkovoy (362242)
@@ -58,7 +55,6 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
                                 nbConnections++;
                             }
                         }
-
                         nbOpenings[sideZone.localId()] += nbConnections; // [3]
 
                         // N'oublions pas les lacs
@@ -131,35 +127,6 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
          * @throws IllegalArgumentException si la sorte d'occupant donnée ne peut pas occuper une zone de la sorte donnée
          */
         public void addInitialOccupant(PlayerColor player, Occupant.Kind occupantKind, Zone occupiedZone) throws IllegalArgumentException {
-            /*
-            switch (occupantKind) {
-                case PAWN:
-                    switch (occupiedZone) {
-                        case Zone.Meadow m1:
-                            meadowBuilder.addInitialOccupant(m1, player);
-                            break;
-                        case Zone.Forest m1:
-                            forestBuilder.addInitialOccupant(m1, player);
-                            break;
-                        case Zone.Water m1:
-                            if (m1 instanceof Zone.River river) {
-                                riverBuilder.addInitialOccupant(river, player);
-                                break;
-                            }
-                            riverSystemBuilder.addInitialOccupant(m1, player);
-                            break;
-                    }
-                    break;
-                case HUT:
-                    if (occupiedZone instanceof Zone.Water m1) {
-                        riverSystemBuilder.addInitialOccupant(m1, player);
-                    } else {
-                        throw new IllegalArgumentException();
-                    }
-                    break;
-            }
-             */
-
             switch(occupiedZone) {
                 case Zone.Forest f1 when occupantKind == Occupant.Kind.PAWN
                     -> forestBuilder.addInitialOccupant(f1, player);
@@ -167,15 +134,6 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
                     -> meadowBuilder.addInitialOccupant(m1, player);
                 case Zone.River r1 when occupantKind == Occupant.Kind.PAWN
                     -> riverBuilder.addInitialOccupant(r1, player);
-                        /*
-                    -> {
-                        if (water instanceof Zone.River river) {
-                            riverBuilder.addInitialOccupant(river, player);
-                            //riverSystemBuilder.addInitialOccupant(water, player);
-                        }
-                }
-
-                         */
                 case Zone.Water water when occupantKind == Occupant.Kind.HUT
                     -> riverSystemBuilder.addInitialOccupant(water, player);
                 default -> throw new IllegalArgumentException();
@@ -183,7 +141,7 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
         }
 
         /**
-         * supprime un occupant (un pion) appartenant au joueur donné de l'aire contenant la zone donnée
+         * Supprime un occupant (un pion) appartenant au joueur donné de l'aire contenant la zone donnée
          * ou lève IllegalArgumentException si la zone est un lac
          *
          * @param player
