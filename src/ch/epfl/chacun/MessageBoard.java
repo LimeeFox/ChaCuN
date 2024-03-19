@@ -198,8 +198,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
 
             int scoredPoints = Points.forMeadow(animalIntegerMap.getOrDefault(Animal.Kind.MAMMOTH, 0),
                     animalIntegerMap.getOrDefault(Animal.Kind.AUROCHS, 0),
-                    animalIntegerMap.getOrDefault(Animal.Kind.DEER, 0) -
-                            animalIntegerMap.getOrDefault(Animal.Kind.TIGER, 0));
+                    animalIntegerMap.getOrDefault(Animal.Kind.DEER, 0));
 
             if (scoredPoints > 0) {
 
