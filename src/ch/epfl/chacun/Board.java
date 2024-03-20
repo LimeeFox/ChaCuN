@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static ch.epfl.chacun.Zone.Forest;
 import static ch.epfl.chacun.Zone.River;
@@ -19,24 +20,22 @@ import static ch.epfl.chacun.Zone.Meadow;
  */
 public final class Board {
 
-    private final PlacedTile[] placedTiles;// = new PlacedTile[625];
-    //placedTileIndices may not have to be so big, considering there's only 96 total possible tiles
-    private final int[] placedTileIndices;// = new int[625];
-    private final ZonePartitions boardPartitions;/*= new ZonePartitions(
-            new ZonePartition<>(),
-            new ZonePartition<>(),
-            new ZonePartition<>(),
-            new ZonePartition<>()
-    );
-    */
+    private final PlacedTile[] placedTiles;
+    private final int[] placedTileIndices;
+    private final ZonePartitions boardPartitions;
+
+    private final Set<Animal> cancelledAnimals;
 
     public static final int REACH = 12;
-    public static final Board EMPTY = new Board(new PlacedTile[625], new int[625], ZonePartitions.EMPTY);
+    public static final Board EMPTY = new Board(new PlacedTile[625], new int[96], ZonePartitions.EMPTY,
+            new HashSet<>());
 
-    public Board(PlacedTile[] placedTiles, int[] placedTileIndices, ZonePartitions boardPartitions) {
+    public Board(PlacedTile[] placedTiles, int[] placedTileIndices, ZonePartitions boardPartitions,
+                 Set<Animal> cancelledAnimals) {
         this.placedTiles = placedTiles;
         this.placedTileIndices = placedTileIndices;
         this.boardPartitions = boardPartitions;
+        this.cancelledAnimals = cancelledAnimals;
     }
 
     /**
@@ -82,11 +81,7 @@ public final class Board {
      * @return ensemble des animaux annulés
      */
     public Set<Animal> cancelledAnimals() {
-        Set<Animal> cancelledAnimalSet = new HashSet<>();
-        for (int index : placedTileIndices) {
-            cancelledAnimalSet.add();
-        }
-        return Collections.unmodifiableSet(cancelledAnimalSet); // ça permet de retourner le set immodifiable sans faire de copies
+        return Collections.unmodifiableSet(cancelledAnimals); //permet de retourner le set immodifiable sans faire de copies
     }
 
     /**
@@ -186,16 +181,57 @@ public final class Board {
         });
     }
 
+    /**
+     * Positions d'insertion du plateau
+     *
+     * @return l'ensemble des positions du plateau sur lesquels les joueurs peuvent placer des tuiles
+     */
+    //@todo review this goofy ahh code
     public Set<Pos> insertionPositions() {
+        Set<Pos> positions = new HashSet<>();
+        for (int index : placedTileIndices) {
+            Pos placedTilePos = new Pos(index % 25, index / 25);
 
+            Predicate<Pos> isValidPosition = pos -> {
+                int x = pos.x();
+                int y = pos.y();
+                return x >= -12 && x <= 12 && y >= -12 && y <= 12;
+            };
+
+            Arrays.stream(Direction.values())
+                    .map(placedTilePos::neighbor)
+                    .filter(isValidPosition)
+                    .forEach(positions::add);
+        }
+        return positions;
     }
 
+    /**
+     * La dernière tuile placée
+     *
+     * @return la dernière tuile placée sur le plateau, ou null si aucune tuile n'a encore été placée
+     */
     public PlacedTile lastPlacedTile(){
-
+        if (!this.equals(EMPTY)) {
+            return placedTiles[placedTileIndices[placedTileIndices.length - 1]];
+        }
+        return null;
     }
 
     public Set<Area<Zone.Forest>> forestsClosedByLastTile() {
+        if (!this.equals(EMPTY)) {
+            PlacedTile lastPlacedTile = lastPlacedTile();
+            if (lastPlacedTile != null) {
+                Set<Area<Zone.Forest>> forestSet = new HashSet<>();
 
+                Set<Forest> forestZones = new HashSet<>(lastPlacedTile.forestZones());
+
+                 forestSet = boardPartitions.forests().areas().stream()
+                        .filter(forestArea -> forestArea.zones().containsAll(forestZones))
+                        .collect(Collectors.toSet());
+            }
+        }
+        return null;
     }
 
     public Set<Area<Zone.River>> riversClosedByLastTile() {
