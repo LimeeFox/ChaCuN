@@ -10,7 +10,6 @@ import java.util.function.Predicate;
 import static ch.epfl.chacun.Zone.Forest;
 import static ch.epfl.chacun.Zone.River;
 import static ch.epfl.chacun.Zone.Meadow;
-import static ch.epfl.chacun.Zone.Water;
 
 /**
  * Le tableau de jeu
