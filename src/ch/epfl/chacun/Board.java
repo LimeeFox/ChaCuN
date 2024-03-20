@@ -4,6 +4,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.*;
+import java.util.function.Predicate;
+
 import static ch.epfl.chacun.Zone.Forest;
 import static ch.epfl.chacun.Zone.River;
 import static ch.epfl.chacun.Zone.Meadow;
@@ -17,20 +20,21 @@ import static ch.epfl.chacun.Zone.Water;
  */
 public final class Board {
 
-    private final PlacedTile[] placedTiles = new PlacedTile[625];
+    private final PlacedTile[] placedTiles;// = new PlacedTile[625];
     //placedTileIndices may not have to be so big, considering there's only 96 total possible tiles
-    private final int[] placedTileIndices = new int[625];
-    private final ZonePartitions boardPartitions = new ZonePartitions(
+    private final int[] placedTileIndices;// = new int[625];
+    private final ZonePartitions boardPartitions;/*= new ZonePartitions(
             new ZonePartition<>(),
             new ZonePartition<>(),
             new ZonePartition<>(),
             new ZonePartition<>()
     );
+    */
 
     public static final int REACH = 12;
     public static final Board EMPTY = new Board(new PlacedTile[625], new int[625], ZonePartitions.EMPTY);
 
-    private Board(PlacedTile[] placedTiles, int[] placedTileIndices, ZonePartitions boardPartitions) {
+    public Board(PlacedTile[] placedTiles, int[] placedTileIndices, ZonePartitions boardPartitions) {
         this.placedTiles = placedTiles;
         this.placedTileIndices = placedTileIndices;
         this.boardPartitions = boardPartitions;
@@ -100,41 +104,87 @@ public final class Board {
         return boardOccupants;
     }
 
+    /**
+     * Obtenir une aire avec la zone de forêt donnée
+     *
+     * @param forest
+     * @return l'aire avec la zone de forêt donnée, si elle existe
+     */
     public Area<Zone.Forest> forestArea(Zone.Forest forest) {
-        for (int index : placedTileIndices) {
-            for (Zone.Forest forestZone : placedTiles[index]) {
-                if (forestZone.equals(forest)) {
-                    return forestZone.
-                }
-            }
-        }
+        return boardPartitions.forests().areaContaining(forest);
     }
 
+    /**
+     * Obtenir une aire avec la zone de pré donnée
+     *
+     * @param meadow
+     * @return l'aire avec la zone de pré donnée, si elle existe
+     */
     public Area<Zone.Meadow> meadowArea(Zone.Meadow meadow) {
+        return boardPartitions.meadows().areaContaining(meadow);
     }
 
+    /**
+     * Obtenir une aire avec la zone de rivière donnée
+     *
+     * @param riverZone
+     * @return l'aire avec la zone de rivière donnée, si elle existe
+     */
     public Area<Zone.River> riverArea(Zone.River riverZone) {
-
+        return boardPartitions.rivers().areaContaining(riverZone);
     }
 
+    /**
+     * Obtenir une aire avec la zone d'eau donnée
+     *
+     * @param water
+     * @return l'aire avec la zone d'eau donnée, si elle existe
+     */
     public Area<Zone.Water> riverSystemArea(Zone.Water water) {
-
+        return boardPartitions.riverSystems().areaContaining(water);
     }
 
+    /**
+     * Obtenir l'ensemble de toutes les aires du type pré
+     *
+     * @return l'ensemble de toutes les aires du type pré
+     */
     public Set<Area<Zone.Meadow>> meadowAreas() {
-
+        return boardPartitions.meadows().areas();
     }
 
+    /**
+     * Obtenir l'ensemble de toutes les aires du type hydrographique
+     *
+     * @return l'ensemble de toutes les aires du type hydrographique
+     */
     public Set<Area<Zone.Water>> riverSystemAreas() {
-
+        return boardPartitions.riverSystems().areas();
     }
 
+    /**
+     * Obtenir le pré adjacent à la zone donnée, sous la forme d'une aire
+     * qui ne contient que les zones de ce pré mais tous les occupants du pré complet,
+     * et qui, pour simplifier, ne possède aucune connexion ouverte
+     *
+     * @param pos
+     * @param meadowZone
+     * @return aire de pré
+     */
     public Area<Zone.Meadow> adjacentMeadow(Pos pos, Zone.Meadow meadowZone) {
-
+        //@todo
     }
 
     public int occupantCount(PlayerColor player, Occupant.Kind occupantKind) {
+        List<PlacedTile> tiles = Arrays.stream(placedTiles).toList();
 
+        Predicate<PlayerColor> playerFilter = playerColor -> !(playerColor == player);
+        Predicate<Area<Meadow>> meadowAreaFilter = meadowArea -> meadowArea.occupants() != null;
+        //Predicate<Meadow> meadowZoneFilter = meadowZone -> meadowZone.
+
+        boardPartitions.meadows().areas().stream().filter(meadowAreaFilter).forEach(area -> {
+            area.occupants().stream().filter(playerFilter);
+        });
     }
 
     public Set<Pos> insertionPositions() {
@@ -182,12 +232,17 @@ public final class Board {
     }
 
     @Override
-    public Board equals() {
-
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Board board = (Board) o;
+        return Arrays.equals(placedTiles, board.placedTiles) && Arrays.equals(placedTileIndices, board.placedTileIndices) && Objects.equals(boardPartitions, board.boardPartitions);
     }
 
     @Override
     public int hashCode() {
-
+        final int firstDigit = Arrays.hashCode(placedTiles);
+        final int secondDigit = Arrays.hashCode(placedTileIndices);
+        return Objects.hash(firstDigit, secondDigit);
     }
 }
