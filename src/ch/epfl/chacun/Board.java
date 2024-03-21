@@ -158,7 +158,7 @@ public final class Board {
 
     /**
      * Obtenir le pré adjacent à la zone donnée, sous la forme d'une aire
-     * qui ne contient que les zones de ce pré mais tous les occupants du pré complet,
+     * qui ne contient que les zones de ce pré, mais tous les occupants du pré complet,
      * et qui, pour simplifier, ne possède aucune connexion ouverte
      *
      * @param pos
@@ -259,7 +259,12 @@ public final class Board {
     }
 
     public boolean canAddTile(PlacedTile tile) {
-
+        Pos placedTilePos = tile.pos();
+        if (insertionPositions().contains(tile.pos())) {
+            boolean compatibleWithNeighbours = true;
+            Arrays.stream(Direction.values());
+        }
+        return false;
     }
 
     public boolean couldPlaceTile(Tile tile) {
