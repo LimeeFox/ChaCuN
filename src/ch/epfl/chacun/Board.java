@@ -221,8 +221,7 @@ public final class Board {
     /**
      * Aires de type forêt fermées par la dernière tuile placée
      *
-     * @return closedForestSet
-     *          l'ensemble des aires de types forêt fermées par la dernière tuile placée sur le plateau
+     * @return l'ensemble des aires de type forêt fermées par la dernière tuile placée sur le plateau
      */
     public Set<Area<Zone.Forest>> forestsClosedByLastTile() {
         if (!this.equals(EMPTY)) {
@@ -240,15 +239,15 @@ public final class Board {
     }
 
     /**
-     * Aires de type rivière fermées par le dernière tuile placée
+     * Aires de type rivière fermées par la dernière tuile placée
      *
-     * @return
+     * @return l'ensemble des aires de type rivière fermées par la dernière tuile placée sur le plateau
      */
     public Set<Area<Zone.River>> riversClosedByLastTile() {
         if (!this.equals(EMPTY)) {
             PlacedTile lasPlacedTile = lastPlacedTile();
             if(lasPlacedTile != null) {
-                Set<Zone.River> riverZones = new HashSet<>(lasPlacedTile.forestZones());
+                Set<Zone.River> riverZones = new HashSet<>(lasPlacedTile.riverZones());
 
                 return boardPartitions.rivers().areas().stream()
                         .filter(riverArea -> riverArea.zones().containsAll(riverZones))
