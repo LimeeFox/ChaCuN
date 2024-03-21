@@ -27,8 +27,7 @@ public final class Board {
     private final Set<Animal> cancelledAnimals;
 
     public static final int REACH = 12;
-    public static final Board EMPTY = new Board(new PlacedTile[625], new int[96], ZonePartitions.EMPTY,
-            new HashSet<>());
+    public static final Board EMPTY = new Board(new PlacedTile[625], new int[96], ZonePartitions.EMPTY, new HashSet<>());
 
     public Board(PlacedTile[] placedTiles, int[] placedTileIndices, ZonePartitions boardPartitions,
                  Set<Animal> cancelledAnimals) {
@@ -258,13 +257,27 @@ public final class Board {
         return null;
     }
 
+    /**
+     * Indique si la tuile placée donnée pourrait être ajoutée au plateau
+     *
+     * @param tile
+     *          tuile placée donnée
+     * @return vrai si la position de la tuile placée donnée est une position d'insertion et que chaque bord de la
+     *          tuile qui un bord de tuile déjà posée est de la mêmê sorte que lui
+     */
     public boolean canAddTile(PlacedTile tile) {
         Pos placedTilePos = tile.pos();
         if (insertionPositions().contains(tile.pos())) {
-            boolean compatibleWithNeighbours = true;
-            Arrays.stream(Direction.values());
+            for (Direction direction : Direction.values()) {
+                if (tileAt(placedTilePos.neighbor(direction)) != null) {
+                    if (!Objects.requireNonNull(tileAt(placedTilePos.neighbor(direction))).side(direction.opposite())
+                            .isSameKindAs(tile.side(direction))) {
+                        return false;
+                    }
+                }
+            }
         }
-        return false;
+        return true;
     }
 
     public boolean couldPlaceTile(Tile tile) {
