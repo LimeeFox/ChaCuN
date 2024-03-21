@@ -218,24 +218,45 @@ public final class Board {
         return null;
     }
 
+    /**
+     * Aires de type forêt fermées par la dernière tuile placée
+     *
+     * @return closedForestSet
+     *          l'ensemble des aires de types forêt fermées par la dernière tuile placée sur le plateau
+     */
     public Set<Area<Zone.Forest>> forestsClosedByLastTile() {
         if (!this.equals(EMPTY)) {
             PlacedTile lastPlacedTile = lastPlacedTile();
             if (lastPlacedTile != null) {
-                Set<Area<Zone.Forest>> forestSet = new HashSet<>();
-
                 Set<Forest> forestZones = new HashSet<>(lastPlacedTile.forestZones());
 
-                 forestSet = boardPartitions.forests().areas().stream()
-                        .filter(forestArea -> forestArea.zones().containsAll(forestZones))
-                        .collect(Collectors.toSet());
+                return boardPartitions.forests().areas().stream()
+                         .filter(forestArea -> forestArea.zones().containsAll(forestZones))
+                         .filter(Area::isClosed)
+                         .collect(Collectors.toSet());
             }
         }
         return null;
     }
 
+    /**
+     * Aires de type rivière fermées par le dernière tuile placée
+     *
+     * @return
+     */
     public Set<Area<Zone.River>> riversClosedByLastTile() {
+        if (!this.equals(EMPTY)) {
+            PlacedTile lasPlacedTile = lastPlacedTile();
+            if(lasPlacedTile != null) {
+                Set<Zone.River> riverZones = new HashSet<>(lasPlacedTile.forestZones());
 
+                return boardPartitions.rivers().areas().stream()
+                        .filter(riverArea -> riverArea.zones().containsAll(riverZones))
+                        .filter(Area::isClosed)
+                        .collect(Collectors.toSet());
+            }
+        }
+        return null;
     }
 
     public boolean canAddTile(PlacedTile tile) {
