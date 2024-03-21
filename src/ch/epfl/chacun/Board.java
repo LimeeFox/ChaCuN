@@ -263,7 +263,9 @@ public final class Board {
     }
 
     public Board withMoreCancelledAnimals(Set<Animal> newlyCancelledAnimals) {
-        return new Board(placedTiles, placedTileIndices, boardPartitions);
+        Set<Animal> allAnimalsToCancel = new HashSet<>(cancelledAnimals);
+        allAnimalsToCancel.addAll(newlyCancelledAnimals);
+        return new Board(placedTiles, placedTileIndices, boardPartitions, allAnimalsToCancel);
     }
 
     @Override
