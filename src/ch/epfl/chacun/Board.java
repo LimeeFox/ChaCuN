@@ -395,12 +395,12 @@ public final class Board {
 
         PlacedTile tile = tileWithId(id / 10);
         PlacedTile[] updatedPlacedTiles = placedTiles.clone();
-        updatedPlacedTiles[getIndexOfTile(tile)] = tile;
+        updatedPlacedTiles[getIndexOfTile(tile)] = tile.withOccupant(occupant);
 
         ZonePartitions.Builder updatedPartition = new ZonePartitions.Builder(boardPartitions);
         updatedPartition.addInitialOccupant(tile.placer(), occupant.kind(), tile.zoneWithId(id));
 
-        return new Board(updatedPlacedTiles, placedTileIndices, updatedPartition.build(), cancelledAnimals);
+        return new Board(updatedPlacedTiles, placedTileIndices.clone(), updatedPartition.build(), cancelledAnimals());
     }
 
     /**
