@@ -10,9 +10,17 @@ import java.util.List;
  * @param rivers
  * @param riverSystems
  */
-public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Zone.Meadow> meadows, ZonePartition<Zone.River> rivers, ZonePartition<Zone.Water> riverSystems) {
+public record ZonePartitions(
+        ZonePartition<Zone.Forest> forests,
+        ZonePartition<Zone.Meadow> meadows,
+        ZonePartition<Zone.River> rivers,
+        ZonePartition<Zone.Water> riverSystems
+) {
 
-    public static final ZonePartitions EMPTY = new ZonePartitions(new ZonePartition<>(), new ZonePartition<>(), new ZonePartition<>(), new ZonePartition<>());
+    public static final ZonePartitions EMPTY = new ZonePartitions(new ZonePartition<>(),
+            new ZonePartition<>(),
+            new ZonePartition<>(),
+            new ZonePartition<>());
 
     /**
      * Classe bâtisseur de ZonePartitions
@@ -73,8 +81,20 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
                     case Zone.Meadow meadow -> meadowBuilder.addSingleton(meadow, nbOpenings[meadow.localId()]);
                     case Zone.River river -> {
                         if (river.hasLake()) {
+//<<<<<<< HEAD
                             riverSystemBuilder.addSingleton(river.lake(), nbOpenings[river.lake().localId()]);
                             riverBuilder.addSingleton(river,nbOpenings[river.localId()] - 1);
+                            /*
+=======
+                            final Zone.Lake lake = river.lake();
+                            riverSystemBuilder.addSingleton(river, nbOpenings[river.localId()] + 1);
+                            riverSystemBuilder.addSingleton(lake, nbOpenings[lake.localId()]);
+                            // Avant de creer l'aire hydrographique, il faut d'abord ajouter
+                            // les zones river et son lac séparément (conception de union())
+                            riverSystemBuilder.union(river, lake);
+>>>>>>> 62d9da1 (we dont need the communist test (it's shit))
+
+                             */
                         } else {
                             riverBuilder.addSingleton(river, nbOpenings[river.localId()]);
                         }

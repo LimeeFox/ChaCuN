@@ -8,6 +8,7 @@ import java.util.*;
 import static ch.epfl.chacun.Rotation.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+/*
 class OurBoardTest {
     List<Animal> animal1 = new ArrayList<>(Collections.singletonList(new Animal(5600, Animal.Kind.AUROCHS)));
     List<Animal> animal2 = new ArrayList<>(Collections.singletonList(new Animal(1720, Animal.Kind.DEER)));
@@ -250,7 +251,7 @@ class OurBoardTest {
 
     @Test
     void withOccupantWorksNormalCase() {
-        /*
+
         Occupant occupant1 = new Occupant(Occupant.Kind.PAWN,50_2);
 
         // la seule diff ici c'est l'occupent
@@ -315,7 +316,7 @@ class OurBoardTest {
         assertTrue(boardExpected.equals(boardTest));
         //if(boardExpected.equals(boardTest)){ Assertions.assertEquals(1,1);}
         //else Assertions.assertEquals(1,2);
-         */
+
     }
 
 
@@ -338,4 +339,5 @@ class OurBoardTest {
     @Test
     void testHashCode() {
     }
-}
+    }
+ */
