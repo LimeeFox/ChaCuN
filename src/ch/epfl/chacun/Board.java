@@ -48,7 +48,8 @@ public final class Board {
     public PlacedTile tileAt(Pos pos) {
         if (pos.x() >= -12 && pos.x() <= 12
                 && pos.y() >= -12 && pos.y() <= 12) {
-            int index = pos.x() + 12 + (pos.y() + 12) * 12;
+            pos.translated(REACH, REACH);
+            int index = pos.x() + 25 * pos.y();
             return placedTiles[index];
         }
         return null;
@@ -311,12 +312,53 @@ public final class Board {
         return true;
     }
 
+    /**
+     * Vérifie si une tuile donnée peut être placée sur le plateau, éventuellement, après rotation
+     *
+     * @param tile
+     *          tuile dont on cherche à vérifier la validité
+     * @return vrai si la tuile donnée peut être placée sur le plateau, possiblement après rotation, et faux sinon
+     */
     public boolean couldPlaceTile(Tile tile) {
-
+        return insertionPositions().stream()
+                .flatMap(pos -> Rotation.ALL.stream()
+                        .map(rotation -> canAddTile(new PlacedTile(tile, null, rotation, pos))))
+                .anyMatch(valid -> valid);
     }
 
+    /**
+     * Nouveau plateau contenant une nouvelle tuile placée donnée
+     *
+     * @param tile
+     *          tuile placée dans le nouveau plateau
+     * @return un nouveau plateau identique au récepteur, avec la tuile placée donnée
+     */
     public Board withNewTile(PlacedTile tile) {
+        Preconditions.checkArgument(!this.equals(EMPTY) && canAddTile(tile));
 
+        int tileIndex = getIndexOfTile(tile);
+
+        PlacedTile[] updatedPlacedTiles = placedTiles.clone();
+        updatedPlacedTiles[tileIndex] = tile;
+
+        int[] updatedPlacedTileIndices = Arrays.copyOf(placedTileIndices, placedTileIndices.length + 1);
+        updatedPlacedTileIndices[updatedPlacedTileIndices.length - 1] = tileIndex;
+
+        ZonePartitions.Builder boardPartitionsBuilder = new ZonePartitions.Builder(this.boardPartitions);
+        boardPartitionsBuilder.addTile(tile.tile());
+        for (Direction direction: Direction.ALL) {
+            PlacedTile neighbourTile = tileAt(tile.pos().neighbor(direction));
+            if (neighbourTile != null) {
+                boardPartitionsBuilder.connectSides(tile.side(direction), neighbourTile.side(direction.opposite()));
+            }
+        }
+
+        if (tile.occupant() != null) {
+            boardPartitionsBuilder.addInitialOccupant(tile.placer(), tile.occupant().kind(),
+                    tile.zoneWithId(tile.occupant().zoneId()));
+        }
+
+        return new Board(updatedPlacedTiles, updatedPlacedTileIndices, boardPartitionsBuilder.build(), cancelledAnimals());
     }
 
     /**
