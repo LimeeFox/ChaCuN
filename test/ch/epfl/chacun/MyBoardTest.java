@@ -286,7 +286,7 @@ public class MyBoardTest {
                 board_many.withoutOccupant(new Occupant(Occupant.Kind.HUT, 171))); // must fail because ED#571
         assertThrows(IllegalArgumentException.class, () ->
                 board_many.withoutOccupant(new Occupant(Occupant.Kind.PAWN, 561)));
-        assertEquals(board_many4.withoutOccupant(new Occupant(Occupant.Kind.PAWN, 171)).equals(board_many_noOccup), true);
+        assertTrue(board_many4.withoutOccupant(new Occupant(Occupant.Kind.PAWN, 171)).equals(board_many_noOccup));
     }
 
     @Test
