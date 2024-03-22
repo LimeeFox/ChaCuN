@@ -1,9 +1,6 @@
 package ch.epfl.chacun;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 /**
  * @author Vladislav Yarkovoy (362242)
@@ -13,9 +10,17 @@ import java.util.Set;
  * @param rivers
  * @param riverSystems
  */
-public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Zone.Meadow> meadows, ZonePartition<Zone.River> rivers, ZonePartition<Zone.Water> riverSystems) {
+public record ZonePartitions(
+        ZonePartition<Zone.Forest> forests,
+        ZonePartition<Zone.Meadow> meadows,
+        ZonePartition<Zone.River> rivers,
+        ZonePartition<Zone.Water> riverSystems
+) {
 
-    public static final ZonePartitions EMPTY = new ZonePartitions(new ZonePartition<>(), new ZonePartition<>(), new ZonePartition<>(), new ZonePartition<>());
+    public static final ZonePartitions EMPTY = new ZonePartitions(new ZonePartition<>(),
+            new ZonePartition<>(),
+            new ZonePartition<>(),
+            new ZonePartition<>());
 
     /**
      * Classe bâtisseur de ZonePartitions
@@ -47,38 +52,61 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
             int[] nbOpenings = new int[10];
 
             // On va parcourir d'abord toutes les zones sur les côtés de la tuile [1]
-            final Set<Zone.Lake> countedLakes = new HashSet<>();
             for (Zone sideZone : tile.sideZones()) {
                 for (TileSide tileSide : tile.sides()) {
-                    if (tileSide.zones().contains(sideZone)) { // [2]
-                        nbOpenings[sideZone.localId()] += 1; // [3]
+
+                    List<Zone> tileSideZones = tileSide.zones();
+                    if (tileSideZones.contains(sideZone)) { // [2]
+                        int nbConnections = 0;
+                        for (Zone zone : tileSideZones) {
+                            if (zone.equals(sideZone)) {
+                                nbConnections++;
+                            }
+                        }
+                        nbOpenings[sideZone.localId()] += nbConnections; // [3]
 
                         // N'oublions pas les lacs
                         if (sideZone instanceof Zone.River river && river.hasLake()) {
-                            Zone.Lake lake = river.lake();
-                            if (countedLakes.contains(lake)) continue;
-
-                            countedLakes.add(lake);
+                            nbOpenings[river.localId()] += 1;
                             nbOpenings[river.lake().localId()] += 1;
                         }
                     }
                 }
-                // Ajouter les zones en tant qu'aires, inoccupées, à nos partitions
-                switch(sideZone) {
+            }
+
+            // Ajouter les zones en tant qu'aires, inoccupées, à nos partitions
+            for (Zone sideZone : tile.sideZones()) {
+                switch (sideZone) {
                     case Zone.Forest forest -> forestBuilder.addSingleton(forest, nbOpenings[forest.localId()]);
                     case Zone.Meadow meadow -> meadowBuilder.addSingleton(meadow, nbOpenings[meadow.localId()]);
                     case Zone.River river -> {
                         if (river.hasLake()) {
+//<<<<<<< HEAD
+                            riverSystemBuilder.addSingleton(river.lake(), nbOpenings[river.lake().localId()]);
+                            riverBuilder.addSingleton(river,nbOpenings[river.localId()] - 1);
+                            /*
+=======
                             final Zone.Lake lake = river.lake();
                             riverSystemBuilder.addSingleton(river, nbOpenings[river.localId()] + 1);
                             riverSystemBuilder.addSingleton(lake, nbOpenings[lake.localId()]);
-                            riverSystemBuilder.union(river, lake); // Avant de creer l'aire hydrographique, il faut d'abord ajouter les zones river et son lac séparément (conception de union())
+                            // Avant de creer l'aire hydrographique, il faut d'abord ajouter
+                            // les zones river et son lac séparément (conception de union())
+                            riverSystemBuilder.union(river, lake);
+>>>>>>> 62d9da1 (we dont need the communist test (it's shit))
+
+                             */
                         } else {
-                            riverSystemBuilder.addSingleton(river, nbOpenings[river.localId()]);
+                            riverBuilder.addSingleton(river, nbOpenings[river.localId()]);
                         }
-                        riverBuilder.addSingleton(river, nbOpenings[river.localId()]);
+                        riverSystemBuilder.addSingleton(river, nbOpenings[river.localId()]);
                     }
                     default -> {}
+                }
+            }
+
+            for (Zone zone : tile.sideZones()) {
+                if (zone instanceof Zone.River river && river.hasLake()) {
+                    riverSystemBuilder.union(river, river.lake());
                 }
             }
         }
@@ -119,35 +147,6 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
          * @throws IllegalArgumentException si la sorte d'occupant donnée ne peut pas occuper une zone de la sorte donnée
          */
         public void addInitialOccupant(PlayerColor player, Occupant.Kind occupantKind, Zone occupiedZone) throws IllegalArgumentException {
-            /*
-            switch (occupantKind) {
-                case PAWN:
-                    switch (occupiedZone) {
-                        case Zone.Meadow m1:
-                            meadowBuilder.addInitialOccupant(m1, player);
-                            break;
-                        case Zone.Forest m1:
-                            forestBuilder.addInitialOccupant(m1, player);
-                            break;
-                        case Zone.Water m1:
-                            if (m1 instanceof Zone.River river) {
-                                riverBuilder.addInitialOccupant(river, player);
-                                break;
-                            }
-                            riverSystemBuilder.addInitialOccupant(m1, player);
-                            break;
-                    }
-                    break;
-                case HUT:
-                    if (occupiedZone instanceof Zone.Water m1) {
-                        riverSystemBuilder.addInitialOccupant(m1, player);
-                    } else {
-                        throw new IllegalArgumentException();
-                    }
-                    break;
-            }
-             */
-
             switch(occupiedZone) {
                 case Zone.Forest f1 when occupantKind == Occupant.Kind.PAWN
                     -> forestBuilder.addInitialOccupant(f1, player);
@@ -155,15 +154,6 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
                     -> meadowBuilder.addInitialOccupant(m1, player);
                 case Zone.River r1 when occupantKind == Occupant.Kind.PAWN
                     -> riverBuilder.addInitialOccupant(r1, player);
-                        /*
-                    -> {
-                        if (water instanceof Zone.River river) {
-                            riverBuilder.addInitialOccupant(river, player);
-                            //riverSystemBuilder.addInitialOccupant(water, player);
-                        }
-                }
-
-                         */
                 case Zone.Water water when occupantKind == Occupant.Kind.HUT
                     -> riverSystemBuilder.addInitialOccupant(water, player);
                 default -> throw new IllegalArgumentException();
@@ -171,7 +161,7 @@ public record ZonePartitions(ZonePartition<Zone.Forest> forests, ZonePartition<Z
         }
 
         /**
-         * supprime un occupant (un pion) appartenant au joueur donné de l'aire contenant la zone donnée
+         * Supprime un occupant (un pion) appartenant au joueur donné de l'aire contenant la zone donnée
          * ou lève IllegalArgumentException si la zone est un lac
          *
          * @param player

@@ -26,9 +26,11 @@ public final class Board {
     private final Set<Animal> cancelledAnimals;
 
     public static final int REACH = 12;
-    public static final Board EMPTY = new Board(new PlacedTile[625], new int[96], ZonePartitions.EMPTY, new HashSet<>());
+    public static final Board EMPTY = new Board(new PlacedTile[625], new int[96], ZonePartitions.EMPTY,
+            new HashSet<>());
 
-    public Board(PlacedTile[] placedTiles, int[] placedTileIndices, ZonePartitions boardPartitions, Set<Animal> cancelledAnimals) {
+    public Board(PlacedTile[] placedTiles, int[] placedTileIndices, ZonePartitions boardPartitions,
+                 Set<Animal> cancelledAnimals) {
         this.placedTiles = placedTiles;
         this.placedTileIndices = placedTileIndices;
         this.boardPartitions = boardPartitions;
@@ -79,7 +81,8 @@ public final class Board {
      * @return ensemble des animaux annulés
      */
     public Set<Animal> cancelledAnimals() {
-        return Collections.unmodifiableSet(cancelledAnimals); //permet de retourner le set immodifiable sans faire de copies
+        //permet de retourner le set immodifiable sans faire de copies
+        return Collections.unmodifiableSet(cancelledAnimals);
     }
 
     /**
@@ -381,7 +384,8 @@ public final class Board {
                     tile.zoneWithId(tile.occupant().zoneId()));
         }
 
-        return new Board(updatedPlacedTiles, updatedPlacedTileIndices, boardPartitionsBuilder.build(), cancelledAnimals());
+        return new Board(updatedPlacedTiles, updatedPlacedTileIndices,
+                boardPartitionsBuilder.build(), cancelledAnimals());
     }
 
     /**
@@ -414,12 +418,12 @@ public final class Board {
 
         PlacedTile tile = tileWithId(id / 10);
         PlacedTile[] updatedPlacedTiles = placedTiles.clone();
-        updatedPlacedTiles[getIndexOfTile(tile)] = tile;
+        updatedPlacedTiles[getIndexOfTile(tile)] = tile.withNoOccupant();
 
         ZonePartitions.Builder updatedPartition = new ZonePartitions.Builder(boardPartitions);
         updatedPartition.removePawn(tile.placer(), tile.zoneWithId(id));
 
-        return new Board(updatedPlacedTiles, placedTileIndices, updatedPartition.build(), cancelledAnimals);
+        return new Board(updatedPlacedTiles, placedTileIndices.clone(), updatedPartition.build(), cancelledAnimals());
     }
 
     /**
@@ -437,7 +441,8 @@ public final class Board {
         });
 
         final Set<Area<Forest>> boardForestAreas = boardPartitions.forests().areas();
-        Set<Area<Forest>> newForests = boardForestAreas.stream().filter(forest -> !forests.contains(forest)).collect(Collectors.toSet());
+        Set<Area<Forest>> newForests = boardForestAreas.stream().filter(forest ->
+                !forests.contains(forest)).collect(Collectors.toSet());
         newForests.addAll(forestsWithoutOccupants);
 
         // Take care of Rivers
@@ -447,11 +452,13 @@ public final class Board {
         });
 
         final Set<Area<River>> boardRiverAreas = boardPartitions.rivers().areas();
-        Set<Area<River>> newRivers = boardRiverAreas.stream().filter(river -> !rivers.contains(river)).collect(Collectors.toSet());
+        Set<Area<River>> newRivers = boardRiverAreas.stream().filter(river ->
+                !rivers.contains(river)).collect(Collectors.toSet());
         newRivers.addAll(riversWithoutOccupants);
 
         // Rebuild partitions
-        ZonePartitions updatedPartitions = new ZonePartitions(new ZonePartition<>(newForests), boardPartitions.meadows(), new ZonePartition<>(newRivers), boardPartitions.riverSystems());
+        ZonePartitions updatedPartitions = new ZonePartitions(new ZonePartition<>(newForests),
+                boardPartitions.meadows(), new ZonePartition<>(newRivers), boardPartitions.riverSystems());
 
         return new Board(placedTiles, placedTileIndices, updatedPartitions, cancelledAnimals);
     }
@@ -467,14 +474,17 @@ public final class Board {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Board board = (Board) o;
-        return Arrays.equals(placedTiles, board.placedTiles) && Arrays.equals(placedTileIndices, board.placedTileIndices) && Objects.equals(boardPartitions, board.boardPartitions);
+        return Arrays.equals(placedTiles, board.placedTiles)
+                && Arrays.equals(placedTileIndices, board.placedTileIndices)
+                && Objects.equals(boardPartitions, board.boardPartitions)
+                && Objects.equals(cancelledAnimals, board.cancelledAnimals);
     }
 
     @Override
     public int hashCode() {
         final int firstDigit = Arrays.hashCode(placedTiles);
         final int secondDigit = Arrays.hashCode(placedTileIndices);
-        return Objects.hash(firstDigit, secondDigit, boardPartitions, cancelledAnimals);
+        return Objects.hash(firstDigit, secondDigit, boardPartitions, cancelledAnimals());
     }
 
     private int getIndexOfTile(PlacedTile tile) {
