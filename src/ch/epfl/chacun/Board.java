@@ -46,7 +46,7 @@ public final class Board {
     public PlacedTile tileAt(Pos pos) {
         if (pos.x() >= -12 && pos.x() <= 12
                 && pos.y() >= -12 && pos.y() <= 12) {
-            pos.translated(REACH, REACH);
+            pos = pos.translated(REACH, REACH);
             int index = pos.x() + 25 * pos.y();
             return placedTiles[index];
         }
@@ -66,7 +66,7 @@ public final class Board {
      */
     public PlacedTile tileWithId(int tileId) {
         for (int index : placedTileIndices) {
-            if (placedTiles[index].id() == tileId) {
+            if (placedTiles[index] != null && placedTiles[index].id() == tileId) {
                 return placedTiles[index];
             }
         }
@@ -326,8 +326,8 @@ public final class Board {
         if (!insertionPositions().contains(tile.pos())) return false;
 
         for (Direction direction : Direction.values()) {
-            if (tileAt(placedTilePos.neighbor(direction)) != null) continue;
-            if (Objects.requireNonNull(tileAt(placedTilePos.neighbor(direction))).side(direction.opposite())
+            if (tileAt(placedTilePos.neighbor(direction)) == null) continue;
+            if (tileAt(placedTilePos.neighbor(direction)).side(direction.opposite())
                     .isSameKindAs(tile.side(direction))) {
                 return true;
             }
