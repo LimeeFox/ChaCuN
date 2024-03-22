@@ -26,7 +26,7 @@ public final class Board {
     private final Set<Animal> cancelledAnimals;
 
     public static final int REACH = 12;
-    public static final Board EMPTY = new Board(new PlacedTile[625], new int[96], ZonePartitions.EMPTY,
+    public static final Board EMPTY = new Board(new PlacedTile[625], new int[0], ZonePartitions.EMPTY,
             new HashSet<>());
 
     public Board(PlacedTile[] placedTiles, int[] placedTileIndices, ZonePartitions boardPartitions,
@@ -325,17 +325,19 @@ public final class Board {
      *          tuile qui un bord de tuile déjà posée est de la mêmê sorte que lui
      */
     public boolean canAddTile(PlacedTile tile) {
-        Pos placedTilePos = tile.pos();
-        if (!insertionPositions().contains(placedTilePos)) return false;
 
-        for (Direction direction : Direction.values()) {
-            if (tileAt(placedTilePos.neighbor(direction)) == null) continue;
-            if (Objects.requireNonNull(tileAt(placedTilePos.neighbor(direction))).side(direction.opposite())
-                    .isSameKindAs(tile.side(direction))) {
-                return true;
+        Pos placedTilePos = tile.pos();
+        if (!insertionPositions().contains(placedTilePos)) {
+            //all neighbours must be valid, otherwise false
+            //only if neighbours
+            for (Direction direction : Direction.ALL) {
+                PlacedTile neighbour = tileAt(placedTilePos.neighbor(direction));
+                if (neighbour != null && !neighbour.side(direction.opposite()).isSameKindAs(tile.side(direction))) {
+                    return false;
+                }
             }
         }
-        return false;
+        return true;
     }
 
     /**
