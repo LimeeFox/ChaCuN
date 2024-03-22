@@ -223,9 +223,18 @@ public class MyBoardTest {
 
  */
 
+
     @Test
     void adjacentMeadow() {
         Board board = Board.EMPTY;
+
+        PlacedTile tile1 = new PlacedTile(tile56, null, Rotation.NONE, Pos.ORIGIN);
+        PlacedTile tile2 = new PlacedTile(tile17, PlayerColor.RED, Rotation.NONE, new Pos(-1, 0));
+
+        board.withNewTile(tile1);
+        board.withNewTile(tile2);
+
+        board.adjacentMeadow(Pos.ORIGIN, m1);
     }
 
     @Test
