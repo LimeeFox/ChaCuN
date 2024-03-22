@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class OurBoardTest {
 
-    /*
     List<Animal> animal1 = new ArrayList<>(Collections.singletonList(new Animal(5600, Animal.Kind.AUROCHS)));
     List<Animal> animal2 = new ArrayList<>(Collections.singletonList(new Animal(1720, Animal.Kind.DEER)));
     List<Animal> animal3 = new ArrayList<>(Collections.singletonList(new Animal(1740, Animal.Kind.TIGER)));
@@ -171,7 +170,7 @@ class OurBoardTest {
             .withNewTile(new PlacedTile(copyTile(tile56), PlayerColor.RED, LEFT, new Pos(-1, -1)));
 
 
-     */
+
     @Test
     void tileAt() {
         int[] placedTileIndices = new int[5];
