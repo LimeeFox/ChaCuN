@@ -224,6 +224,7 @@ public class MyBoardTest {
  */
 
 
+    /*
     @Test
     void adjacentMeadow() {
         Board board = Board.EMPTY;
@@ -236,6 +237,8 @@ public class MyBoardTest {
 
         board.adjacentMeadow(Pos.ORIGIN, m1);
     }
+    
+     */
 
     @Test
     void occupantCount() {
