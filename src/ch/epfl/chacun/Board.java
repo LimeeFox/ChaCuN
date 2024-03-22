@@ -364,7 +364,7 @@ public final class Board {
     public int hashCode() {
         final int firstDigit = Arrays.hashCode(placedTiles);
         final int secondDigit = Arrays.hashCode(placedTileIndices);
-        return Objects.hash(firstDigit, secondDigit);
+        return Objects.hash(firstDigit, secondDigit, boardPartitions, cancelledAnimals);
     }
 
     private int getIndexOfTile(PlacedTile tile) {
