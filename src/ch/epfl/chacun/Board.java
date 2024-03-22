@@ -323,7 +323,7 @@ public final class Board {
      */
     public boolean canAddTile(PlacedTile tile) {
         Pos placedTilePos = tile.pos();
-        if (!insertionPositions().contains(tile.pos())) return false;
+        if (!insertionPositions().contains(placedTilePos)) return false;
 
         for (Direction direction : Direction.values()) {
             if (tileAt(placedTilePos.neighbor(direction)) == null) continue;
