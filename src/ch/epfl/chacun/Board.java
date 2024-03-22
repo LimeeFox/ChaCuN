@@ -457,8 +457,8 @@ public final class Board {
         newRivers.addAll(riversWithoutOccupants);
 
         // Rebuild partitions
-        ZonePartitions updatedPartitions = new ZonePartitions(new ZonePartition<>(newForests), boardPartitions.meadows(),
-                new ZonePartition<>(newRivers), boardPartitions.riverSystems());
+        ZonePartitions updatedPartitions = new ZonePartitions(new ZonePartition<>(newForests),
+                boardPartitions.meadows(), new ZonePartition<>(newRivers), boardPartitions.riverSystems());
 
         return new Board(placedTiles, placedTileIndices, updatedPartitions, cancelledAnimals);
     }
