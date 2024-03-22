@@ -303,9 +303,9 @@ public final class Board {
      */
     public Set<Area<River>> riversClosedByLastTile() {
         if (!this.equals(EMPTY)) {
-            PlacedTile lasPlacedTile = lastPlacedTile();
-            if(lasPlacedTile != null) {
-                Set<River> riverZones = new HashSet<>(lasPlacedTile.riverZones());
+            PlacedTile lastPlacedTile = lastPlacedTile();
+            if(lastPlacedTile != null) {
+                Set<River> riverZones = new HashSet<>(lastPlacedTile.riverZones());
 
                 return boardPartitions.rivers().areas().stream()
                         .filter(riverArea -> riverArea.zones().containsAll(riverZones))
@@ -328,8 +328,6 @@ public final class Board {
 
         Pos placedTilePos = tile.pos();
         if (!insertionPositions().contains(placedTilePos)) {
-            //all neighbours must be valid, otherwise false
-            //only if neighbours
             for (Direction direction : Direction.ALL) {
                 PlacedTile neighbour = tileAt(placedTilePos.neighbor(direction));
                 if (neighbour != null && !neighbour.side(direction.opposite()).isSameKindAs(tile.side(direction))) {
@@ -348,10 +346,17 @@ public final class Board {
      * @return vrai si la tuile donnée peut être placée sur le plateau, possiblement après rotation, et faux sinon
      */
     public boolean couldPlaceTile(Tile tile) {
-        return insertionPositions().stream()
-                .flatMap(pos -> Rotation.ALL.stream()
-                        .map(rotation -> canAddTile(new PlacedTile(tile, null, rotation, pos))))
-                .anyMatch(valid -> valid);
+        if (!this.equals(EMPTY)) {
+            for (Pos position : insertionPositions()) {
+                for (Rotation rotation : Rotation.ALL) {
+                    if (canAddTile(new PlacedTile(tile, null, rotation, position, null))) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        return true;
     }
 
     /**
