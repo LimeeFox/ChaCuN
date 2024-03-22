@@ -178,10 +178,10 @@ public final class Board {
 
         for (int x = -1; x <= 1; x++) {
             for (int y = -1; y <= 1; y++) {
-                PlacedTile tile = tileAt(pos.translated(x, y););
+                PlacedTile tile = tileAt(pos.translated(x, y));
 
                 if (tile != null) {
-                    Set<Meadow> meadows = Objects.requireNonNull(tile).meadowZones();
+                    Set<Meadow> meadows = Objects.requireNonNull(tile.meadowZones());
                     allNeighbourMeadowZones.addAll(meadows);
                 }
             }
