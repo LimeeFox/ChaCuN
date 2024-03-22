@@ -210,18 +210,10 @@ public class MyBoardTest {
     }
 
 
-    @Test
-    void adjacentMeadow() {
-    }
 
 
-    @Test
-    void occupantCount() {
-        assertEquals(board56.occupantCount(PlayerColor.RED, Occupant.Kind.HUT), 0);
-        assertEquals(board_many.occupantCount(PlayerColor.RED, Occupant.Kind.HUT), 1);
 
 
-    }
 
     @Test
     void insertionPositions() {
@@ -230,6 +222,17 @@ public class MyBoardTest {
     }
 
  */
+
+    @Test
+    void adjacentMeadow() {
+        Board board = Board.EMPTY;
+    }
+
+    @Test
+    void occupantCount() {
+        //assertEquals(board56.occupantCount(PlayerColor.RED, Occupant.Kind.HUT), 0);
+        //assertEquals(board_many.occupantCount(PlayerColor.RED, Occupant.Kind.HUT), 1);
+    }
 
     @Test
     void lastPlacedTile() {

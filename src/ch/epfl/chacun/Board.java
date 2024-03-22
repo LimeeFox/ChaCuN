@@ -29,7 +29,7 @@ public final class Board {
     public static final Board EMPTY = new Board(new PlacedTile[625], new int[0], ZonePartitions.EMPTY,
             new HashSet<>());
 
-    public Board(PlacedTile[] placedTiles, int[] placedTileIndices, ZonePartitions boardPartitions,
+    private Board(PlacedTile[] placedTiles, int[] placedTileIndices, ZonePartitions boardPartitions,
                  Set<Animal> cancelledAnimals) {
         this.placedTiles = placedTiles;
         this.placedTileIndices = placedTileIndices;
