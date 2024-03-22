@@ -323,14 +323,13 @@ public final class Board {
      */
     public boolean canAddTile(PlacedTile tile) {
         Pos placedTilePos = tile.pos();
-        if (insertionPositions().contains(tile.pos())) {
-            for (Direction direction : Direction.values()) {
-                if (tileAt(placedTilePos.neighbor(direction)) != null) {
-                    if (Objects.requireNonNull(tileAt(placedTilePos.neighbor(direction))).side(direction.opposite())
-                            .isSameKindAs(tile.side(direction))) {
-                        return true;
-                    }
-                }
+        if (!insertionPositions().contains(tile.pos())) return false;
+
+        for (Direction direction : Direction.values()) {
+            if (tileAt(placedTilePos.neighbor(direction)) != null) continue;
+            if (Objects.requireNonNull(tileAt(placedTilePos.neighbor(direction))).side(direction.opposite())
+                    .isSameKindAs(tile.side(direction))) {
+                return true;
             }
         }
         return false;
@@ -358,7 +357,7 @@ public final class Board {
      * @return un nouveau plateau identique au récepteur, avec la tuile placée donnée
      */
     public Board withNewTile(PlacedTile tile) {
-        Preconditions.checkArgument(!this.equals(EMPTY) && canAddTile(tile));
+        Preconditions.checkArgument(this.equals(EMPTY) || canAddTile(tile));
 
         int tileIndex = getIndexOfTile(tile);
 
