@@ -168,16 +168,47 @@ public final class Board {
         //@todo
     }
 
+    /**
+     *
+     * @param player
+     * @param occupantKind
+     * @return
+     */
     public int occupantCount(PlayerColor player, Occupant.Kind occupantKind) {
+        /*
+        final int[] playerCount = new int[1];
         List<PlacedTile> tiles = Arrays.stream(placedTiles).toList();
 
-        Predicate<PlayerColor> playerFilter = playerColor -> !(playerColor == player);
         Predicate<Area<Meadow>> meadowAreaFilter = meadowArea -> meadowArea.occupants() != null;
+        Predicate<PlayerColor> playerFilter = playerColor -> !(playerColor == player);
+
         //Predicate<Meadow> meadowZoneFilter = meadowZone -> meadowZone.
 
         boardPartitions.meadows().areas().stream().filter(meadowAreaFilter).forEach(area -> {
-            area.occupants().stream().filter(playerFilter);
+            area.occupants().stream().filter(playerFilter).forEach(playerColor -> {
+                playerCount[0]++;
+            });
         });
+
+        Predicate<Area<Forest>> forestAreaFilter = forestArea -> forestArea.occupants() != null;
+
+        boardPartitions.forests().areas().stream().filter(forestAreaFilter).forEach(area -> {
+            area.occupants().stream().filter(playerFilter).forEach(playerColor -> {
+                playerCount[0]++;
+            });
+        });
+
+        boardPartitions.
+
+        return playerCount[0];
+
+         */
+
+        long occupants = Arrays.stream(placedTileIndices)
+                .mapToObj(index -> placedTiles[index])
+                .filter(tile -> tile.placer() == player && tile.occupant().kind() == occupantKind)
+                .count();
+        return (int) occupants;
     }
 
     /**
@@ -288,8 +319,23 @@ public final class Board {
 
     }
 
+    /**
+     *
+     *
+     * @param occupant
+     * @return
+     */
     public Board withOccupant(Occupant occupant) {
+        final int id = occupant.zoneId();
 
+        PlacedTile tile = tileWithId(id / 10);
+        PlacedTile[] updatedPlacedTiles = placedTiles.clone();
+        updatedPlacedTiles[getIndexOfTile(tile)] = tile;
+
+        ZonePartitions.Builder updatedPartition = new ZonePartitions.Builder(boardPartitions);
+        updatedPartition.addInitialOccupant(tile.placer(), occupant.kind(), tile.zoneWithId(id));
+
+        return new Board(updatedPlacedTiles, placedTileIndices, updatedPartition.build(), cancelledAnimals);
     }
 
     public Board withoutOccupant(Occupant occupant) {
@@ -319,5 +365,11 @@ public final class Board {
         final int firstDigit = Arrays.hashCode(placedTiles);
         final int secondDigit = Arrays.hashCode(placedTileIndices);
         return Objects.hash(firstDigit, secondDigit);
+    }
+
+    private int getIndexOfTile(PlacedTile tile) {
+        final Pos tilePos = tile.pos().translated(REACH, REACH);
+
+        return tilePos.x() + 25 * tilePos.y();
     }
 }
