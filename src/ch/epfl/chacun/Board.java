@@ -327,7 +327,7 @@ public final class Board {
 
         for (Direction direction : Direction.values()) {
             if (tileAt(placedTilePos.neighbor(direction)) == null) continue;
-            if (tileAt(placedTilePos.neighbor(direction)).side(direction.opposite())
+            if (Objects.requireNonNull(tileAt(placedTilePos.neighbor(direction))).side(direction.opposite())
                     .isSameKindAs(tile.side(direction))) {
                 return true;
             }
