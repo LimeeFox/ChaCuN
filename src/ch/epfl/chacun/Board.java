@@ -334,8 +334,9 @@ public final class Board {
                     return false;
                 }
             }
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**
