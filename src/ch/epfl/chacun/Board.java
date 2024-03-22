@@ -328,14 +328,14 @@ public final class Board {
         if (insertionPositions().contains(tile.pos())) {
             for (Direction direction : Direction.values()) {
                 if (tileAt(placedTilePos.neighbor(direction)) != null) {
-                    if (!Objects.requireNonNull(tileAt(placedTilePos.neighbor(direction))).side(direction.opposite())
+                    if (Objects.requireNonNull(tileAt(placedTilePos.neighbor(direction))).side(direction.opposite())
                             .isSameKindAs(tile.side(direction))) {
-                        return false;
+                        return true;
                     }
                 }
             }
         }
-        return true;
+        return false;
     }
 
     /**
