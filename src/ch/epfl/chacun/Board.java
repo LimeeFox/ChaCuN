@@ -104,7 +104,7 @@ public final class Board {
      * @param forest
      * @return l'aire avec la zone de forêt donnée, si elle existe
      */
-    public Area<Zone.Forest> forestArea(Zone.Forest forest) {
+    public Area<Forest> forestArea(Forest forest) {
         return boardPartitions.forests().areaContaining(forest);
     }
 
@@ -114,7 +114,7 @@ public final class Board {
      * @param meadow
      * @return l'aire avec la zone de pré donnée, si elle existe
      */
-    public Area<Zone.Meadow> meadowArea(Zone.Meadow meadow) {
+    public Area<Meadow> meadowArea(Meadow meadow) {
         return boardPartitions.meadows().areaContaining(meadow);
     }
 
@@ -124,7 +124,7 @@ public final class Board {
      * @param riverZone
      * @return l'aire avec la zone de rivière donnée, si elle existe
      */
-    public Area<Zone.River> riverArea(Zone.River riverZone) {
+    public Area<River> riverArea(River riverZone) {
         return boardPartitions.rivers().areaContaining(riverZone);
     }
 
@@ -143,7 +143,7 @@ public final class Board {
      *
      * @return l'ensemble de toutes les aires du type pré
      */
-    public Set<Area<Zone.Meadow>> meadowAreas() {
+    public Set<Area<Meadow>> meadowAreas() {
         return boardPartitions.meadows().areas();
     }
 
@@ -162,11 +162,37 @@ public final class Board {
      * et qui, pour simplifier, ne possède aucune connexion ouverte
      *
      * @param pos
+     *          position de la tuile centrale des prés adjacents
      * @param meadowZone
-     * @return aire de pré
+     *          zone centrale des prés adjacents
+     * @return aire de prés adjacents à la zone de type pré donnée
      */
-    public Area<Zone.Meadow> adjacentMeadow(Pos pos, Zone.Meadow meadowZone) {
-        //@todo
+    public Area<Meadow> adjacentMeadow(Pos pos, Meadow meadowZone) {
+        ZonePartition<Meadow> meadowZonePartition = boardPartitions.meadows();
+
+        Area<Meadow> validMeadowArea = meadowZonePartition.areaContaining(meadowZone);
+
+        Set<Meadow> allNeighbourMeadowZones = new HashSet<>();
+
+        Set<Meadow> adjacentMeadowZones = new HashSet<>();
+
+        for (int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) {
+                PlacedTile tile = tileAt(pos.translated(x, y););
+
+                if (tile != null) {
+                    Set<Meadow> meadows = Objects.requireNonNull(tile).meadowZones();
+                    allNeighbourMeadowZones.addAll(meadows);
+                }
+            }
+        }
+
+        allNeighbourMeadowZones.stream()
+                .filter(zone -> validMeadowArea.zones().contains(zone))
+                .forEach(adjacentMeadowZones::add);
+
+
+        return new Area<>(adjacentMeadowZones, validMeadowArea.occupants(), 0);
     }
 
     /**
@@ -254,7 +280,7 @@ public final class Board {
      *
      * @return l'ensemble des aires de type forêt fermées par la dernière tuile placée sur le plateau
      */
-    public Set<Area<Zone.Forest>> forestsClosedByLastTile() {
+    public Set<Area<Forest>> forestsClosedByLastTile() {
         if (!this.equals(EMPTY)) {
             PlacedTile lastPlacedTile = lastPlacedTile();
             if (lastPlacedTile != null) {
@@ -274,11 +300,11 @@ public final class Board {
      *
      * @return l'ensemble des aires de type rivière fermées par la dernière tuile placée sur le plateau
      */
-    public Set<Area<Zone.River>> riversClosedByLastTile() {
+    public Set<Area<River>> riversClosedByLastTile() {
         if (!this.equals(EMPTY)) {
             PlacedTile lasPlacedTile = lastPlacedTile();
             if(lasPlacedTile != null) {
-                Set<Zone.River> riverZones = new HashSet<>(lasPlacedTile.riverZones());
+                Set<River> riverZones = new HashSet<>(lasPlacedTile.riverZones());
 
                 return boardPartitions.rivers().areas().stream()
                         .filter(riverArea -> riverArea.zones().containsAll(riverZones))
