@@ -362,10 +362,10 @@ public final class Board {
     }
 
     /**
+     * Obtenir un plateau qui rajoute l'occupent à la zone qui correspond à son ID
      *
-     *
-     * @param occupant
-     * @return
+     * @param occupant occupent à rajouter
+     * @return un plateau identique au récepteur, mais avec l'occupant donné en plus
      */
     public Board withOccupant(Occupant occupant) {
         final int id = occupant.zoneId();
@@ -380,12 +380,57 @@ public final class Board {
         return new Board(updatedPlacedTiles, placedTileIndices, updatedPartition.build(), cancelledAnimals);
     }
 
+    /**
+     * Obtenir un plateau qui enlève l'occupent à la zone qui correspond à son ID
+     *
+     * @param occupant l'occupent à enlever
+     * @return un plateau identique au récepteur, mais avec l'occupant donné en moins
+     */
     public Board withoutOccupant(Occupant occupant) {
+        final int id = occupant.zoneId();
 
+        PlacedTile tile = tileWithId(id / 10);
+        PlacedTile[] updatedPlacedTiles = placedTiles.clone();
+        updatedPlacedTiles[getIndexOfTile(tile)] = tile;
+
+        ZonePartitions.Builder updatedPartition = new ZonePartitions.Builder(boardPartitions);
+        updatedPartition.removePawn(tile.placer(), tile.zoneWithId(id));
+
+        return new Board(updatedPlacedTiles, placedTileIndices, updatedPartition.build(), cancelledAnimals);
     }
 
+    /**
+     * 
+     *
+     * @param forests
+     * @param rivers
+     * @return un plateau identique au récepteur mais sans aucun occupant dans les forêts et les rivières données
+     */
     public Board withoutGatherersOrFishersIn(Set<Area<Forest>> forests, Set<Area<River>> rivers) {
+        // Take care of Forests
+        Set<Area<Forest>> forestsWithoutOccupants = new HashSet<>();
+        forests.forEach(forest -> {
+            forestsWithoutOccupants.add(forest.withoutOccupants());
+        });
 
+        final Set<Area<Forest>> boardForestAreas = boardPartitions.forests().areas();
+        Set<Area<Forest>> newForests = boardForestAreas.stream().filter(forest -> !forests.contains(forest)).collect(Collectors.toSet());
+        newForests.addAll(forestsWithoutOccupants);
+
+        // Take care of Rivers
+        Set<Area<River>> riversWithoutOccupants = new HashSet<>();
+        rivers.forEach(river -> {
+            riversWithoutOccupants.add(river.withoutOccupants());
+        });
+
+        final Set<Area<River>> boardRiverAreas = boardPartitions.rivers().areas();
+        Set<Area<River>> newRivers = boardRiverAreas.stream().filter(river -> !rivers.contains(river)).collect(Collectors.toSet());
+        newRivers.addAll(riversWithoutOccupants);
+
+        // Rebuild partitions
+        ZonePartitions updatedPartitions = new ZonePartitions(new ZonePartition<>(newForests), boardPartitions.meadows(), new ZonePartition<>(newRivers), boardPartitions.riverSystems());
+
+        return new Board(placedTiles, placedTileIndices, updatedPartitions, cancelledAnimals);
     }
 
     public Board withMoreCancelledAnimals(Set<Animal> newlyCancelledAnimals) {
