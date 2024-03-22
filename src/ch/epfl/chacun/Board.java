@@ -23,14 +23,12 @@ public final class Board {
     private final PlacedTile[] placedTiles;
     private final int[] placedTileIndices;
     private final ZonePartitions boardPartitions;
-
     private final Set<Animal> cancelledAnimals;
 
     public static final int REACH = 12;
     public static final Board EMPTY = new Board(new PlacedTile[625], new int[96], ZonePartitions.EMPTY, new HashSet<>());
 
-    public Board(PlacedTile[] placedTiles, int[] placedTileIndices, ZonePartitions boardPartitions,
-                 Set<Animal> cancelledAnimals) {
+    public Board(PlacedTile[] placedTiles, int[] placedTileIndices, ZonePartitions boardPartitions, Set<Animal> cancelledAnimals) {
         this.placedTiles = placedTiles;
         this.placedTileIndices = placedTileIndices;
         this.boardPartitions = boardPartitions;
@@ -426,7 +424,7 @@ public final class Board {
     }
 
     /**
-     * 
+     * //todo
      *
      * @param forests
      * @param rivers
