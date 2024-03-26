@@ -6,7 +6,7 @@ import ch.epfl.chacun.PlayerColor;
 import java.util.Map;
 import java.util.Set;
 
-interface TextMaker {
+public interface TextMaker {
     /**
      * Retourne le nom du joueur de couleur donnée.
      * @param playerColor la couleur du joueur
