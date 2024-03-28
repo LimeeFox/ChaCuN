@@ -14,8 +14,7 @@ public record ZonePartitions(
         ZonePartition<Zone.Forest> forests,
         ZonePartition<Zone.Meadow> meadows,
         ZonePartition<Zone.River> rivers,
-        ZonePartition<Zone.Water> riverSystems
-) {
+        ZonePartition<Zone.Water> riverSystems) {
 
     public static final ZonePartitions EMPTY = new ZonePartitions(new ZonePartition<>(),
             new ZonePartition<>(),
