@@ -88,15 +88,13 @@ public final class Board {
     /**
      * Occupants présents sur le tableau
      *
-     * @return boardOccupants
-     *          la totalité des occupants présents sur le tableau
+     * @return la totalité des occupants présents sur le tableau
      */
     public Set<Occupant> occupants() {
-        Set<Occupant> boardOccupants = new HashSet<>();
-        for(int index : placedTileIndices) {
-            boardOccupants.add(placedTiles[index].occupant());
-        }
-        return boardOccupants;
+        return Arrays.stream(placedTileIndices)
+                .mapToObj(index -> placedTiles[index].occupant())
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -197,10 +195,12 @@ public final class Board {
     }
 
     /**
-     *
+     * Nombre d'occupants d'une même sorte placés par un même joueur sur le plateau
      * @param player
+     *          joueur auquel appartiennent les occupants
      * @param occupantKind
-     * @return
+     *          type d'occupant recherché
+     * @return le nombre d'occupants sur le plateau étant d'une même sorte et appartenant à un même joueur
      */
     public int occupantCount(PlayerColor player, Occupant.Kind occupantKind) {
         /*
@@ -234,7 +234,7 @@ public final class Board {
 
         long occupants = Arrays.stream(placedTileIndices)
                 .mapToObj(index -> placedTiles[index])
-                .filter(tile -> tile.placer() == player && tile.occupant().kind() == occupantKind)
+                .filter(tile -> tile.placer() == player && tile.occupant() != null && tile.occupant().kind() == occupantKind)
                 .count();
         return (int) occupants;
     }
@@ -244,24 +244,26 @@ public final class Board {
      *
      * @return l'ensemble des positions du plateau sur lesquels les joueurs peuvent placer des tuiles
      */
-    //@todo review this goofy ahh code
     public Set<Pos> insertionPositions() {
-        Set<Pos> positions = new HashSet<>();
+        Set<Pos> validPositions = new HashSet<>();
         for (int index : placedTileIndices) {
-            Pos placedTilePos = new Pos(index % 25, index / 25);
+            PlacedTile tile = placedTiles[index];
+
+            Pos placedTilePos = tile.pos();
 
             Predicate<Pos> isValidPosition = pos -> {
                 int x = pos.x();
                 int y = pos.y();
-                return x >= -12 && x <= 12 && y >= -12 && y <= 12;
+                return x >= -12 && x <= 12 && y >= -12 && y <= 12 && tileAt(pos) == null;
             };
 
             Arrays.stream(Direction.values())
                     .map(placedTilePos::neighbor)
                     .filter(isValidPosition)
-                    .forEach(positions::add);
+                    .forEach(validPositions::add);
         }
-        return positions;
+
+        return validPositions;
     }
 
     /**
@@ -288,7 +290,7 @@ public final class Board {
                 Set<Forest> forestZones = new HashSet<>(lastPlacedTile.forestZones());
 
                 return boardPartitions.forests().areas().stream()
-                        .filter(forestArea -> forestArea.zones().containsAll(forestZones))
+                        .filter(forestArea -> forestArea.zones().stream().anyMatch(forestZones::contains))
                         .filter(Area::isClosed)
                         .collect(Collectors.toSet());
             }
@@ -308,7 +310,7 @@ public final class Board {
                 Set<River> riverZones = new HashSet<>(lastPlacedTile.riverZones());
 
                 return boardPartitions.rivers().areas().stream()
-                        .filter(riverArea -> riverArea.zones().containsAll(riverZones))
+                        .filter(riverArea -> riverArea.zones().stream().anyMatch(riverZones::contains))
                         .filter(Area::isClosed)
                         .collect(Collectors.toSet());
             }
@@ -327,14 +329,14 @@ public final class Board {
     public boolean canAddTile(PlacedTile tile) {
 
         Pos placedTilePos = tile.pos();
-        if (!insertionPositions().contains(placedTilePos)) {
+        Set<Pos> insertionPositions = insertionPositions();
+        if (insertionPositions.contains(placedTilePos) && !this.equals(EMPTY)) {
             for (Direction direction : Direction.ALL) {
                 PlacedTile neighbour = tileAt(placedTilePos.neighbor(direction));
-                if (neighbour != null && !neighbour.side(direction.opposite()).isSameKindAs(tile.side(direction))) {
-                    return false;
+                if (neighbour != null) {
+                    return neighbour.side(direction.opposite()).isSameKindAs(tile.side(direction));
                 }
             }
-            return true;
         }
         return false;
     }
@@ -495,9 +497,22 @@ public final class Board {
         return Objects.hash(firstDigit, secondDigit, boardPartitions, cancelledAnimals());
     }
 
+    /**
+     * Emplacement d'une tuile à une position donnée dans le tableau des tuiles du plateau
+     *
+     * @param tile
+     *          tuile placée
+     * @return l'indice de la tuile donnée dans placedTiles
+     */
     private int getIndexOfTile(PlacedTile tile) {
         final Pos tilePos = tile.pos().translated(REACH, REACH);
 
         return tilePos.x() + 25 * tilePos.y();
+    }
+
+    private Pos indexToPos(int index) {
+        int x = (index % 25) - REACH;
+        int y = (index / 25) - REACH;
+        return new Pos(x , y);
     }
 }
