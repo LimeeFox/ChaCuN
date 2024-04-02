@@ -166,6 +166,7 @@ public record GameState(
                 default -> {}
             }
         }
+        // @todo IF NEXT ACTION IS OCCUPY_TILE, THEN THE PLAYER ORDER SHOULD NOT CHANGE
 
 
         // @todo update players list with the last placer in the head
@@ -178,6 +179,26 @@ public record GameState(
         // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
         // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
         return new GameState(newPlayerOrder, tileDecks, tileToPlace, newBoard, newAction, messageBoard);
+    }
+
+    /**
+     * Gère toutes les transitions à partir de RETAKE_PAWN, en supprimant l'occupant donné, sauf s'il vaut null,
+     * ce qui indique que le joueur ne désire pas reprendre de pion
+     *
+     * @param occupant l'occupant à supprimer du Plateau du jeu
+     * @return le nouveau état du jeu, mis à jour.
+     * @throws IllegalArgumentException si la prochaine action n'est pas RETAKE_PAWN,
+     *                                  ou si l'occupant donné n'est ni null, ni un pion
+     */
+    public GameState withOccupantRemoved(Occupant occupant) {
+        Preconditions.checkArgument(nextAction != Action.RETAKE_PAWN ||
+                (occupant != null && occupant.kind() != Occupant.Kind.PAWN));
+
+        if (occupant != null) {
+            board.withoutOccupant(occupant);
+        }
+        //todo update messageboard
+        return new GameState(shiftAndGetPlayerList(), tileDecks, tileToPlace, board, Action.OCCUPY_TILE, messageBoard);
     }
 
 
