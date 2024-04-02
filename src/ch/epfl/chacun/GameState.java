@@ -120,35 +120,42 @@ public record GameState(
         Preconditions.checkArgument(nextAction != Action.PLACE_TILE || tile.occupant() != null);
 
         Board newBoard = board.withNewTile(tile);
+        final TileDecks newTileDecks = tileDecks.withTopTileDrawn(tile.kind());
+        Tile newTile = null;
 
         // @todo coder l'ajout des points, section 2.2, 2.3
-        Action newAction = Action.OCCUPY_TILE; //@todo c'est possible de ne pas pouvoir en placer, actually: 1) if player has no free occupants left, 2) if the area is alraedy occupied
-        List<PlayerColor> newPlayerOrder = shiftAndGetPlayerList();
+        Action newAction = Action.OCCUPY_TILE;//@todo c'est possible de ne pas pouvoir en placer, actually: 1) if player has no free occupants left, 2) if the area is alraedy occupied
+        List<PlayerColor> newPlayerList = players;
         Zone zone = tile.specialPowerZone();
 
-        // @todo update tile decks
         if (zone != null) {
+            final int freeOccupants = freeOccupantsCount(currentPlayer(), Occupant.Kind.PAWN);
             switch (zone) {
                 // Si le pouvoir spécial est SHAMAN && le joueur possède au moins un pion sur le plateau,
                 // alors il peut reprendre un pion
                 case Zone.Meadow meadow -> {
-                    final int freeOccupants = freeOccupantsCount(currentPlayer(), Occupant.Kind.PAWN);
-                    if (meadow.SpecialPower() == Zone.SpecialPower.SHAMAN &&
-                            freeOccupants != Occupant.occupantsCount(Occupant.Kind.PAWN)) {
-                        newAction = Action.RETAKE_PAWN;
+                    if (freeOccupants > 0) {
+                        if (meadow.SpecialPower() == Zone.SpecialPower.SHAMAN) {
+                            newAction = Action.RETAKE_PAWN;
+                        }
+                    } else if (freeOccupants == 0) {
+                        // Le joueur n'a plus de pions libres, donc l'action suivante sera forcément placer une
+                        // nouvelle tuile
+                        newTile = tileDecks.topTile(tile.kind());
+                        newAction = Action.PLACE_TILE;
+                        newPlayerList = shiftAndGetPlayerList();
                     }
                 }
                 // Le cas d'une forêt serait intéressent si elle contient un menhir
                 // car selon les règles du jeu, le joueur peut dans ce cas poser une deuxième tuile.
-                // On s'intéresse aussi à la zone forêt lorsqu'elles ferme une aire de forêts qui contient un menhir.
+                // On s'intéresse aussi à la zone forêt lorsqu'elle ferme une aire de forêt qui contient un menhir.
                 case Zone.Forest forest -> {
-                    // Si la zone ferme une aire de forêt avec un menhir, on s'arrête à là.
-                    Area<Zone.Forest> forestArea = board.forestArea(forest);
-                    if (forestArea.isClosed() && Area.hasMenhir(forestArea)) {
-                        newPlayerOrder = players;
-                        //@todo d'abord occupy_tile puis ensuite place_tile?
-                        break;
+                    if (freeOccupants == 0) {
+                        newAction = Action.PLACE_TILE;
                     }
+                    // Si la zone ferme une aire de forêt avec un menhir, on s'arrête à là. //@todo i think place_tile for menhirs should be called at withOccupant AH UNLESS IT HAS 0
+                    Area<Zone.Forest> forestArea = board.forestArea(forest);
+                    if (forestArea.isClosed() && Area.hasMenhir(forestArea)) break; //@todo check dans withNewOccupant that we dont play 3 times in a row xDDDD (pls help)
 
                     // Autrement, on regarde si la zone elle-même contient un menhir:
                     if (forest.kind() != Zone.Forest.Kind.WITH_MENHIR) break;
@@ -157,9 +164,10 @@ public record GameState(
 
                     // La vérification si-dessous permet d'assurer que le joueur ne joue pas 3 fois de suite.
                     PlayerColor lastPlacer = lastPlacedTile.placer();
-                    if (currentPlayer() != lastPlacer) {
-                        //@todo d'abord occupy_tile puis ensuite place_tile?
-                        newPlayerOrder = players;
+                    if (currentPlayer() == lastPlacer) {
+                        newTile = tileDecks.topTile(tile.kind());
+                        newPlayerList = shiftAndGetPlayerList();
+                        newAction = Action.PLACE_TILE;
                         break;
                     }
                 }
@@ -169,8 +177,6 @@ public record GameState(
         // @todo IF NEXT ACTION IS OCCUPY_TILE, THEN THE PLAYER ORDER SHOULD NOT CHANGE
 
 
-        // @todo update players list with the last placer in the head
-        // @todo update tileDecks with one tile less, and in case it's MENHIR then use an entirely different deck
         // @todo get a new tileToPlace
         // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
         // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
@@ -178,7 +184,7 @@ public record GameState(
         // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
         // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
         // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
-        return new GameState(newPlayerOrder, tileDecks, tileToPlace, newBoard, newAction, messageBoard);
+        return new GameState(newPlayerList, newTileDecks, newTile, newBoard, newAction, messageBoard);
     }
 
     /**
