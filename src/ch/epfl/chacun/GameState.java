@@ -122,7 +122,7 @@ public record GameState(
         Board newBoard = board.withNewTile(tile);
 
         // @todo coder l'ajout des points, section 2.2, 2.3
-        Action newAction = Action.OCCUPY_TILE; //@todo c'est possible de ne pas pouvoir en placer, actually
+        Action newAction = Action.OCCUPY_TILE; //@todo c'est possible de ne pas pouvoir en placer, actually: 1) if player has no free occupants left, 2) if the area is alraedy occupied
         List<PlayerColor> newPlayerOrder = shiftAndGetPlayerList();
         Zone zone = tile.specialPowerZone();
 
@@ -201,7 +201,29 @@ public record GameState(
         return new GameState(shiftAndGetPlayerList(), tileDecks, tileToPlace, board, Action.OCCUPY_TILE, messageBoard);
     }
 
+    /**
+     * Gère toutes les transitions à partir de OCCUPY_TILE en ajoutant l'occupant donné à la dernière tuile posée,
+     * sauf s'il vaut null, ce qui indique que le joueur ne désire pas placer d'occupant
+     *
+     * @param occupant l'occupant à rajouter à la dernière tuile posée
+     * @return le nouveau état du jeu, mis à jour.
+     * @throws IllegalArgumentException si la prochaine action n'est pas OCCUPY_TILE
+     */
+    public GameState withNewOccupant(Occupant occupant) {
+        Preconditions.checkArgument(nextAction != Action.OCCUPY_TILE);
 
+        //todo check if the last placer was the same player, in which case next action might be place tile, but it can also be end_game
+
+        if (occupant != null) {
+            PlacedTile lastPlacedTile = board.lastPlacedTile();
+            PlacedTile updatedLastPlacedTile;
+            if (lastPlacedTile != null) {
+                updatedLastPlacedTile = lastPlacedTile.withOccupant(occupant); //todo enft je ne sais pas comment faire pour update la tuile deja posee oops
+            }
+        }
+
+        return new GameState(players, tileDecks, tileToPlace, board, Action.PLACE_TILE, messageBoard); //todo update all fields
+    }
 
     /**
      * Décaler tous les joueurs d'un cran, pour que chacun puisse jouer à son tour, en sachant que
