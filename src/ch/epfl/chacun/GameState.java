@@ -1,9 +1,6 @@
 package ch.epfl.chacun;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  *
@@ -124,36 +121,85 @@ public record GameState(
 
         Board newBoard = board.withNewTile(tile);
 
-        // @todo coder l'ajout des points
-        Action newAction;
+        // @todo coder l'ajout des points, section 2.2, 2.3
+        Action newAction = Action.OCCUPY_TILE; //@todo c'est possible de ne pas pouvoir en placer, actually
+        List<PlayerColor> newPlayerOrder = shiftAndGetPlayerList();
         Zone zone = tile.specialPowerZone();
+
+        // @todo update tile decks
         if (zone != null) {
             switch (zone) {
+                // Si le pouvoir spécial est SHAMAN && le joueur possède au moins un pion sur le plateau,
+                // alors il peut reprendre un pion
                 case Zone.Meadow meadow -> {
-                    newAction = Action.RETAKE_PAWN;
+                    final int freeOccupants = freeOccupantsCount(currentPlayer(), Occupant.Kind.PAWN);
+                    if (meadow.SpecialPower() == Zone.SpecialPower.SHAMAN &&
+                            freeOccupants != Occupant.occupantsCount(Occupant.Kind.PAWN)) {
+                        newAction = Action.RETAKE_PAWN;
+                    }
                 }
-                // Le cas d'une forêt serait intéressent si et seulement si elle contient un menhir
+                // Le cas d'une forêt serait intéressent si elle contient un menhir
+                // car selon les règles du jeu, le joueur peut dans ce cas poser une deuxième tuile.
+                // On s'intéresse aussi à la zone forêt lorsqu'elles ferme une aire de forêts qui contient un menhir.
                 case Zone.Forest forest -> {
+                    // Si la zone ferme une aire de forêt avec un menhir, on s'arrête à là.
+                    Area<Zone.Forest> forestArea = board.forestArea(forest);
+                    if (forestArea.isClosed() && Area.hasMenhir(forestArea)) {
+                        newPlayerOrder = players;
+                        //@todo d'abord occupy_tile puis ensuite place_tile?
+                        break;
+                    }
+
+                    // Autrement, on regarde si la zone elle-même contient un menhir:
                     if (forest.kind() != Zone.Forest.Kind.WITH_MENHIR) break;
                     PlacedTile lastPlacedTile = board.lastPlacedTile();
                     if (lastPlacedTile == null) break;
-                    if (players.getFirst() != lastPlacedTile.placer()) {
-                        newAction = Action.PLACE_TILE;
+
+                    // La vérification si-dessous permet d'assurer que le joueur ne joue pas 3 fois de suite.
+                    PlayerColor lastPlacer = lastPlacedTile.placer();
+                    if (currentPlayer() != lastPlacer) {
+                        //@todo d'abord occupy_tile puis ensuite place_tile?
+                        newPlayerOrder = players;
+                        break;
                     }
                 }
-                default -> {
-                    //help
-                }
+                default -> {}
             }
         }
+
 
         // @todo update players list with the last placer in the head
         // @todo update tileDecks with one tile less, and in case it's MENHIR then use an entirely different deck
         // @todo get a new tileToPlace
-        // @todo
-        return new GameState(players, tileDecks, tileToPlace, newBoard, newAction, messageBoard);
+        // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
+        // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
+        // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
+        // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
+        // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
+        // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
+        return new GameState(newPlayerOrder, tileDecks, tileToPlace, newBoard, newAction, messageBoard);
     }
 
+
+
+    /**
+     * Décaler tous les joueurs d'un cran, pour que chacun puisse jouer à son tour, en sachant que
+     * celui qui est en tête de la liste est celui qui joue actuellement
+     *
+     * @return la liste de tous les joueurs de la partie, dans l'ordre dans lequel ils doivent jouer
+     *         donc avec le joueur courant en tête de liste
+     */
+    private List<PlayerColor> shiftAndGetPlayerList() {
+        List<PlayerColor> playerList = new ArrayList<>(players);
+        List<PlayerColor> newList = new ArrayList<>();
+
+        newList.add(playerList.getLast());
+
+        playerList.removeLast();
+        newList.addAll(playerList);
+
+        return newList;
+    }
 
 
 
