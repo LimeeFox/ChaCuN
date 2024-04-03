@@ -76,8 +76,9 @@ public record GameState(
      * @return le nombre d'occupants libres, c.-à-d. qui ne sont pas actuellement placés
      *         sur le plateau de jeu du type donné et appartenant au joueur donné
      */
+    //todo account for possible exceptions related to kind parameter
     public int freeOccupantsCount(PlayerColor player, Occupant.Kind kind) {
-        return board.occupantCount(player, kind);
+        return Occupant.occupantsCount(kind) - board.occupantCount(player, kind);
     }
 
     /**
