@@ -77,7 +77,10 @@ public record GameState(
      *         sur le plateau de jeu du type donné et appartenant au joueur donné
      */
     public int freeOccupantsCount(PlayerColor player, Occupant.Kind kind) {
-        return board.occupantCount(player, kind);
+        //todo as far as i remember, it's impossible for board.occupantCount to be null or greater than
+        // Occupant.occupantsCount, as a result of fixing step 5
+        // should we still check for null cases, regardless?
+        return Occupant.occupantsCount(kind) - board.occupantCount(player, kind);
     }
 
     /**
