@@ -242,9 +242,9 @@ public record GameState(
         List<PlayerColor> playerList = new ArrayList<>(players);
         List<PlayerColor> newList = new ArrayList<>();
 
-        newList.add(playerList.getLast());
+        newList.add(playerList.getFirst());
 
-        playerList.removeLast();
+        playerList.removeFirst();
         newList.addAll(playerList);
 
         return newList;
