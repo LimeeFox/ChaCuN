@@ -64,8 +64,8 @@ public record GameState(
      * @return le joueur courant, ou null s'il n'y en a pas, c.-à-d. si la prochaine action est START_GAME ou END_GAME
      */
     public PlayerColor currentPlayer() {
-        if (nextAction != Action.START_GAME && nextAction != Action.END_GAME) return null;
-        return players.getFirst();
+        if (nextAction != Action.START_GAME && nextAction != Action.END_GAME) return players.getFirst();
+        return null;
     }
 
     /**
@@ -76,9 +76,8 @@ public record GameState(
      * @return le nombre d'occupants libres, c.-à-d. qui ne sont pas actuellement placés
      *         sur le plateau de jeu du type donné et appartenant au joueur donné
      */
-    //todo account for possible exceptions related to kind parameter
     public int freeOccupantsCount(PlayerColor player, Occupant.Kind kind) {
-        return Occupant.occupantsCount(kind) - board.occupantCount(player, kind);
+        return board.occupantCount(player, kind);
     }
 
     /**
@@ -89,7 +88,7 @@ public record GameState(
      * @throws IllegalArgumentException si le plateau est vide
      */
     public Set<Occupant> lastTilePotentialOccupants() {
-        Preconditions.checkArgument(board != Board.EMPTY);
+        Preconditions.checkArgument(board.equals(Board.EMPTY));
         PlacedTile tile = board.lastPlacedTile();
 
         return tile.potentialOccupants(); //@todo voir comment les autres ont fait parecque ducoup il manque un truc je crois...
@@ -99,11 +98,11 @@ public record GameState(
      * Gère la transition de START_GAME à PLACE_TILE en plaçant la tuile de départ au centre du plateau
      * et en tirant la première tuile du tas des tuiles normales, qui devient la tuile à jouer
      *
-     * @return le nouveau état du jeu, mis à jour.
+     * @return le nouvel état du jeu, mis à jour.
      * @throws IllegalArgumentException si la prochaine action n'est pas START_GAME
      */
     public GameState withStartingTilePlaced() {
-        Preconditions.checkArgument(nextAction != Action.START_GAME);
+        Preconditions.checkArgument(nextAction == Action.START_GAME);
 
         return new GameState(players, tileDecks, tileToPlace, board, Action.PLACE_TILE, messageBoard);
     }
@@ -114,11 +113,11 @@ public record GameState(
      * et déterminant l'action suivante, qui peut être RETAKE_PAWN si la tuile posée contient le chaman;
      *
      * @param tile la tuile qu'on aimerait ajouter au plateau
-     * @return le nouveau état du jeu, mis à jour.
+     * @return le nouvel état du jeu, mis à jour.
      * @throws IllegalArgumentException si la prochaine action n'est pas PLACE_TILE, ou si la tuile passée est déjà occupée
      */
     public GameState withPlacedTile(PlacedTile tile) {
-        Preconditions.checkArgument(nextAction != Action.PLACE_TILE || tile.occupant() != null);
+        Preconditions.checkArgument(nextAction == Action.PLACE_TILE && tile.occupant() == null);
 
         Board newBoard = board.withNewTile(tile);
         final TileDecks newTileDecks = tileDecks.withTopTileDrawn(tile.kind());
@@ -131,15 +130,16 @@ public record GameState(
 
         if (zone != null) {
             final int freeOccupants = freeOccupantsCount(currentPlayer(), Occupant.Kind.PAWN);
+            final int placedOccupants = board.occupantCount(currentPlayer(), Occupant.Kind.PAWN);
             switch (zone) {
                 // Si le pouvoir spécial est SHAMAN && le joueur possède au moins un pion sur le plateau,
                 // alors il peut reprendre un pion
                 case Zone.Meadow meadow -> {
-                    if (freeOccupants > 0) {
+                    if (placedOccupants > 0) {
                         if (meadow.SpecialPower() == Zone.SpecialPower.SHAMAN) {
                             newAction = Action.RETAKE_PAWN;
                         }
-                    } else if (freeOccupants == 0) {
+                    } else if (placedOccupants == 0) {
                         // Le joueur n'a plus de pions libres, donc l'action suivante sera forcément placer une
                         // nouvelle tuile
                         newTile = tileDecks.topTile(tile.kind());
@@ -193,13 +193,13 @@ public record GameState(
      * ce qui indique que le joueur ne désire pas reprendre de pion
      *
      * @param occupant l'occupant à supprimer du Plateau du jeu
-     * @return le nouveau état du jeu, mis à jour.
+     * @return le nouvel état du jeu, mis à jour.
      * @throws IllegalArgumentException si la prochaine action n'est pas RETAKE_PAWN,
      *                                  ou si l'occupant donné n'est ni null, ni un pion
      */
     public GameState withOccupantRemoved(Occupant occupant) {
-        Preconditions.checkArgument(nextAction != Action.RETAKE_PAWN ||
-                (occupant != null && occupant.kind() != Occupant.Kind.PAWN));
+        Preconditions.checkArgument(nextAction == Action.RETAKE_PAWN &&
+                (occupant == null || occupant.kind() == Occupant.Kind.PAWN));
 
         if (occupant != null) {
             board.withoutOccupant(occupant);
@@ -213,11 +213,11 @@ public record GameState(
      * sauf s'il vaut null, ce qui indique que le joueur ne désire pas placer d'occupant
      *
      * @param occupant l'occupant à rajouter à la dernière tuile posée
-     * @return le nouveau état du jeu, mis à jour.
+     * @return le nouvel état du jeu, mis à jour.
      * @throws IllegalArgumentException si la prochaine action n'est pas OCCUPY_TILE
      */
     public GameState withNewOccupant(Occupant occupant) {
-        Preconditions.checkArgument(nextAction != Action.OCCUPY_TILE);
+        Preconditions.checkArgument(nextAction == Action.OCCUPY_TILE);
 
         //todo check if the last placer was the same player, in which case next action might be place tile, but it can also be end_game
 
@@ -243,9 +243,9 @@ public record GameState(
         List<PlayerColor> playerList = new ArrayList<>(players);
         List<PlayerColor> newList = new ArrayList<>();
 
-        newList.add(playerList.getLast());
+        newList.add(playerList.getFirst());
 
-        playerList.removeLast();
+        playerList.removeFirst();
         newList.addAll(playerList);
 
         return newList;
