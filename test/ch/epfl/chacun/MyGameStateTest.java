@@ -3,10 +3,7 @@ package ch.epfl.chacun;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Text;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -207,6 +204,21 @@ public class MyGameStateTest {
 
     @Test
     void testCurrentPlayer() {
+        List<PlayerColor> players = Arrays.asList(PlayerColor.RED, PlayerColor.BLUE, PlayerColor.GREEN);
+
+        GameState gs0 = GameState.initial(players, getTileDecks(), getMessageBoard().textMaker());
+        GameState gs1 = gs0.withStartingTilePlaced();
+        GameState gs2 = new GameState(players,
+                new TileDecks(List.of(), List.of(), List.of()),
+                null,
+                Board.EMPTY,
+                GameState.Action.END_GAME,
+                gs0.messageBoard());
+
+        assertEquals(PlayerColor.RED, gs1.currentPlayer());
+        assertNull(gs0.currentPlayer());
+        assertNull(gs2.currentPlayer());
+
 
     }
 

@@ -130,7 +130,12 @@ public record GameState(
     public GameState withStartingTilePlaced() {
         Preconditions.checkArgument(nextAction == Action.START_GAME);
 
-        return new GameState(players, tileDecks, tileToPlace, board, Action.PLACE_TILE, messageBoard);
+        TileDecks updatedTileDecks = tileDecks.withTopTileDrawn(Tile.Kind.START);
+        Tile updatedTileToPlace = tileDecks.topTile(Tile.Kind.NORMAL);
+        Board upatedBoard = board.withNewTile(new PlacedTile(tileDecks.topTile(Tile.Kind.START),
+                null, Rotation.NONE, Pos.ORIGIN));
+
+        return new GameState(players, updatedTileDecks, updatedTileToPlace, upatedBoard, Action.PLACE_TILE, messageBoard);
     }
 
     /**
