@@ -524,7 +524,7 @@ public record GameState(
     }
 
     private GameState withTurnFinishedIfOccupationImpossible() {
-
+        return new GameState(shiftAndGetPlayerList(), tileDecks, tileToPlace, board, Action.PLACE_TILE,messageBoard);
     }
 
     /**
@@ -547,7 +547,7 @@ public record GameState(
         //Pas de màj de players, puisque le même joueur qui a retiré le pion et amener à en posé un autre (ou aucun)
         //Pas de màj de tileDecks
         //Pas de màj de tileToPlace
-        Board updatedBoard = board.withOccupant(occupant);
+        Board updatedBoard = board.withoutOccupant(occupant);
         //Pas de màj de messageBoard
 
         //Le joueur ne peut passer à OCCUPY_TILE seulement s'il reste de la place sur la dernière tuile
