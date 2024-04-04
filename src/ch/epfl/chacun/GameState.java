@@ -551,33 +551,10 @@ public record GameState(
         //Pas de màj de messageBoard
 
         //Le joueur ne peut passer à OCCUPY_TILE seulement s'il reste de la place sur la dernière tuile
-        if (board.lastPlacedTile()!= null) {
-            PlacedTile lastTile = board.lastPlacedTile();
-            for (Zone zone : lastTile.tile().zones()) {
-                GameState defaultGameState = new GameState(players, tileDecks, tileToPlace, updatedBoard, Action.OCCUPY_TILE, messageBoard);
-                switch (zone) {
-                    case Zone.Forest forest -> {
-                        if (!board.forestArea(forest).isOccupied())
-                            return defaultGameState;
-                    }
-                    case Zone.Meadow meadow -> {
-                        if (!board.meadowArea(meadow).isOccupied())
-                            return defaultGameState;
-                    }
-                    case Zone.River river -> {
-                        if (!board.riverArea(river).isOccupied())
-                            return defaultGameState;
-                    }
-                    case Zone.Lake lake -> {
-                        for (Zone.Water waterZone : lastTile.riverZones()) {
-                            if (!board.riverSystemArea(lake).isOccupied()) {
-                                return defaultGameState;
-                            }
-                        }
-                    }
-                }
-            }
+        if (lastTilePotentialOccupants().contains(occupant)) {
+            return new GameState(players, tileDecks, tileToPlace, updatedBoard, Action.OCCUPY_TILE, messageBoard);;
         }
+
         //Sinon son tour est terminé, car il ne peut pas placer de tuile
         return withTurnFinishedIfOccupationImpossible();
     }
