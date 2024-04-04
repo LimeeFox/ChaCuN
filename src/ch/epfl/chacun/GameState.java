@@ -441,13 +441,15 @@ public record GameState(
 
     private GameState withFinalPointsCounted(
             List<PlayerColor> newPlayers, TileDecks newTileDecks, Board newBoard, MessageBoard newMessageBoard) {
-        Board board1 = newBoard;
-        MessageBoard messageBoard1 = newMessageBoard;
+        Preconditions.checkArgument(nextAction.equals(Action.END_GAME));
+
+        Board updatedBoard = board;
+        MessageBoard updatedMessageBoard = messageBoard;
 
         // add the cancelled animals (smilodon burned, eaten dears, animals already captured)
-        for (Area<Zone.Meadow> meadow : board1.meadowAreas()) {
-            Set<Animal> animals = Area.animals(meadow, board1.cancelledAnimals());
-            Set<Animal> cancelledAnimals = board1.cancelledAnimals();
+        for (Area<Zone.Meadow> meadow : updatedBoard.meadowAreas()) {
+            Set<Animal> animals = Area.animals(meadow, updatedBoard.cancelledAnimals());
+            Set<Animal> cancelledAnimals = updatedBoard.cancelledAnimals();
 
             // get all non-canceled tigers and all non-cancelled deer
             Set<Animal> tigers = new HashSet<>();
@@ -462,7 +464,7 @@ public record GameState(
             // if there is a fire, cancel the tigers
             Zone.Meadow fire = (Zone.Meadow) meadow.zoneWithSpecialPower(Zone.SpecialPower.WILD_FIRE);
             if (fire != null) {
-                board1 = board1.withMoreCancelledAnimals(tigers);
+                updatedBoard = updatedBoard.withMoreCancelledAnimals(tigers);
                 cancelledAnimals.addAll(tigers);
             }
 
@@ -470,7 +472,7 @@ public record GameState(
             Zone.Meadow trap = (Zone.Meadow) meadow.zoneWithSpecialPower(Zone.SpecialPower.PIT_TRAP);
             Area<Zone.Meadow> adjacent = new Area<>(Set.of(), List.of(), 0);
             if (trap != null)
-                adjacent = board1.adjacentMeadow(board1.tileWithId(Zone.tileId(trap.id())).pos(), trap);
+                adjacent = updatedBoard.adjacentMeadow(updatedBoard.tileWithId(Zone.tileId(trap.id())).pos(), trap);
             Set<Animal> adjacentAnimal = Area.animals(adjacent, cancelledAnimals);
 
             // tell if a deer of the meadow is adjacent or not
@@ -496,28 +498,28 @@ public record GameState(
                             toCancel.add(adjacentDeer.removeFirst());
                         toCancel.add(tiger);
                     }
-                    board1 = board1.withMoreCancelledAnimals(toCancel);
+                    updatedBoard = updatedBoard.withMoreCancelledAnimals(toCancel);
                 } else {
-                    board1 = board1.withMoreCancelledAnimals(deer);
-                    board1 = board1.withMoreCancelledAnimals(tigers);
+                    updatedBoard = updatedBoard.withMoreCancelledAnimals(deer);
+                    updatedBoard = updatedBoard.withMoreCancelledAnimals(tigers);
                 }
             }
 
             // compute the points
             if (trap != null)
-                messageBoard1 = messageBoard1.withScoredPitTrap(adjacent, board1.cancelledAnimals());
-            messageBoard1 = messageBoard1.withScoredMeadow(meadow, board1.cancelledAnimals());
+                updatedMessageBoard = updatedMessageBoard.withScoredPitTrap(adjacent, updatedBoard.cancelledAnimals());
+            updatedMessageBoard = updatedMessageBoard.withScoredMeadow(meadow, updatedBoard.cancelledAnimals());
         }
 
         // hydrographic channels (Raft included)
-        for (Area<Zone.Water> riverSystem : board1.riverSystemAreas()) {
+        for (Area<Zone.Water> riverSystem : updatedBoard.riverSystemAreas()) {
             if (riverSystem.zoneWithSpecialPower(Zone.SpecialPower.RAFT) != null)
-                messageBoard1 = messageBoard1.withScoredRaft(riverSystem);
-            messageBoard1 = messageBoard1.withScoredRiverSystem(riverSystem);
+                updatedMessageBoard = updatedMessageBoard.withScoredRaft(riverSystem);
+            updatedMessageBoard = updatedMessageBoard.withScoredRiverSystem(riverSystem);
         }
 
         // final message
-        Map<PlayerColor, Integer> pts = messageBoard1.points();
+        Map<PlayerColor, Integer> pts = updatedMessageBoard.points();
 
         int maxPts = pts.values().stream()
                 .mapToInt(Integer::intValue)
@@ -528,9 +530,9 @@ public record GameState(
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
 
-        messageBoard1 = messageBoard1.withWinners(winners, maxPts);
+        updatedMessageBoard = updatedMessageBoard.withWinners(winners, maxPts);
 
-        return new GameState(newPlayers, newTileDecks, null, null, Action.END_GAME, messageBoard1);
+        return new GameState(newPlayers, newTileDecks, null, null, Action.END_GAME, updatedMessageBoard);
     }
 
     private GameState withTurnFinishedIfOccupationImpossible() {
@@ -542,7 +544,7 @@ public record GameState(
 
         //Le joueur ne peut passer à OCCUPY_TILE seulement s'il reste de la place sur la dernière tuile
         if (!lastTilePotentialOccupants().isEmpty()) {
-            return new GameState(players, tileDecks, tileToPlace, board, Action.OCCUPY_TILE, messageBoard);;
+            return new GameState(players, tileDecks, tileToPlace, board, Action.OCCUPY_TILE, messageBoard);
         }
 
         //Sinon son tour est terminé, car il ne peut pas placer de tuile
@@ -592,7 +594,7 @@ public record GameState(
             return new GameState(players, tileDecks, tileToPlace, board, Action.PLACE_TILE, messageBoard);
         }
 
-        List<PlayerColor> updatedPlayers = shiftAndGetPlayerList()
+        List<PlayerColor> updatedPlayers = shiftAndGetPlayerList();
         //Pas de màj de tileDecks
         //Pas de màj de tileToPlace (traité dans withPlacedTile)
         Board updatedBoard = board.withOccupant(occupant);
