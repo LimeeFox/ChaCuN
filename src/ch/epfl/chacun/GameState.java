@@ -598,7 +598,10 @@ public record GameState(
         Board updatedBoard = board.withOccupant(occupant);
         //Pas de màj de messageBoard
 
-        return new GameState(updatedPlayers, tileDecks, tileToPlace, updatedBoard, Action.PLACE_TILE, messageBoard); //todo update all fields
+        GameState updatedGameState = new GameState(updatedPlayers, tileDecks, tileToPlace, updatedBoard, Action.PLACE_TILE,
+                messageBoard);
+        //todo this method call depends highly on hiw withTurnFinished interacts with its parameters
+        return updatedGameState.withTurnFinished(board, null);
     }
 
     /**
