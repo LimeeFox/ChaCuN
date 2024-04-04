@@ -534,6 +534,20 @@ public record GameState(
     }
 
     private GameState withTurnFinishedIfOccupationImpossible() {
+
+        //Pas de màj de players, puisque le même joueur qui a retiré le pion et amener à en posé un autre (ou aucun)
+        //Pas de màj de tileDecks
+        //Pas de màj de tileToPlace
+        //Pas de màj de messageBoard
+
+        //Le joueur ne peut passer à OCCUPY_TILE seulement s'il reste de la place sur la dernière tuile
+        if (!lastTilePotentialOccupants().isEmpty()) {
+            return new GameState(players, tileDecks, tileToPlace, board, Action.OCCUPY_TILE, messageBoard);;
+        }
+
+        //Sinon son tour est terminé, car il ne peut pas placer de tuile
+
+
         return new GameState(shiftAndGetPlayerList(), tileDecks, tileToPlace, board, Action.PLACE_TILE,messageBoard);
     }
 
@@ -554,19 +568,10 @@ public record GameState(
             return new GameState(players, tileDecks, tileToPlace, board, Action.OCCUPY_TILE, messageBoard);
         }
 
-        //Pas de màj de players, puisque le même joueur qui a retiré le pion et amener à en posé un autre (ou aucun)
-        //Pas de màj de tileDecks
-        //Pas de màj de tileToPlace
-        Board updatedBoard = board.withoutOccupant(occupant);
-        //Pas de màj de messageBoard
+        GameState updatedGameSate = new GameState(shiftAndGetPlayerList(), tileDecks, tileToPlace,
+                board.withoutOccupant(occupant), Action.OCCUPY_TILE, messageBoard);
 
-        //Le joueur ne peut passer à OCCUPY_TILE seulement s'il reste de la place sur la dernière tuile
-        if (lastTilePotentialOccupants().contains(occupant)) {
-            return new GameState(players, tileDecks, tileToPlace, updatedBoard, Action.OCCUPY_TILE, messageBoard);;
-        }
-
-        //Sinon son tour est terminé, car il ne peut pas placer de tuile
-        return withTurnFinishedIfOccupationImpossible();
+        return updatedGameSate.withTurnFinishedIfOccupationImpossible();
     }
 
     /**
