@@ -540,16 +540,46 @@ public record GameState(
         Preconditions.checkArgument(nextAction == Action.RETAKE_PAWN &&
                 (occupant == null || occupant.kind() == Occupant.Kind.PAWN));
 
+        if (occupant == null) {
+            return new GameState(players, tileDecks, tileToPlace, board, Action.OCCUPY_TILE, messageBoard);
+        }
+
         //Pas de màj de players, puisque le même joueur qui a retiré le pion et amener à en posé un autre (ou aucun)
         //Pas de màj de tileDecks
         //Pas de màj de tileToPlace
-        Board updatedBoard = board;
-        if (occupant != null) {
-            updatedBoard = board.withOccupant(occupant);
-        }
+        Board updatedBoard = board.withOccupant(occupant);
         //Pas de màj de messageBoard
 
-        return new GameState(players, tileDecks, tileToPlace, updatedBoard, Action.OCCUPY_TILE, messageBoard);
+        //Le joueur ne peut passer à OCCUPY_TILE seulement s'il reste de la place sur la dernière tuile
+        if (board.lastPlacedTile()!= null) {
+            PlacedTile lastTile = board.lastPlacedTile();
+            for (Zone zone : lastTile.tile().zones()) {
+                GameState defaultGameState = new GameState(players, tileDecks, tileToPlace, updatedBoard, Action.OCCUPY_TILE, messageBoard);
+                switch (zone) {
+                    case Zone.Forest forest -> {
+                        if (!board.forestArea(forest).isOccupied())
+                            return defaultGameState;
+                    }
+                    case Zone.Meadow meadow -> {
+                        if (!board.meadowArea(meadow).isOccupied())
+                            return defaultGameState;
+                    }
+                    case Zone.River river -> {
+                        if (!board.riverArea(river).isOccupied())
+                            return defaultGameState;
+                    }
+                    case Zone.Lake lake -> {
+                        for (Zone.Water waterZone : lastTile.riverZones()) {
+                            if (!board.riverSystemArea(lake).isOccupied()) {
+                                return defaultGameState;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        //Sinon son tour est terminé, car il ne peut pas placer de tuile
+        return withTurnFinishedIfOccupationImpossible();
     }
 
     /**
@@ -565,15 +595,18 @@ public record GameState(
 
         //todo check if the last placer was the same player, in which case next action might be place tile, but it can also be end_game
 
-        if (occupant != null) {
-            PlacedTile lastPlacedTile = board.lastPlacedTile();
-            PlacedTile updatedLastPlacedTile;
-            if (lastPlacedTile != null) {
-                updatedLastPlacedTile = lastPlacedTile.withOccupant(occupant); //todo enft je ne sais pas comment faire pour update la tuile deja posee oops
-            }
+        //Si le joueur ne souhaite pas placer d'occupant
+        if (occupant == null) {
+            return new GameState(players, tileDecks, tileToPlace, board, Action.PLACE_TILE, messageBoard);
         }
 
-        return new GameState(players, tileDecks, tileToPlace, board, Action.PLACE_TILE, messageBoard); //todo update all fields
+        List<PlayerColor> updatedPlayers = shiftAndGetPlayerList()
+        //Pas de màj de tileDecks
+        //Pas de màj de tileToPlace (traité dans withPlacedTile)
+        Board updatedBoard = board.withOccupant(occupant);
+        //Pas de màj de messageBoard
+
+        return new GameState(updatedPlayers, tileDecks, tileToPlace, updatedBoard, Action.PLACE_TILE, messageBoard); //todo update all fields
     }
 
     /**
