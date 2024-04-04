@@ -1,6 +1,8 @@
 package ch.epfl.chacun;
 
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -156,7 +158,53 @@ public record GameState(
         final int placedOccupants = newBoard.occupantCount(currentPlayer(), Occupant.Kind.PAWN);
 
         Zone specialPowerZone = tile.specialPowerZone();
+        if (specialPowerZone != null) {
+            switch (specialPowerZone.specialPower()) {
+                case HUNTING_TRAP -> {
+                    if (!(specialPowerZone instanceof Zone.Meadow meadowZone)) break; // ce cas ne devrait pas arriver
+                    Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), meadowZone);
 
+                    // Compter les animaux
+                    Set<Animal> animals = new HashSet<>();
+                    for (Zone.Meadow meadow : adjacentMeadow.zones()) {
+                        animals.addAll(meadow.animals());
+                    }
+                    Map<Animal.Kind, Long> animalCount = animals.stream()
+                            .collect(Collectors.groupingBy(Animal::kind, Collectors.counting()));
+
+                    /* TODO: les animaux mangés seront à passer en argument de messageboard smth smth lors d'une
+                    TODO: etape ultérieure. Voir 3.1.1.1
+                    // Filtrer les animaux
+                    Set<Animal> cancelledAnimals = new HashSet<>();
+                    long tigerCount = animalCount.getOrDefault(Animal.Kind.TIGER, 0L);
+                    long deerCount = animalCount.getOrDefault(Animal.Kind.DEER, 0L);
+                    // Compter le nombre de cerfs à anuller en fonction du nombre de tigres (qui les mangent)
+                    int deerToCancel = (int) Math.min(deerCount, tigerCount);
+
+                    animals.stream()
+                            .filter(animal -> animal.kind() == Animal.Kind.DEER)
+                            .limit(deerToCancel)
+                            .forEach(cancelledAnimals::add);
+                     */
+
+                    newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
+                    newBoard.withMoreCancelledAnimals(animals);
+                }
+                case LOGBOAT -> {
+                }
+                case SHAMAN -> {
+                    if (placedOccupants > 0) newAction = Action.RETAKE_PAWN;
+                }
+                case PIT_TRAP -> {
+                }
+                case RAFT -> {
+                }
+                case WILD_FIRE -> {
+                }
+                case null -> {
+                }
+            }
+        }
 
         /*
         if (zone != null) {
@@ -260,8 +308,6 @@ public record GameState(
             }
         }
 
-         */
-
         for (Zone.Meadow meadow : tile.meadowZones()) {
             Area<Zone.Meadow> meadowArea = newBoard.meadowArea(meadow);
             if (placedOccupants == 0 || meadowArea.isOccupied()) {
@@ -305,11 +351,180 @@ public record GameState(
                 //todo messageboard AAH MAIS ATTENTION AUX POUVOIRS SPECIAUX
             }
         }
+
+
+         */
+
+
+
         // @todo IF NEXT ACTION IS OCCUPY_TILE, THEN THE PLAYER ORDER SHOULD NOT CHANGE
 
 
         // @todo get a new tileToPlace
-        return new GameState(newPlayerList, newTileDecks, newTile, newBoard, newAction, messageBoard);
+        return new GameState(newPlayerList, newTileDecks, newTile, newBoard, newAction, newMessageBoard);
+    }
+
+    /**
+     * Methode d'aide qui permet de gerer la fin d'un tour
+     *
+     * @param board le plateau du jeu
+     * @return
+     */
+    private GameState withTurnFinished(Board board, PlacedTile tile) {
+        List<PlayerColor> newPlayerList = players;
+        Predicate<Tile> tileCondition = tileToPlace -> board.canAddTile(tile);
+        TileDecks newTileDecks = tileDecks.withTopTileDrawnUntil(tile.kind(), tileCondition);
+        Tile newTile = null;
+        Action newAction = Action.PLACE_TILE;
+        MessageBoard newMessageBoard = messageBoard;
+
+        PlacedTile lastPlacedTile = board.lastPlacedTile();
+
+        final int placedOccupants = board.occupantCount(currentPlayer(), Occupant.Kind.PAWN);
+        final int freeOccupants = freeOccupantsCount(currentPlayer(), Occupant.Kind.PAWN);
+
+        // Traitement de toutes les forêt
+        for (Zone.Forest forest : lastPlacedTile.forestZones()) {
+            Area<Zone.Forest> forestArea = board.forestArea(forest);
+
+            if (forestArea.isClosed() && Area.hasMenhir(forestArea)) {
+                if (lastPlacedTile.placer() == currentPlayer()) {
+                    if (lastPlacedTile.kind() == Tile.Kind.NORMAL) {
+                        newPlayerList = shiftAndGetPlayerList();
+                    }
+                    break; //@todo check dans withNewOccupant that we dont play 3 times in a row xDDDD (pls help)
+                }
+            }
+
+            // Autrement, on regarde si la zone elle-même contient un menhir:
+            if (forest.kind() != Zone.Forest.Kind.WITH_MENHIR) break;
+
+            // La vérification si-dessous permet d'assurer que le joueur ne joue pas 3 fois de suite.
+            PlayerColor lastPlacer = lastPlacedTile.placer();
+            if (currentPlayer() == lastPlacer) {
+                newTile = tileDecks.topTile(tile.kind());
+                newPlayerList = shiftAndGetPlayerList();
+                newAction = Action.PLACE_TILE;
+                break;
+            }
+        }
+
+        // Traitement de toutes les aires rivieres/hydrographiques
+        for (Zone.River river : lastPlacedTile.riverZones()) {
+            Area<Zone.River> riverArea = board.riverArea(river);
+            Area<Zone.Water> riverSystemArea = board.riverSystemArea(river);
+            if (placedOccupants == 0 || (riverArea.isOccupied() && riverSystemArea.isOccupied())) {
+                newAction = Action.PLACE_TILE;
+                newPlayerList = shiftAndGetPlayerList();
+            }
+            if (riverArea.isClosed()) {
+                //todo messageboard AAH MAIS ATTENTION AUX POUVOIRS SPECIAUX
+            }
+
+            if (riverSystemArea.isClosed()) {
+                //todo messageboard AAH MAIS ATTENTION AUX POUVOIRS SPECIAUX
+            }
+        }
+
+        return new GameState(newPlayerList, newTileDecks, newTile, board, newAction, newMessageBoard);
+    }
+
+    private GameState withFinalPointsCounted(
+            List<PlayerColor> newPlayers, TileDecks newTileDecks, Board newBoard, MessageBoard newMessageBoard) {
+        Board board1 = newBoard;
+        MessageBoard messageBoard1 = newMessageBoard;
+
+        // add the cancelled animals (smilodon burned, eaten dears, animals already captured)
+        for (Area<Zone.Meadow> meadow : board1.meadowAreas()) {
+            Set<Animal> animals = Area.animals(meadow, board1.cancelledAnimals());
+            Set<Animal> cancelledAnimals = board1.cancelledAnimals();
+
+            // get all non-canceled tigers and all non-cancelled deer
+            Set<Animal> tigers = new HashSet<>();
+            Set<Animal> deer = new HashSet<>();
+            for (Animal animal : animals) {
+                if (animal.kind() == Animal.Kind.TIGER && !cancelledAnimals.contains(animal))
+                    tigers.add(animal);
+                else if (animal.kind() == Animal.Kind.DEER && !cancelledAnimals.contains(animal))
+                    deer.add(animal);
+            }
+
+            // if there is a fire, cancel the tigers
+            Zone.Meadow fire = (Zone.Meadow) meadow.zoneWithSpecialPower(Zone.SpecialPower.WILD_FIRE);
+            if (fire != null) {
+                board1 = board1.withMoreCancelledAnimals(tigers);
+                cancelledAnimals.addAll(tigers);
+            }
+
+            // get the adjacent meadow and all the deer
+            Zone.Meadow trap = (Zone.Meadow) meadow.zoneWithSpecialPower(Zone.SpecialPower.PIT_TRAP);
+            Area<Zone.Meadow> adjacent = new Area<>(Set.of(), List.of(), 0);
+            if (trap != null)
+                adjacent = board1.adjacentMeadow(board1.tileWithId(Zone.tileId(trap.id())).pos(), trap);
+            Set<Animal> adjacentAnimal = Area.animals(adjacent, cancelledAnimals);
+
+            // tell if a deer of the meadow is adjacent or not
+            List<Animal> adjacentDeer = new ArrayList<>();
+            for (Animal animal : adjacentAnimal) {
+                if (animal.kind() == Animal.Kind.DEER)
+                    adjacentDeer.add(animal);
+            }
+            List<Animal> nonAdjacentDeer = new ArrayList<>();
+            for (Animal animal : animals) {
+                if (animal.kind() == Animal.Kind.DEER && !adjacentAnimal.contains(animal))
+                    nonAdjacentDeer.add(animal);
+            }
+
+            // cancel first the deer that aren't in the adjacent meadow
+            if (fire == null) {
+                if (tigers.size() < deer.size()) {
+                    Set<Animal> toCancel = new HashSet<>();
+                    for (Animal tiger : tigers) {
+                        if (!nonAdjacentDeer.isEmpty())
+                            toCancel.add(nonAdjacentDeer.removeFirst());
+                        else
+                            toCancel.add(adjacentDeer.removeFirst());
+                        toCancel.add(tiger);
+                    }
+                    board1 = board1.withMoreCancelledAnimals(toCancel);
+                } else {
+                    board1 = board1.withMoreCancelledAnimals(deer);
+                    board1 = board1.withMoreCancelledAnimals(tigers);
+                }
+            }
+
+            // compute the points
+            if (trap != null)
+                messageBoard1 = messageBoard1.withScoredPitTrap(adjacent, board1.cancelledAnimals());
+            messageBoard1 = messageBoard1.withScoredMeadow(meadow, board1.cancelledAnimals());
+        }
+
+        // hydrographic channels (Raft included)
+        for (Area<Zone.Water> riverSystem : board1.riverSystemAreas()) {
+            if (riverSystem.zoneWithSpecialPower(Zone.SpecialPower.RAFT) != null)
+                messageBoard1 = messageBoard1.withScoredRaft(riverSystem);
+            messageBoard1 = messageBoard1.withScoredRiverSystem(riverSystem);
+        }
+
+        // final message
+        Map<PlayerColor, Integer> pts = messageBoard1.points();
+
+        int maxPts = pts.values().stream()
+                .mapToInt(Integer::intValue)
+                .max()
+                .orElse(0);
+        Set<PlayerColor> winners = pts.entrySet().stream()
+                .filter(entry -> entry.getValue() == maxPts)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+
+        messageBoard1 = messageBoard1.withWinners(winners, maxPts);
+
+        return new GameState(newPlayers, newTileDecks, null, null, Action.END_GAME, messageBoard1);
+    }
+
+    private GameState withTurnFinishedIfOccupationImpossible() {
+
     }
 
     /**
