@@ -224,7 +224,34 @@ public class MyGameStateTest {
 
     @Test
     void testFreeOccupantsCount() {
-        // Test implementation here
+        List<PlayerColor> players = Arrays.asList(PlayerColor.RED, PlayerColor.BLUE);
+
+        GameState gs0 = GameState.initial(players, getTileDecks(), getMessageBoard().textMaker());
+        GameState gs1 = gs0.withStartingTilePlaced();
+        //Requires completion of withPlacedTile() to function
+        GameState gs2 = gs1.withPlacedTile(new PlacedTile(gs1.tileDecks().topTile(Tile.Kind.NORMAL), PlayerColor.RED,
+                Rotation.HALF_TURN, new Pos(0, -1)))
+                .withNewOccupant(new Occupant(Occupant.Kind.PAWN, 0));
+        GameState gs3 = gs1.withPlacedTile(new PlacedTile(gs1.tileDecks().topTile(Tile.Kind.NORMAL), PlayerColor.RED,
+                        Rotation.HALF_TURN, new Pos(0, -1)))
+                .withNewOccupant(new Occupant(Occupant.Kind.HUT, 8));
+
+        int standardPawnCount = gs0.board().occupantCount(PlayerColor.RED, Occupant.Kind.PAWN);
+        int standardHutCount = gs0.board().occupantCount(PlayerColor.RED, Occupant.Kind.HUT);
+
+        assertEquals(standardPawnCount, gs1.freeOccupantsCount(PlayerColor.RED, Occupant.Kind.PAWN));
+        assertEquals(standardHutCount, gs1.freeOccupantsCount(PlayerColor.RED, Occupant.Kind.HUT));
+
+        assertEquals(standardPawnCount - 1, gs2.freeOccupantsCount(PlayerColor.RED, Occupant.Kind.PAWN));
+        assertEquals(standardHutCount - 1, gs3.freeOccupantsCount(PlayerColor.RED, Occupant.Kind.HUT));
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            gs1.freeOccupantsCount(PlayerColor.RED, Occupant.Kind.PAWN);
+        });
+        assertThrows(IllegalArgumentException.class, () -> {
+            gs1.freeOccupantsCount(PlayerColor.RED, Occupant.Kind.HUT);
+        });
+
     }
 
     @Test
