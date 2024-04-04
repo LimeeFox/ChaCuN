@@ -373,7 +373,8 @@ public record GameState(
     private GameState withTurnFinished(Board board, PlacedTile tile) {
         List<PlayerColor> newPlayerList = players;
         Predicate<Tile> tileCondition = tileToPlace -> board.canAddTile(tile);
-        TileDecks newTileDecks = tileDecks.withTopTileDrawnUntil(tile.kind(), tileCondition);
+        TileDecks newTileDecks = null;// = tileDecks.withTopTileDrawnUntil(tile.kind(), tileCondition);
+        Tile.Kind tileKind = Tile.Kind.NORMAL;
         Tile newTile = null;
         Action newAction = Action.PLACE_TILE;
         MessageBoard newMessageBoard = messageBoard;
@@ -384,47 +385,56 @@ public record GameState(
         final int freeOccupants = freeOccupantsCount(currentPlayer(), Occupant.Kind.PAWN);
 
         // Traitement de toutes les forêt
-        for (Zone.Forest forest : lastPlacedTile.forestZones()) {
-            Area<Zone.Forest> forestArea = board.forestArea(forest);
+        if (lastPlacedTile != null) {
+            for (Zone.Forest forest : lastPlacedTile.forestZones()) {
+                Area<Zone.Forest> forestArea = board.forestArea(forest);
 
-            if (forestArea.isClosed() && Area.hasMenhir(forestArea)) {
-                if (lastPlacedTile.placer() == currentPlayer()) {
-                    if (lastPlacedTile.kind() == Tile.Kind.NORMAL) {
+                // Regarder si on ferme une aire avec un menhir
+                if (forestArea.isClosed() && Area.hasMenhir(forestArea)) {
+                    // Un joueur ne peut pas jouer plus de deux fois
+                    if (lastPlacedTile.placer() == currentPlayer()) {
                         newPlayerList = shiftAndGetPlayerList();
+                    } else {
+                        // Le joueur peut rejouer, en posant une case menhir
+                        tileKind = Tile.Kind.MENHIR;
+                        newTileDecks = tileDecks.withTopTileDrawnUntil(tileKind, tileCondition);
                     }
-                    break; //@todo check dans withNewOccupant that we dont play 3 times in a row xDDDD (pls help)
+                    break;
+                }
+
+                // Autrement, on regarde si la tuile posée elle-même contient un menhir:
+                if (forest.kind() != Zone.Forest.Kind.WITH_MENHIR) {
+                    newPlayerList = shiftAndGetPlayerList();
+                    break;
+                }
+
+                // Un joueur ne peut pas jouer plus de deux fois
+                if (currentPlayer() == lastPlacedTile.placer()) {
+                    newPlayerList = shiftAndGetPlayerList();
+                    break;
+                }
+                tileKind = Tile.Kind.MENHIR;
+                newTileDecks = tileDecks.withTopTileDrawnUntil(tileKind, tileCondition);
+            }
+
+            // Traitement de toutes les aires rivieres/hydrographiques
+            for (Zone.River river : lastPlacedTile.riverZones()) {
+                Area<Zone.River> riverArea = board.riverArea(river);
+                Area<Zone.Water> riverSystemArea = board.riverSystemArea(river);
+                if (riverArea.isClosed()) {
+                    //todo enft il doit se passer quoi quand on ferme une riviere? on fait des trucs avec des points?
+                }
+
+                if (riverSystemArea.isClosed()) {
+                    //todo enft il doit se passer quoi quand on ferme un reseau hydrographique? on fait des trucs avec des points?
                 }
             }
-
-            // Autrement, on regarde si la zone elle-même contient un menhir:
-            if (forest.kind() != Zone.Forest.Kind.WITH_MENHIR) break;
-
-            // La vérification si-dessous permet d'assurer que le joueur ne joue pas 3 fois de suite.
-            PlayerColor lastPlacer = lastPlacedTile.placer();
-            if (currentPlayer() == lastPlacer) {
-                newTile = tileDecks.topTile(tile.kind());
-                newPlayerList = shiftAndGetPlayerList();
-                newAction = Action.PLACE_TILE;
-                break;
-            }
         }
 
-        // Traitement de toutes les aires rivieres/hydrographiques
-        for (Zone.River river : lastPlacedTile.riverZones()) {
-            Area<Zone.River> riverArea = board.riverArea(river);
-            Area<Zone.Water> riverSystemArea = board.riverSystemArea(river);
-            if (placedOccupants == 0 || (riverArea.isOccupied() && riverSystemArea.isOccupied())) {
-                newAction = Action.PLACE_TILE;
-                newPlayerList = shiftAndGetPlayerList();
-            }
-            if (riverArea.isClosed()) {
-                //todo messageboard AAH MAIS ATTENTION AUX POUVOIRS SPECIAUX
-            }
-
-            if (riverSystemArea.isClosed()) {
-                //todo messageboard AAH MAIS ATTENTION AUX POUVOIRS SPECIAUX
-            }
+        if (newTileDecks == null) {
+            newTileDecks = tileDecks.withTopTileDrawnUntil(tileKind, tileCondition);
         }
+        newTile = newTileDecks.topTile(tileKind);
 
         return new GameState(newPlayerList, newTileDecks, newTile, board, newAction, newMessageBoard);
     }
@@ -570,7 +580,7 @@ public record GameState(
     public GameState withNewOccupant(Occupant occupant) {
         Preconditions.checkArgument(nextAction == Action.OCCUPY_TILE);
 
-        //todo check if the last placer was the same player, in which case next action might be place tile, but it can also be end_game
+        // todo check if the last placer was the same player, in which case next action might be place tile, but it can also be end_game
 
         //Si le joueur ne souhaite pas placer d'occupant
         if (occupant == null) {
