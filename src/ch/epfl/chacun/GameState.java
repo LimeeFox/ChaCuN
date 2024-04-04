@@ -127,44 +127,49 @@ public record GameState(
         Tile newTile = null;
 
         // @todo coder l'ajout des points, section 2.2, 2.3
-        Action newAction = Action.OCCUPY_TILE;//@todo c'est possible de ne pas pouvoir en placer, actually: 1) if player has no free occupants left, 2) if the area is alraedy occupied
+        Action newAction = Action.OCCUPY_TILE; // @todo c'est possible de ne pas pouvoir en placer, actually: 1) if player has no free occupants left, 2) if the area is alraedy occupied
         List<PlayerColor> newPlayerList = players;
         Zone zone = tile.specialPowerZone();
 
+        final int freeOccupants = freeOccupantsCount(currentPlayer(), Occupant.Kind.PAWN);
+        final int placedOccupants = newBoard.occupantCount(currentPlayer(), Occupant.Kind.PAWN);
         if (zone != null) {
-            final int freeOccupants = freeOccupantsCount(currentPlayer(), Occupant.Kind.PAWN);
-            final int placedOccupants = board.occupantCount(currentPlayer(), Occupant.Kind.PAWN);
             switch (zone) {
                 // Si le pouvoir spécial est SHAMAN && le joueur possède au moins un pion sur le plateau,
                 // alors il peut reprendre un pion
                 case Zone.Meadow meadow -> {
-                    if (placedOccupants > 0) {
-                        if (meadow.SpecialPower() == Zone.SpecialPower.SHAMAN) {
-                            newAction = Action.RETAKE_PAWN;
-                        }
-                    } else if (placedOccupants == 0) {
-                        // Le joueur n'a plus de pions libres, donc l'action suivante sera forcément placer une
-                        // nouvelle tuile
+                    Area<Zone.Meadow> meadowArea = newBoard.meadowArea(meadow);
+                    if (placedOccupants == 0 || meadowArea.isOccupied()) {
+                        // Le joueur n'a plus de pions libres OU l'aire est déjà occupée,
+                        // donc l'action suivante sera forcément placer une nouvelle tuile
                         newTile = tileDecks.topTile(tile.kind());
                         newAction = Action.PLACE_TILE;
                         newPlayerList = shiftAndGetPlayerList();
+                    } else if (placedOccupants > 0) {
+                        if (meadow.SpecialPower() == Zone.SpecialPower.SHAMAN) {
+                            newAction = Action.RETAKE_PAWN;
+                        }
                     }
                 }
                 // Le cas d'une forêt serait intéressent si elle contient un menhir
                 // car selon les règles du jeu, le joueur peut dans ce cas poser une deuxième tuile.
                 // On s'intéresse aussi à la zone forêt lorsqu'elle ferme une aire de forêt qui contient un menhir.
                 case Zone.Forest forest -> {
-                    if (freeOccupants == 0) {
+                    // Si la zone ferme une aire de forêt avec un menhir, on s'arrête à là. //@todo i think place_tile for menhirs should be called at withOccupant AH UNLESS IT HAS 0
+                    Area<Zone.Forest> forestArea = newBoard.forestArea(forest);
+                    if (freeOccupants == 0 || forestArea.isOccupied()) {
+                        newTile = tileDecks.topTile(tile.kind());
+                        newPlayerList = shiftAndGetPlayerList();
                         newAction = Action.PLACE_TILE;
                     }
-                    // Si la zone ferme une aire de forêt avec un menhir, on s'arrête à là. //@todo i think place_tile for menhirs should be called at withOccupant AH UNLESS IT HAS 0
-                    Area<Zone.Forest> forestArea = board.forestArea(forest);
-                    if (forestArea.isClosed() && Area.hasMenhir(forestArea)) break; //@todo check dans withNewOccupant that we dont play 3 times in a row xDDDD (pls help)
+                    PlacedTile lastPlacedTile = newBoard.lastPlacedTile();
+                    if (lastPlacedTile == null) break;
+                    if (forestArea.isClosed()
+                            && Area.hasMenhir(forestArea)
+                            && lastPlacedTile.kind() == Tile.Kind.NORMAL) break; //@todo check dans withNewOccupant that we dont play 3 times in a row xDDDD (pls help)
 
                     // Autrement, on regarde si la zone elle-même contient un menhir:
                     if (forest.kind() != Zone.Forest.Kind.WITH_MENHIR) break;
-                    PlacedTile lastPlacedTile = board.lastPlacedTile();
-                    if (lastPlacedTile == null) break;
 
                     // La vérification si-dessous permet d'assurer que le joueur ne joue pas 3 fois de suite.
                     PlayerColor lastPlacer = lastPlacedTile.placer();
@@ -175,19 +180,65 @@ public record GameState(
                         break;
                     }
                 }
+                case Zone.River river -> {
+                    Area<Zone.River> riverArea = newBoard.riverArea(river);
+                    if (freeOccupants == 0 || riverArea.isOccupied()) {
+                        newTile = tileDecks.topTile(tile.kind());
+                        newPlayerList = shiftAndGetPlayerList();
+                        newAction = Action.PLACE_TILE;
+                    }
+                }
                 default -> {}
+            }
+        }
+
+        for (Zone.Meadow meadow : tile.meadowZones()) {
+            Area<Zone.Meadow> meadowArea = newBoard.meadowArea(meadow);
+            if (placedOccupants == 0 || meadowArea.isOccupied()) {
+                // Le joueur n'a plus de pions libres OU l'aire est déjà occupée,
+                // donc l'action suivante sera forcément placer une nouvelle tuile
+                newTile = tileDecks.topTile(tile.kind());
+                newAction = Action.PLACE_TILE;
+                newPlayerList = shiftAndGetPlayerList();
+            }
+            // Si le joueur ferme une aire, on gère les points
+            if (meadowArea.isClosed()) {
+                //todo messageboard AAH MAIS ATTENTION AUX POUVOIRS SPECIAUX
+            }
+        }
+
+        for (Zone.Forest forest : tile.forestZones()) {
+            Area<Zone.Forest> forestArea = newBoard.forestArea(forest);
+            if (placedOccupants == 0 || forestArea.isOccupied()) {
+                newTile = tileDecks.topTile(tile.kind());
+                newAction = Action.PLACE_TILE;
+                newPlayerList = shiftAndGetPlayerList();
+            }
+            if (forestArea.isClosed()) {
+                //todo messageboard AAH MAIS ATTENTION AUX POUVOIRS SPECIAUX
+            }
+        }
+
+        for (Zone.River river : tile.riverZones()) {
+            Area<Zone.River> riverArea = newBoard.riverArea(river);
+            Area<Zone.Water> riverSystemArea = newBoard.riverSystemArea(river);
+            if (placedOccupants == 0 || (riverArea.isOccupied() && riverSystemArea.isOccupied())) {
+                newTile = tileDecks.topTile(tile.kind());
+                newAction = Action.PLACE_TILE;
+                newPlayerList = shiftAndGetPlayerList();
+            }
+            if (riverArea.isClosed()) {
+                //todo messageboard AAH MAIS ATTENTION AUX POUVOIRS SPECIAUX
+            }
+
+            if (riverSystemArea.isClosed()) {
+                //todo messageboard AAH MAIS ATTENTION AUX POUVOIRS SPECIAUX
             }
         }
         // @todo IF NEXT ACTION IS OCCUPY_TILE, THEN THE PLAYER ORDER SHOULD NOT CHANGE
 
 
         // @todo get a new tileToPlace
-        // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
-        // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
-        // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
-        // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
-        // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
-        // @todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo todo
         return new GameState(newPlayerList, newTileDecks, newTile, newBoard, newAction, messageBoard);
     }
 
@@ -253,7 +304,4 @@ public record GameState(
 
         return newList;
     }
-
-
-
 }
