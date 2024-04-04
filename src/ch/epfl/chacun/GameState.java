@@ -77,9 +77,6 @@ public record GameState(
      *         sur le plateau de jeu du type donné et appartenant au joueur donné
      */
     public int freeOccupantsCount(PlayerColor player, Occupant.Kind kind) {
-        //todo as far as i remember, it's impossible for board.occupantCount to be null or greater than
-        // Occupant.occupantsCount, as a result of fixing step 5
-        // should we still check for null cases, regardless?
         return Occupant.occupantsCount(kind) - board.occupantCount(player, kind);
     }
 
@@ -91,10 +88,34 @@ public record GameState(
      * @throws IllegalArgumentException si le plateau est vide
      */
     public Set<Occupant> lastTilePotentialOccupants() {
-        Preconditions.checkArgument(board.equals(Board.EMPTY));
+        Preconditions.checkArgument(!board.equals(Board.EMPTY));
         PlacedTile tile = board.lastPlacedTile();
+        Set<Occupant> filteredPotentialOccupants = new HashSet<>();
 
-        return tile.potentialOccupants(); //@todo voir comment les autres ont fait parecque ducoup il manque un truc je crois...
+        tile.potentialOccupants().forEach(occupant -> {
+            // On enlève l'occupant potentiel si le joueur n'a plus d'occupants libres
+            boolean isValid;
+
+            if (freeOccupantsCount(currentPlayer(), occupant.kind()) == 0) {
+                isValid = false;
+            } else {
+                Zone zone = tile.zoneWithId(occupant.zoneId());
+                switch (zone) {
+                    case Zone.Forest forest -> isValid = !board.forestArea(forest).isOccupied();
+                    case Zone.Meadow meadow -> isValid = !board.meadowArea(meadow).isOccupied();
+                    case Zone.Lake lake -> isValid = !board.riverSystemArea(lake).isOccupied();
+                    case Zone.River river -> {
+                        if (occupant.kind() == Occupant.Kind.PAWN) {
+                            isValid = !board.riverArea(river).isOccupied();
+                        } else {
+                            isValid = !board.riverSystemArea(river).isOccupied();
+                        }
+                    }
+                }
+            }
+            if (isValid) filteredPotentialOccupants.add(occupant);
+        });
+        return filteredPotentialOccupants;
     }
 
     /**
@@ -129,10 +150,15 @@ public record GameState(
         // @todo coder l'ajout des points, section 2.2, 2.3
         Action newAction = Action.OCCUPY_TILE; // @todo c'est possible de ne pas pouvoir en placer, actually: 1) if player has no free occupants left, 2) if the area is alraedy occupied
         List<PlayerColor> newPlayerList = players;
-        Zone zone = tile.specialPowerZone();
+        MessageBoard newMessageBoard = messageBoard;
 
         final int freeOccupants = freeOccupantsCount(currentPlayer(), Occupant.Kind.PAWN);
         final int placedOccupants = newBoard.occupantCount(currentPlayer(), Occupant.Kind.PAWN);
+
+        Zone specialPowerZone = tile.specialPowerZone();
+
+
+        /*
         if (zone != null) {
             switch (zone) {
                 // Si le pouvoir spécial est SHAMAN && le joueur possède au moins un pion sur le plateau,
@@ -146,9 +172,51 @@ public record GameState(
                         newAction = Action.PLACE_TILE;
                         newPlayerList = shiftAndGetPlayerList();
                     } else if (placedOccupants > 0) {
-                        if (meadow.SpecialPower() == Zone.SpecialPower.SHAMAN) {
-                            newAction = Action.RETAKE_PAWN;
+                        switch(meadow.specialPower()) {
+                            case HUNTING_TRAP -> {
+                                Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), (Zone.Meadow) specialPowerZone);
+
+                                // count the animals
+                                Set<Animal> animals = new HashSet<>();
+                                for (Zone.Meadow meadow : adjacentMeadow.zones()) {
+                                    animals.addAll(meadow.animals());
+                                }
+                                Map<Animal.Kind, Integer> animalMap = new HashMap<>();
+                                for (Animal animal : animals) {
+                                    switch (animal.kind()) {
+                                        case DEER    -> animalMap.put(Animal.Kind.DEER,    1 + animalMap.getOrDefault(Animal.Kind.DEER, 0));
+                                        case TIGER   -> animalMap.put(Animal.Kind.TIGER,   1 + animalMap.getOrDefault(Animal.Kind.TIGER, 0));
+                                        case AUROCHS -> animalMap.put(Animal.Kind.AUROCHS, 1 + animalMap.getOrDefault(Animal.Kind.AUROCHS, 0));
+                                        case MAMMOTH -> animalMap.put(Animal.Kind.MAMMOTH, 1 + animalMap.getOrDefault(Animal.Kind.MAMMOTH, 0));
+                                        case null -> {}
+                                    }
+                                }
+                                // cancel the animals
+                                Set<Animal> cancelledAnimals = new HashSet<>(); // todo add to an ulterior step (3.1.1.1)
+                                int nbTiger = animalMap.getOrDefault(Animal.Kind.TIGER, 0);
+                                int nbDeer = animalMap.getOrDefault(Animal.Kind.DEER, 0);
+                                if (nbDeer < nbTiger) {
+                                    for (Animal animal : animals) {
+                                        if (animal.kind() == Animal.Kind.DEER)
+                                            cancelledAnimals.add(animal);
+                                    }
+                                } else for (int i = 0; i < nbTiger; i++) {
+                                    for (Animal animal : animals) {
+                                        if (animal.kind() == Animal.Kind.DEER && !cancelledAnimals.contains(animal)) {
+                                            cancelledAnimals.add(animal);
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
+                                newBoard.withMoreCancelledAnimals(animals);
+                            }
+                            if (meadow.SpecialPower() == Zone.SpecialPower.SHAMAN) {
+                                newAction = Action.RETAKE_PAWN;
+                            }
                         }
+
                     }
                 }
                 // Le cas d'une forêt serait intéressent si elle contient un menhir
@@ -191,6 +259,8 @@ public record GameState(
                 default -> {}
             }
         }
+
+         */
 
         for (Zone.Meadow meadow : tile.meadowZones()) {
             Area<Zone.Meadow> meadowArea = newBoard.meadowArea(meadow);
