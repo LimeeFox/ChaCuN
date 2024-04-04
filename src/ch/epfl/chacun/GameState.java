@@ -540,11 +540,16 @@ public record GameState(
         Preconditions.checkArgument(nextAction == Action.RETAKE_PAWN &&
                 (occupant == null || occupant.kind() == Occupant.Kind.PAWN));
 
+        //Pas de màj de players, puisque le même joueur qui a retiré le pion et amener à en posé un autre (ou aucun)
+        //Pas de màj de tileDecks
+        //Pas de màj de tileToPlace
+        Board updatedBoard = board;
         if (occupant != null) {
-            board.withoutOccupant(occupant);
+            updatedBoard = board.withOccupant(occupant);
         }
-        //todo update messageboard
-        return new GameState(shiftAndGetPlayerList(), tileDecks, tileToPlace, board, Action.OCCUPY_TILE, messageBoard);
+        //Pas de màj de messageBoard
+
+        return new GameState(players, tileDecks, tileToPlace, updatedBoard, Action.OCCUPY_TILE, messageBoard);
     }
 
     /**

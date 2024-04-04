@@ -2,14 +2,10 @@ package ch.epfl.chacun;
 
 import java.util.*;
 
-// TODO: 10/03/2024 Review descriptions of parameters 
-// TODO: 10/03/2024 Verify if constructor is up to code (textMaker in particular) 
-
 /**
  * Contenu du tableau d'affichage
  *
  * @author Cyriac Philippe (360553)
- *
  * @param textMaker
  *          permet d'obtenir le texte des différents messages
  * @param messages
@@ -21,8 +17,6 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     public MessageBoard {
         messages = List.copyOf(messages);
     }
-
-    // TODO: 10/03/2024 Review description of Map<PlayerColor, Integer> points() 
     /**
      * Table associant à chaque joueur ayant obtenu des points, le nombre de points obtenus
      *
@@ -118,7 +112,6 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * @return un tableau d'affichage identique au récepteur, à moins que le joueur remporte des points en posant
      *          sa fosse
      */
-    // TODO: 11/03/2024 check optimisation of following method (and others with regard to this one)
     public MessageBoard withScoredHuntingTrap(PlayerColor scorer, Area<Zone.Meadow> adjacentMeadow) {
         Set<Animal> animals = new HashSet<>();
         for (Zone.Meadow meadowZone : adjacentMeadow.zones()) {
