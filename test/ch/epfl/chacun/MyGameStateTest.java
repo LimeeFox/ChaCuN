@@ -180,21 +180,71 @@ public class MyGameStateTest {
                 .withNewTile(menhirTile0)
                 .withNewTile(menhirTile1)
                 .withNewTile(menhirTile2);
-        MessageBoard updatedMessageBoardM = gs0.messageBoard().withClosedForestWithMenhir(PlayerColor.RED,
-                gs0.withStartingTilePlaced().board().forestArea(new Zone.Forest(1, Zone.Forest.Kind.WITH_MENHIR)));
+        MessageBoard updatedMessageBoardM = gs0.messageBoard().withClosedForestWithMenhir(PlayerColor.RED, gs0.withStartingTilePlaced().board().forestArea(new Zone.Forest(1, Zone.Forest.Kind.WITH_MENHIR)));
 
         //Test pour les différents cas de withPlacedTile:
-        assertEquals(new GameState(shiftedPlayerList, updatedTileDecksN, null, updatedBoarN,
-                        GameState.Action.OCCUPY_TILE, updatedMessageBoardN),
-                gsN);
+        assertEquals(new GameState(shiftedPlayerList, updatedTileDecksN, null, updatedBoarN, GameState.Action.OCCUPY_TILE, updatedMessageBoardN), gsN);
         assertEquals(new GameState(shiftedPlayerList, updatedTileDeckM, updatedTileDeckM.topTile(Tile.Kind.MENHIR),
                 updatedBoardM, GameState.Action.PLACE_TILE, updatedMessageBoardM),
                 gsM);
     }
 
     @Test
-    void testWithOccupantRemoved() {
-        // Test implementation here
+    void withOccupantRemoved_NullOccupant_StateUnchanged() {
+        List<PlayerColor> players = Arrays.asList(PlayerColor.RED, PlayerColor.BLUE);
+
+        GameState gs0 = GameState.initial(players, getTileDecks(), getMessageBoard().textMaker());
+        GameState gs1 = gs0.withStartingTilePlaced();
+        //Requires withPlacedTile() to function correctly
+        GameState gs2 = gs1.withPlacedTile(new PlacedTile(gs1.tileDecks().topTile(Tile.Kind.NORMAL), PlayerColor.RED,
+                        Rotation.HALF_TURN, new Pos(0, -1)))
+                .withNewOccupant(new Occupant(Occupant.Kind.PAWN, 0));
+        GameState gs3 = gs1.withPlacedTile(new PlacedTile(gs1.tileDecks().topTile(Tile.Kind.NORMAL), PlayerColor.RED,
+                        Rotation.HALF_TURN, new Pos(0, -1)))
+                .withNewOccupant(new Occupant(Occupant.Kind.HUT, 8));
+
+        // Initialize an occupant assuming a constructor exists. Adapt parameters as needed.
+        Occupant occupant2 = new Occupant(Occupant.Kind.PAWN,10);
+
+        assertNotNull(gs3.board().lastPlacedTile());
+        assertEquals(-1, gs3.board().lastPlacedTile().idOfZoneOccupiedBy(occupant2.kind()));
+    }
+
+    @Test
+    void withOccupantRemoved_normal_case() {
+        List<PlayerColor> players = Arrays.asList(PlayerColor.RED, PlayerColor.BLUE);
+
+        GameState gs0 = GameState.initial(players, getTileDecks(), getMessageBoard().textMaker());
+        GameState gs1 = gs0.withStartingTilePlaced();
+        //Requires withPlacedTile() to function correctly
+        GameState gs2 = gs1.withPlacedTile(new PlacedTile(gs1.tileDecks().topTile(Tile.Kind.NORMAL), PlayerColor.RED,
+                        Rotation.HALF_TURN, new Pos(0, -1)))
+                .withNewOccupant(new Occupant(Occupant.Kind.PAWN, 0));
+        GameState gs3 = gs1.withPlacedTile(new PlacedTile(gs1.tileDecks().topTile(Tile.Kind.NORMAL), PlayerColor.RED,
+                        Rotation.HALF_TURN, new Pos(0, -1)))
+                .withNewOccupant(new Occupant(Occupant.Kind.HUT, 8));
+
+        // Initialize an occupant assuming a constructor exists. Adapt parameters as needed.
+        Occupant occupant2 = new Occupant(Occupant.Kind.PAWN,10);
+
+        // Requires withNewOccupant to function correctly
+        GameState finalGameState2_PRE = gs2.withNewOccupant(occupant2);
+
+        GameState finalGameState2 = finalGameState2_PRE.withOccupantRemoved(occupant2);
+        assertNotNull(finalGameState2.board().lastPlacedTile());
+        assertEquals(-1, finalGameState2.board().lastPlacedTile().idOfZoneOccupiedBy(occupant2.kind()));
+    }
+
+    @Test
+    void testWithOccupantRemoved_throws_IAE_when_NOTRetake_Pawn() {
+        List<PlayerColor> players = Arrays.asList(PlayerColor.RED, PlayerColor.BLUE);
+        GameState gs0 = GameState.initial(players, getTileDecks(), getMessageBoard().textMaker());
+        GameState gs1 = gs0.withStartingTilePlaced();
+        GameState gs = new GameState(players, gs1.tileDecks(), getTile(5, Tile.Kind.NORMAL), gs1.board(), GameState.Action.PLACE_TILE, getMessageBoard());
+
+        Occupant occupant2 = new Occupant(Occupant.Kind.PAWN,10);
+
+        assertThrows(IllegalArgumentException.class, () -> gs.withOccupantRemoved(occupant2));
     }
 
     @Test
