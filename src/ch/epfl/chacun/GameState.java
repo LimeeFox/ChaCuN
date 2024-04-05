@@ -373,7 +373,7 @@ public record GameState(
     private GameState withTurnFinished(Board board, PlacedTile tile) {
         List<PlayerColor> newPlayerList = players;
         Predicate<Tile> tileCondition = tileToPlace -> board.canAddTile(tile);
-        TileDecks newTileDecks = null;// = tileDecks.withTopTileDrawnUntil(tile.kind(), tileCondition);
+        TileDecks newTileDecks = null; // = tileDecks.withTopTileDrawnUntil(tile.kind(), tileCondition);
         Tile.Kind tileKind = Tile.Kind.NORMAL;
         Tile newTile = null;
         Action newAction = Action.PLACE_TILE;
@@ -421,13 +421,8 @@ public record GameState(
             for (Zone.River river : lastPlacedTile.riverZones()) {
                 Area<Zone.River> riverArea = board.riverArea(river);
                 Area<Zone.Water> riverSystemArea = board.riverSystemArea(river);
-                if (riverArea.isClosed()) {
-                    //todo enft il doit se passer quoi quand on ferme une riviere? on fait des trucs avec des points?
-                }
-
-                if (riverSystemArea.isClosed()) {
-                    //todo enft il doit se passer quoi quand on ferme un reseau hydrographique? on fait des trucs avec des points?
-                }
+                if (riverArea.isClosed()) newMessageBoard.withScoredRiver(riverArea);
+                if (riverSystemArea.isClosed()) newMessageBoard.withScoredRiverSystem(riverSystemArea);
             }
         }
 
