@@ -323,18 +323,18 @@ public class MyGameStateTest {
     void testLastTilePotentialOccupants_pawnless_player() {
         List<PlayerColor> players = Arrays.asList(PlayerColor.RED, PlayerColor.BLUE);
 
-        Occupant occupant_pawn1 = new Occupant(Occupant.Kind.PAWN, 0);
-        Occupant occupant_pawn2 = new Occupant(Occupant.Kind.PAWN, 1);
-        Occupant occupant_pawn10 = new Occupant(Occupant.Kind.PAWN, 0);
-        Occupant occupant_pawn11 = new Occupant(Occupant.Kind.PAWN, 1);
-        Occupant occupant_pawn100 = new Occupant(Occupant.Kind.PAWN, 0);
-        Occupant occupant_pawn110 = new Occupant(Occupant.Kind.PAWN, 1); // potential
-        Occupant occupant_pawn1000 = new Occupant(Occupant.Kind.PAWN, 0); // potential
-        Occupant occupant_pawn1100 = new Occupant(Occupant.Kind.PAWN, 1); // potential
-        Occupant occupant_hut1 = new Occupant(Occupant.Kind.HUT, 8);
-        Occupant occupant_hut2 = new Occupant(Occupant.Kind.HUT, 8);
-        Occupant occupant_hut3 = new Occupant(Occupant.Kind.HUT, 8);
-        Occupant occupant_hut4 = new Occupant(Occupant.Kind.HUT, 8);
+        Occupant occupant_pawn1 = new Occupant(Occupant.Kind.PAWN, 56_0);
+        Occupant occupant_pawn2 = new Occupant(Occupant.Kind.PAWN, 56_1);
+        Occupant occupant_pawn10 = new Occupant(Occupant.Kind.PAWN, 57_0);
+        Occupant occupant_pawn11 = new Occupant(Occupant.Kind.PAWN, 57_1);
+        Occupant occupant_pawn100 = new Occupant(Occupant.Kind.PAWN, 58_0);
+        Occupant occupant_pawn110 = new Occupant(Occupant.Kind.PAWN, 58_1); //potential
+        Occupant occupant_pawn1000 = new Occupant(Occupant.Kind.PAWN, 59_0); //potential
+        Occupant occupant_pawn1100 = new Occupant(Occupant.Kind.PAWN, 59_1); //potential
+        Occupant occupant_hut1 = new Occupant(Occupant.Kind.HUT, 56_8);
+        Occupant occupant_hut2 = new Occupant(Occupant.Kind.HUT, 57_8);
+        Occupant occupant_hut3 = new Occupant(Occupant.Kind.HUT, 58_8);
+        Occupant occupant_hut4 = new Occupant(Occupant.Kind.HUT, 59_8);
 
         GameState gs0 = GameState.initial(players, getTileDecks(), getMessageBoard().textMaker());
         GameState gs1 = gs0.withStartingTilePlaced();
@@ -346,28 +346,28 @@ public class MyGameStateTest {
                 Rotation.HALF_TURN, new Pos(1, 1))).withNewOccupant(occupant_pawn100);
         GameState gs4 = gs3.withPlacedTile(new PlacedTile(getTile(59, Tile.Kind.NORMAL), PlayerColor.RED,
                 Rotation.LEFT, new Pos(0, 1))).withNewOccupant(occupant_pawn1000).withNewOccupant(occupant_pawn1100);
-        GameState gs5 = gs4.withPlacedTile(new PlacedTile(getTile(60, Tile.Kind.NORMAL), PlayerColor.RED,
-                Rotation.HALF_TURN, new Pos(0, -1)));
+        //GameState gs5 = gs4.withPlacedTile(new PlacedTile(getTile(60, Tile.Kind.NORMAL), PlayerColor.RED,
+        //        Rotation.HALF_TURN, new Pos(0, -1)));
 
-        assertEquals(gs5.lastTilePotentialOccupants(), Set.of(occupant_hut1, occupant_hut2, occupant_hut3, occupant_hut4, occupant_pawn110, occupant_pawn1, occupant_pawn2));
+        assertEquals(gs4.lastTilePotentialOccupants(), Set.of(occupant_hut1, occupant_hut2, occupant_hut3, occupant_hut4, occupant_pawn110, occupant_pawn1, occupant_pawn2));
     }
 
     @Test
     void testLastTilePotentialOccupants_hutless_player() {
         List<PlayerColor> players = Arrays.asList(PlayerColor.RED, PlayerColor.BLUE);
 
-        Occupant occupant_pawn1 = new Occupant(Occupant.Kind.PAWN, 0);
-        Occupant occupant_pawn2 = new Occupant(Occupant.Kind.PAWN, 1);
-        Occupant occupant_pawn10 = new Occupant(Occupant.Kind.PAWN, 0);
-        Occupant occupant_pawn11 = new Occupant(Occupant.Kind.PAWN, 1);
-        Occupant occupant_pawn100 = new Occupant(Occupant.Kind.PAWN, 0);
-        Occupant occupant_pawn110 = new Occupant(Occupant.Kind.PAWN, 1);
-        Occupant occupant_pawn1000 = new Occupant(Occupant.Kind.PAWN, 0);
-        Occupant occupant_pawn1100 = new Occupant(Occupant.Kind.PAWN, 1);
-        Occupant occupant_hut1 = new Occupant(Occupant.Kind.HUT, 8);
-        Occupant occupant_hut2 = new Occupant(Occupant.Kind.HUT, 8);
-        Occupant occupant_hut3 = new Occupant(Occupant.Kind.HUT, 8);
-        Occupant occupant_hut4 = new Occupant(Occupant.Kind.HUT, 8);
+        Occupant occupant_pawn1 = new Occupant(Occupant.Kind.PAWN, 56_0);
+        Occupant occupant_pawn2 = new Occupant(Occupant.Kind.PAWN, 56_1);
+        Occupant occupant_pawn10 = new Occupant(Occupant.Kind.PAWN, 57_0);
+        Occupant occupant_pawn11 = new Occupant(Occupant.Kind.PAWN, 57_1);
+        Occupant occupant_pawn100 = new Occupant(Occupant.Kind.PAWN, 58_0);
+        Occupant occupant_pawn110 = new Occupant(Occupant.Kind.PAWN, 58_1);
+        Occupant occupant_pawn1000 = new Occupant(Occupant.Kind.PAWN, 59_0);
+        Occupant occupant_pawn1100 = new Occupant(Occupant.Kind.PAWN, 59_1);
+        Occupant occupant_hut1 = new Occupant(Occupant.Kind.HUT, 56_8);
+        Occupant occupant_hut2 = new Occupant(Occupant.Kind.HUT, 57_8);
+        Occupant occupant_hut3 = new Occupant(Occupant.Kind.HUT, 58_8);
+        Occupant occupant_hut4 = new Occupant(Occupant.Kind.HUT, 59_8);
 
         GameState gs0 = GameState.initial(players, getTileDecks(), getMessageBoard().textMaker());
         GameState gs1 = gs0.withStartingTilePlaced();
@@ -379,10 +379,10 @@ public class MyGameStateTest {
                 Rotation.HALF_TURN, new Pos(1, 1))).withNewOccupant(occupant_hut3);
         GameState gs4 = gs3.withPlacedTile(new PlacedTile(getTile(59, Tile.Kind.NORMAL), PlayerColor.RED,
                 Rotation.LEFT, new Pos(0, 1))).withNewOccupant(occupant_hut4);
-        GameState gs5 = gs4.withPlacedTile(new PlacedTile(getTile(60, Tile.Kind.NORMAL), PlayerColor.RED,
-                Rotation.HALF_TURN, new Pos(0, -1)));
+        //GameState gs5 = gs4.withPlacedTile(new PlacedTile(getTile(60, Tile.Kind.NORMAL), PlayerColor.RED,
+        //        Rotation.HALF_TURN, new Pos(0, -1)));
 
-        assertEquals(gs5.lastTilePotentialOccupants(), Set.of(occupant_pawn1, occupant_pawn2, occupant_pawn10, occupant_pawn11, occupant_pawn100, occupant_pawn110, occupant_pawn1000, occupant_pawn1100, occupant_hut1));
+        assertEquals(gs4.lastTilePotentialOccupants(), Set.of(occupant_pawn1, occupant_pawn2, occupant_pawn10, occupant_pawn11, occupant_pawn100, occupant_pawn110, occupant_pawn1000, occupant_pawn1100, occupant_hut1));
     }
 
     @Test
