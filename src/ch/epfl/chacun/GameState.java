@@ -143,225 +143,52 @@ public record GameState(
      * @throws IllegalArgumentException si la prochaine action n'est pas PLACE_TILE, ou si la tuile passée est déjà occupée
      */
     public GameState withPlacedTile(PlacedTile tile) {
-        Preconditions.checkArgument(nextAction == Action.PLACE_TILE && tile.occupant() == null);
+        Preconditions.checkArgument(nextAction == Action.PLACE_TILE );
+        Preconditions.checkArgument(tile.occupant() == null);
 
-        Board newBoard = board.withNewTile(tile);
-        final TileDecks newTileDecks = tileDecks.withTopTileDrawn(tile.kind());
-        Tile newTile = null;
+        //Màj par défaut des paramètres de GameState
+        //Pas de màj de players (par défaut, le même joueur qui a posé la tuile devra poser un occupant)
+        List<PlayerColor> updatedPlayerList = players;
+        final TileDecks updatedTileDecks = tileDecks.withTopTileDrawn(tile.kind());
+        Tile updatedTileToPlace = null;
+        Board updatedBoard = board.withNewTile(tile);
+        Action updatedNextAction = Action.OCCUPY_TILE;
+        //La màj de messageBoard dépend des points obtenus et des pouvoirs utilisés
+        MessageBoard updatedMessageBoard = messageBoard;
 
-        // @todo coder l'ajout des points, section 2.2, 2.3
-        Action newAction = Action.OCCUPY_TILE; // @todo c'est possible de ne pas pouvoir en placer, actually: 1) if player has no free occupants left, 2) if the area is alraedy occupied
-        List<PlayerColor> newPlayerList = players;
-        MessageBoard newMessageBoard = messageBoard;
+        PlayerColor scorer = currentPlayer();
 
-        final int freeOccupants = freeOccupantsCount(currentPlayer(), Occupant.Kind.PAWN);
-        final int placedOccupants = newBoard.occupantCount(currentPlayer(), Occupant.Kind.PAWN);
+        final int placedOccupants = updatedBoard.occupantCount(currentPlayer(), Occupant.Kind.PAWN);
 
+        //Traitement des pouvoirs spéciaux
         Zone specialPowerZone = tile.specialPowerZone();
         if (specialPowerZone != null) {
-            switch (specialPowerZone.specialPower()) {
-                case HUNTING_TRAP -> {
-                    if (!(specialPowerZone instanceof Zone.Meadow meadowZone)) break; // ce cas ne devrait pas arriver
-                    Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), meadowZone);
-
-                    // Compter les animaux
-                    Set<Animal> animals = new HashSet<>();
-                    for (Zone.Meadow meadow : adjacentMeadow.zones()) {
-                        animals.addAll(meadow.animals());
-                    }
-                    Map<Animal.Kind, Long> animalCount = animals.stream()
-                            .collect(Collectors.groupingBy(Animal::kind, Collectors.counting()));
-
-                    /* TODO: les animaux mangés seront à passer en argument de messageboard smth smth lors d'une
-                    TODO: etape ultérieure. Voir 3.1.1.1
-                    // Filtrer les animaux
-                    Set<Animal> cancelledAnimals = new HashSet<>();
-                    long tigerCount = animalCount.getOrDefault(Animal.Kind.TIGER, 0L);
-                    long deerCount = animalCount.getOrDefault(Animal.Kind.DEER, 0L);
-                    // Compter le nombre de cerfs à anuller en fonction du nombre de tigres (qui les mangent)
-                    int deerToCancel = (int) Math.min(deerCount, tigerCount);
-
-                    animals.stream()
-                            .filter(animal -> animal.kind() == Animal.Kind.DEER)
-                            .limit(deerToCancel)
-                            .forEach(cancelledAnimals::add);
-                     */
-
-                    newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
-                    newBoard.withMoreCancelledAnimals(animals);
-                }
-                case LOGBOAT -> {
-                }
-                case SHAMAN -> {
-                    if (placedOccupants > 0) newAction = Action.RETAKE_PAWN;
-                }
-                case PIT_TRAP -> {
-                }
-                case RAFT -> {
-                }
-                case WILD_FIRE -> {
-                }
-                case null -> {
-                }
-            }
-        }
-
-        /*
-        if (zone != null) {
-            switch (zone) {
-                // Si le pouvoir spécial est SHAMAN && le joueur possède au moins un pion sur le plateau,
-                // alors il peut reprendre un pion
-                case Zone.Meadow meadow -> {
-                    Area<Zone.Meadow> meadowArea = newBoard.meadowArea(meadow);
-                    if (placedOccupants == 0 || meadowArea.isOccupied()) {
-                        // Le joueur n'a plus de pions libres OU l'aire est déjà occupée,
-                        // donc l'action suivante sera forcément placer une nouvelle tuile
-                        newTile = tileDecks.topTile(tile.kind());
-                        newAction = Action.PLACE_TILE;
-                        newPlayerList = shiftAndGetPlayerList();
-                    } else if (placedOccupants > 0) {
-                        switch(meadow.specialPower()) {
-                            case HUNTING_TRAP -> {
-                                Area<Zone.Meadow> adjacentMeadow = newBoard.adjacentMeadow(tile.pos(), (Zone.Meadow) specialPowerZone);
-
-                                // count the animals
-                                Set<Animal> animals = new HashSet<>();
-                                for (Zone.Meadow meadow : adjacentMeadow.zones()) {
-                                    animals.addAll(meadow.animals());
-                                }
-                                Map<Animal.Kind, Integer> animalMap = new HashMap<>();
-                                for (Animal animal : animals) {
-                                    switch (animal.kind()) {
-                                        case DEER    -> animalMap.put(Animal.Kind.DEER,    1 + animalMap.getOrDefault(Animal.Kind.DEER, 0));
-                                        case TIGER   -> animalMap.put(Animal.Kind.TIGER,   1 + animalMap.getOrDefault(Animal.Kind.TIGER, 0));
-                                        case AUROCHS -> animalMap.put(Animal.Kind.AUROCHS, 1 + animalMap.getOrDefault(Animal.Kind.AUROCHS, 0));
-                                        case MAMMOTH -> animalMap.put(Animal.Kind.MAMMOTH, 1 + animalMap.getOrDefault(Animal.Kind.MAMMOTH, 0));
-                                        case null -> {}
-                                    }
-                                }
-                                // cancel the animals
-                                Set<Animal> cancelledAnimals = new HashSet<>(); // todo add to an ulterior step (3.1.1.1)
-                                int nbTiger = animalMap.getOrDefault(Animal.Kind.TIGER, 0);
-                                int nbDeer = animalMap.getOrDefault(Animal.Kind.DEER, 0);
-                                if (nbDeer < nbTiger) {
-                                    for (Animal animal : animals) {
-                                        if (animal.kind() == Animal.Kind.DEER)
-                                            cancelledAnimals.add(animal);
-                                    }
-                                } else for (int i = 0; i < nbTiger; i++) {
-                                    for (Animal animal : animals) {
-                                        if (animal.kind() == Animal.Kind.DEER && !cancelledAnimals.contains(animal)) {
-                                            cancelledAnimals.add(animal);
-                                            break;
-                                        }
-                                    }
-                                }
-
-                                newMessageBoard.withScoredHuntingTrap(currentPlayer(), adjacentMeadow);
-                                newBoard.withMoreCancelledAnimals(animals);
-                            }
-                            if (meadow.SpecialPower() == Zone.SpecialPower.SHAMAN) {
-                                newAction = Action.RETAKE_PAWN;
-                            }
+            List<Zone.SpecialPower> immediateEffectPowers = List.of(Zone.SpecialPower.SHAMAN, Zone.SpecialPower.LOGBOAT,
+                    Zone.SpecialPower.HUNTING_TRAP);
+            Zone.SpecialPower tilePower = specialPowerZone.specialPower();
+            if (immediateEffectPowers.contains(tilePower)) {
+                switch (tilePower) {
+                    case SHAMAN -> {
+                        if (placedOccupants > 0) {
+                            updatedNextAction = Action.RETAKE_PAWN;
                         }
-
+                    }
+                    case LOGBOAT -> {
+                        Zone.Water logBoatZone = (Zone.Water) specialPowerZone;
+                        updatedMessageBoard = updatedMessageBoard.withScoredLogboat(scorer,
+                                updatedBoard.riverSystemArea(logBoatZone));
+                    }
+                    case HUNTING_TRAP -> {
+                        Zone.Meadow huntingTrapZone = (Zone.Meadow) specialPowerZone;
+                        updatedMessageBoard = updatedMessageBoard.withScoredHuntingTrap(scorer,
+                                updatedBoard.meadowArea(huntingTrapZone));
                     }
                 }
-                // Le cas d'une forêt serait intéressent si elle contient un menhir
-                // car selon les règles du jeu, le joueur peut dans ce cas poser une deuxième tuile.
-                // On s'intéresse aussi à la zone forêt lorsqu'elle ferme une aire de forêt qui contient un menhir.
-                case Zone.Forest forest -> {
-                    // Si la zone ferme une aire de forêt avec un menhir, on s'arrête à là. //@todo i think place_tile for menhirs should be called at withOccupant AH UNLESS IT HAS 0
-                    Area<Zone.Forest> forestArea = newBoard.forestArea(forest);
-                    if (freeOccupants == 0 || forestArea.isOccupied()) {
-                        newTile = tileDecks.topTile(tile.kind());
-                        newPlayerList = shiftAndGetPlayerList();
-                        newAction = Action.PLACE_TILE;
-                    }
-                    PlacedTile lastPlacedTile = newBoard.lastPlacedTile();
-                    if (lastPlacedTile == null) break;
-                    if (forestArea.isClosed()
-                            && Area.hasMenhir(forestArea)
-                            && lastPlacedTile.kind() == Tile.Kind.NORMAL) break; //@todo check dans withNewOccupant that we dont play 3 times in a row xDDDD (pls help)
-
-                    // Autrement, on regarde si la zone elle-même contient un menhir:
-                    if (forest.kind() != Zone.Forest.Kind.WITH_MENHIR) break;
-
-                    // La vérification si-dessous permet d'assurer que le joueur ne joue pas 3 fois de suite.
-                    PlayerColor lastPlacer = lastPlacedTile.placer();
-                    if (currentPlayer() == lastPlacer) {
-                        newTile = tileDecks.topTile(tile.kind());
-                        newPlayerList = shiftAndGetPlayerList();
-                        newAction = Action.PLACE_TILE;
-                        break;
-                    }
-                }
-                case Zone.River river -> {
-                    Area<Zone.River> riverArea = newBoard.riverArea(river);
-                    if (freeOccupants == 0 || riverArea.isOccupied()) {
-                        newTile = tileDecks.topTile(tile.kind());
-                        newPlayerList = shiftAndGetPlayerList();
-                        newAction = Action.PLACE_TILE;
-                    }
-                }
-                default -> {}
             }
         }
-
-        for (Zone.Meadow meadow : tile.meadowZones()) {
-            Area<Zone.Meadow> meadowArea = newBoard.meadowArea(meadow);
-            if (placedOccupants == 0 || meadowArea.isOccupied()) {
-                // Le joueur n'a plus de pions libres OU l'aire est déjà occupée,
-                // donc l'action suivante sera forcément placer une nouvelle tuile
-                newTile = tileDecks.topTile(tile.kind());
-                newAction = Action.PLACE_TILE;
-                newPlayerList = shiftAndGetPlayerList();
-            }
-            // Si le joueur ferme une aire, on gère les points
-            if (meadowArea.isClosed()) {
-                //todo messageboard AAH MAIS ATTENTION AUX POUVOIRS SPECIAUX
-            }
-        }
-
-        for (Zone.Forest forest : tile.forestZones()) {
-            Area<Zone.Forest> forestArea = newBoard.forestArea(forest);
-            if (placedOccupants == 0 || forestArea.isOccupied()) {
-                newTile = tileDecks.topTile(tile.kind());
-                newAction = Action.PLACE_TILE;
-                newPlayerList = shiftAndGetPlayerList();
-            }
-            if (forestArea.isClosed()) {
-                //todo messageboard AAH MAIS ATTENTION AUX POUVOIRS SPECIAUX
-            }
-        }
-
-        for (Zone.River river : tile.riverZones()) {
-            Area<Zone.River> riverArea = newBoard.riverArea(river);
-            Area<Zone.Water> riverSystemArea = newBoard.riverSystemArea(river);
-            if (placedOccupants == 0 || (riverArea.isOccupied() && riverSystemArea.isOccupied())) {
-                newTile = tileDecks.topTile(tile.kind());
-                newAction = Action.PLACE_TILE;
-                newPlayerList = shiftAndGetPlayerList();
-            }
-            if (riverArea.isClosed()) {
-                //todo messageboard AAH MAIS ATTENTION AUX POUVOIRS SPECIAUX
-            }
-
-            if (riverSystemArea.isClosed()) {
-                //todo messageboard AAH MAIS ATTENTION AUX POUVOIRS SPECIAUX
-            }
-        }
-
-
-         */
-
-
-
-        // @todo IF NEXT ACTION IS OCCUPY_TILE, THEN THE PLAYER ORDER SHOULD NOT CHANGE
-
-
-        // @todo get a new tileToPlace
-        return new GameState(newPlayerList, newTileDecks, newTile, newBoard, newAction, newMessageBoard);
+        return new GameState(updatedPlayerList, updatedTileDecks, updatedTileToPlace, updatedBoard, updatedNextAction,
+                updatedMessageBoard)
+                .withTurnFinishedIfOccupationImpossible();
     }
 
     /**
@@ -542,10 +369,8 @@ public record GameState(
             return new GameState(players, tileDecks, tileToPlace, board, Action.OCCUPY_TILE, messageBoard);
         }
 
-        //Sinon son tour est terminé, car il ne peut pas placer de tuile
-
-
-        return new GameState(shiftAndGetPlayerList(), tileDecks, tileToPlace, board, Action.PLACE_TILE,messageBoard);
+        //Sinon on vérifie la fin du tour du joueur
+        return withTurnFinished(board, board.lastPlacedTile());
     }
 
     /**
