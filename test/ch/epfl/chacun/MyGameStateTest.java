@@ -321,7 +321,7 @@ public class MyGameStateTest {
         Occupant occupant_hut4 = new Occupant(Occupant.Kind.HUT, 8);
 
         GameState gs0 = GameState.initial(players, getTileDecks(), getMessageBoard().textMaker());
-        GameState gs1 = gs0.withStartingTilePlaced().withNewOccupant(occupant_pawn1).withNewOccupant(occupant_pawn2);
+        GameState gs1 = gs0.withStartingTilePlaced();
 
         // Requires withPlacedTile() && withNewOccupant to function correctly
         GameState gs2 = gs1.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
@@ -329,11 +329,11 @@ public class MyGameStateTest {
         GameState gs3 = gs2.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
                 Rotation.HALF_TURN, new Pos(1, 1))).withNewOccupant(occupant_pawn100);
         GameState gs4 = gs3.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
-                Rotation.LEFT, new Pos(0, 1)));
+                Rotation.LEFT, new Pos(0, 1))).withNewOccupant(occupant_pawn1000).withNewOccupant(occupant_pawn1100);
         GameState gs5 = gs4.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
                 Rotation.HALF_TURN, new Pos(0, -1)));
 
-        assertEquals(gs5.lastTilePotentialOccupants(), Set.of(occupant_hut1, occupant_hut2, occupant_hut3, occupant_hut4, occupant_pawn110, occupant_pawn1000, occupant_pawn1100));
+        assertEquals(gs5.lastTilePotentialOccupants(), Set.of(occupant_hut1, occupant_hut2, occupant_hut3, occupant_hut4, occupant_pawn110, occupant_pawn1, occupant_pawn2));
     }
 
     @Test
@@ -354,19 +354,19 @@ public class MyGameStateTest {
         Occupant occupant_hut4 = new Occupant(Occupant.Kind.HUT, 8);
 
         GameState gs0 = GameState.initial(players, getTileDecks(), getMessageBoard().textMaker());
-        GameState gs1 = gs0.withStartingTilePlaced().withNewOccupant(occupant_hut1);
+        GameState gs1 = gs0.withStartingTilePlaced();
 
         // Requires withPlacedTile() && withNewOccupant to function correctly
         GameState gs2 = gs1.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
-                Rotation.RIGHT, new Pos(1, 0))).withNewOccupant(occupant_hut1);
+                Rotation.RIGHT, new Pos(1, 0))).withNewOccupant(occupant_hut2);
         GameState gs3 = gs2.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
-                Rotation.HALF_TURN, new Pos(1, 1))).withNewOccupant(occupant_hut2);
+                Rotation.HALF_TURN, new Pos(1, 1))).withNewOccupant(occupant_hut3);
         GameState gs4 = gs3.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
-                Rotation.LEFT, new Pos(0, 1))).withNewOccupant(occupant_hut3);
+                Rotation.LEFT, new Pos(0, 1))).withNewOccupant(occupant_hut4);
         GameState gs5 = gs4.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
                 Rotation.HALF_TURN, new Pos(0, -1)));
 
-        assertEquals(gs5.lastTilePotentialOccupants(), Set.of(occupant_pawn1, occupant_pawn2, occupant_pawn10, occupant_pawn11, occupant_pawn100, occupant_pawn110, occupant_pawn1000, occupant_pawn1100, occupant_hut4));
+        assertEquals(gs5.lastTilePotentialOccupants(), Set.of(occupant_pawn1, occupant_pawn2, occupant_pawn10, occupant_pawn11, occupant_pawn100, occupant_pawn110, occupant_pawn1000, occupant_pawn1100, occupant_hut1));
     }
 
     @Test
@@ -389,6 +389,7 @@ public class MyGameStateTest {
     /**
      * unfinished tests
      */
+    /*
     void testLastTilePotentialOccupants_pawnsOnly_occupied() {
         List<PlayerColor> players = Arrays.asList(PlayerColor.RED, PlayerColor.BLUE);
 
@@ -471,6 +472,8 @@ public class MyGameStateTest {
 
         GameState finalGameState2 = finalGameState2_PRE.withOccupantRemoved(occupant2);
     }
+
+     */
 
     // Additional test methods can be added as needed
 }

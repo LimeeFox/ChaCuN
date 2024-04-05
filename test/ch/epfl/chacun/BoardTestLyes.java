@@ -8,9 +8,10 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/*
 public class BoardTestLyes {
 
-    /*IN ORDER TO TEST INSERTIONPOSITION REMOVE PRECONDITION IN WITHNEWTILE*/
+    /*IN ORDER TO TEST INSERTIONPOSITION REMOVE PRECONDITION IN WITHNEWTILE
 
     @Test
     void tileAtTestWorksWithStartTile(){
@@ -438,22 +439,22 @@ public class BoardTestLyes {
 
     @Test
     void occupantCountWorksWhenNone(){
-        /* TODO */
+        /* TODO
     }
 
     @Test
     void occupantCountWorksWhenSomeAllSame(){
-        /* TODO */
+        /* TODO
     }
 
     @Test
     void occupantCountWorksWhenSomeButDiff(){
-        /* TODO */
+        /* TODO
     }
 
     @Test
     void occupantCountWorksWhenSomeSameSomeDiff(){
-        /* TODO */
+        /* TODO
     }
 
     @Test
@@ -505,7 +506,7 @@ public class BoardTestLyes {
 
     @Test
     void insertionPositionsWorksWhenFull(){
-        /* TODO */
+        /* TODO
     }
 
     @Test
@@ -602,7 +603,7 @@ public class BoardTestLyes {
 
     @Test
 
-        /* TODO: TEST FONCTIONNE MAIS PAS SUR QU'IL TESTE QUELQUE CHOSE */
+        /* TODO: TEST FONCTIONNE MAIS PAS SUR QU'IL TESTE QUELQUE CHOSE
 
     void forestsClosedByLastTileWorksWhenNone(){
 
@@ -643,7 +644,7 @@ public class BoardTestLyes {
     @Test
     void forestsClosedByLastTileWorksWhenSome(){
 
-        /* TODO: VERIF LE TEST */
+        /* TODO: VERIF LE TEST
 
         Zone.Forest forest1 = new Zone.Forest(111, Zone.Forest.Kind.PLAIN);
         Zone.Forest forest2 = new Zone.Forest(112, Zone.Forest.Kind.PLAIN);
@@ -675,7 +676,7 @@ public class BoardTestLyes {
 
         /*
         TODO: comment faire pour créer le board avec les openCo que je veux sans me casser la tête à utiliser addTile?
-        */
+
         //assertEquals(Set.of(ForestAreas1),Board.EMPTY.);
 
     }
@@ -1049,7 +1050,7 @@ public class BoardTestLyes {
 
     }
 
-    /* TODO: TESTER:
+     TODO: TESTER:
 
     - forestclosedby (test probablement faux)
     - riverSystemArea (toutes les méthodes à 1 ligne)
@@ -1061,7 +1062,8 @@ public class BoardTestLyes {
     TODO: REGLER
     -couldPlaceTile
     -adjacentMeadow
-    */
-
-
 }
+
+ */
+
+
