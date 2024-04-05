@@ -163,8 +163,8 @@ public class MyGameStateTest {
         GameState gsN = gs0.withStartingTilePlaced()
                 .withPlacedTile(normalTile);
         GameState gsM = gs0.withStartingTilePlaced()
-                .withPlacedTile(menhirTile0)
-                .withPlacedTile(menhirTile1)
+                .withPlacedTile(menhirTile0).withNewOccupant(null)
+                .withPlacedTile(menhirTile1).withNewOccupant(null)
                 .withPlacedTile(menhirTile2);
 
         List<PlayerColor> shiftedPlayerList = new ArrayList<>(List.of(PlayerColor.BLUE, PlayerColor.RED));
@@ -263,8 +263,6 @@ public class MyGameStateTest {
         assertEquals(PlayerColor.RED, gs1.currentPlayer());
         assertNull(gs0.currentPlayer());
         assertNull(gs2.currentPlayer());
-
-
     }
 
     @Test
@@ -296,7 +294,6 @@ public class MyGameStateTest {
         assertThrows(IllegalArgumentException.class, () -> {
             gs1.freeOccupantsCount(PlayerColor.RED, Occupant.Kind.HUT);
         });
-
     }
 
     @Test
@@ -348,7 +345,7 @@ public class MyGameStateTest {
 
         assertEquals(expectedPotentialOccupants, actualPotentialOccupants);
     }
-
+/*
     void testLastTilePotentialOccupants_pawnsOnly_occupied() {
         List<PlayerColor> players = Arrays.asList(PlayerColor.RED, PlayerColor.BLUE);
 
@@ -387,6 +384,8 @@ public class MyGameStateTest {
 
         GameState finalGameState2 = finalGameState2_PRE.withOccupantRemoved(occupant2);
     }
+
+ */
 
     void testLastTilePotentialOccupants_MIXED() {
         List<PlayerColor> players = Arrays.asList(PlayerColor.RED, PlayerColor.BLUE);

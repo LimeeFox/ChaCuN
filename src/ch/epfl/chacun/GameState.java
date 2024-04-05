@@ -203,67 +203,64 @@ public record GameState(
      * @return
      */
     private GameState withTurnFinished(Board board, PlacedTile tile) {
-        List<PlayerColor> newPlayerList = players;
+        Preconditions.checkArgument(!board().equals(Board.EMPTY));
+
+        List<PlayerColor> updatedPlayers = players;
+        TileDecks updatedTileDecks = tileDecks;
+        Tile updatedTileToPlace = tileToPlace;
+        Board updatedBoard = board;
+        Action updatedNextAction = nextAction;
+        MessageBoard updatedMessageBoard = messageBoard;
+
         Predicate<Tile> tileCondition = tileToPlace -> board.canAddTile(tile);
-        TileDecks newTileDecks = null; // = tileDecks.withTopTileDrawnUntil(tile.kind(), tileCondition);
         Tile.Kind tileKind = Tile.Kind.NORMAL;
-        Tile newTile = null;
-        Action newAction = Action.PLACE_TILE;
-        MessageBoard newMessageBoard = messageBoard;
 
         PlacedTile lastPlacedTile = board.lastPlacedTile();
 
-        final int placedOccupants = board.occupantCount(currentPlayer(), Occupant.Kind.PAWN);
-        final int freeOccupants = freeOccupantsCount(currentPlayer(), Occupant.Kind.PAWN);
+        boolean playerGetsMenhir = false;
 
-        // Traitement de toutes les forêt
-        if (lastPlacedTile != null) {
-            for (Zone.Forest forest : lastPlacedTile.forestZones()) {
-                Area<Zone.Forest> forestArea = board.forestArea(forest);
+        Set<Area<Zone.River>> lastClosedRivers = null;
+        if (board.riversClosedByLastTile() != null) {
+            lastClosedRivers = board.riversClosedByLastTile();
+            for (Area<Zone.River> closedRiver : Objects.requireNonNull(lastClosedRivers)) {
+                updatedMessageBoard = updatedMessageBoard.withScoredRiver(closedRiver);
+            }
+        }
 
-                // Regarder si on ferme une aire avec un menhir
-                if (forestArea.isClosed() && Area.hasMenhir(forestArea)) {
-                    // Un joueur ne peut pas jouer plus de deux fois
-                    if (lastPlacedTile.placer() == currentPlayer()) {
-                        newPlayerList = shiftAndGetPlayerList();
-                    } else {
-                        // Le joueur peut rejouer, en posant une case menhir
-                        tileKind = Tile.Kind.MENHIR;
-                        newTileDecks = tileDecks.withTopTileDrawnUntil(tileKind, tileCondition);
+        Set<Area<Zone.Forest>> lastClosedForests = null;
+        if (board.forestsClosedByLastTile() != null) {
+            lastClosedForests = board.forestsClosedByLastTile();
+            for (Area<Zone.Forest> closedForest : Objects.requireNonNull(lastClosedForests)) {
+                updatedMessageBoard = updatedMessageBoard.withScoredForest(closedForest);
+
+                if (lastPlacedTile != null && Area.hasMenhir(closedForest) && !lastPlacedTile.tile().kind().equals(Tile.Kind.MENHIR)) {
+                    if (!playerGetsMenhir) {
+                        playerGetsMenhir = true;
+                        updatedMessageBoard = updatedMessageBoard.withClosedForestWithMenhir(currentPlayer(), closedForest);
                     }
-                    break;
                 }
-
-                // Autrement, on regarde si la tuile posée elle-même contient un menhir:
-                if (forest.kind() != Zone.Forest.Kind.WITH_MENHIR) {
-                    newPlayerList = shiftAndGetPlayerList();
-                    break;
-                }
-
-                // Un joueur ne peut pas jouer plus de deux fois
-                if (currentPlayer() == lastPlacedTile.placer()) {
-                    newPlayerList = shiftAndGetPlayerList();
-                    break;
-                }
-                tileKind = Tile.Kind.MENHIR;
-                newTileDecks = tileDecks.withTopTileDrawnUntil(tileKind, tileCondition);
-            }
-
-            // Traitement de toutes les aires rivieres/hydrographiques
-            for (Zone.River river : lastPlacedTile.riverZones()) {
-                Area<Zone.River> riverArea = board.riverArea(river);
-                Area<Zone.Water> riverSystemArea = board.riverSystemArea(river);
-                if (riverArea.isClosed()) newMessageBoard.withScoredRiver(riverArea);
-                if (riverSystemArea.isClosed()) newMessageBoard.withScoredRiverSystem(riverSystemArea);
             }
         }
 
-        if (newTileDecks == null) {
-            newTileDecks = tileDecks.withTopTileDrawnUntil(tileKind, tileCondition);
-        }
-        newTile = newTileDecks.topTile(tileKind);
+        updatedBoard = updatedBoard.withoutGatherersOrFishersIn(lastClosedForests, lastClosedRivers);
 
-        return new GameState(newPlayerList, newTileDecks, newTile, board, newAction, newMessageBoard);
+        if (playerGetsMenhir) {
+            tileKind = Tile.Kind.MENHIR;
+            updatedNextAction = Action.PLACE_TILE;
+        }
+
+        updatedTileDecks = updatedTileDecks.withTopTileDrawnUntil(tileKind, tileCondition);
+
+        if (updatedTileDecks.normalTiles().isEmpty()) {
+            return withFinalPointsCounted(updatedPlayers, updatedTileDecks, updatedBoard, updatedMessageBoard);
+        }
+
+        updatedTileToPlace = updatedTileDecks.topTile(tileKind);
+
+        GameState updatedGameState = new GameState(updatedPlayers, updatedTileDecks, updatedTileToPlace, updatedBoard, updatedNextAction,
+                updatedMessageBoard);
+
+        return updatedGameState;
     }
 
     private GameState withFinalPointsCounted(
@@ -374,7 +371,7 @@ public record GameState(
             return new GameState(players, tileDecks, tileToPlace, board, Action.OCCUPY_TILE, messageBoard);
         }
 
-        //Sinon on vérifie la fin du tour du joueur
+        //Sinon, on vérifie la fin du tour du joueur
         return withTurnFinished(board, board.lastPlacedTile());
     }
 

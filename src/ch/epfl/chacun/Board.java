@@ -446,29 +446,46 @@ public final class Board {
     public Board withoutGatherersOrFishersIn(Set<Area<Forest>> forests, Set<Area<River>> rivers) {
         // Take care of Forests
         Set<Area<Forest>> forestsWithoutOccupants = new HashSet<>();
-        forests.forEach(forest -> {
-            forestsWithoutOccupants.add(forest.withoutOccupants());
-        });
-
-        final Set<Area<Forest>> boardForestAreas = boardPartitions.forests().areas();
-        Set<Area<Forest>> newForests = boardForestAreas.stream().filter(forest ->
-                !forests.contains(forest)).collect(Collectors.toSet());
-        newForests.addAll(forestsWithoutOccupants);
+        if (forests != null) {
+            forests.forEach(forest -> {
+                forestsWithoutOccupants.add(forest.withoutOccupants());
+            });
+        }
 
         // Take care of Rivers
         Set<Area<River>> riversWithoutOccupants = new HashSet<>();
-        rivers.forEach(river -> {
-            riversWithoutOccupants.add(river.withoutOccupants());
-        });
+        if (rivers != null) {
+            rivers.forEach(river -> {
+                riversWithoutOccupants.add(river.withoutOccupants());
+            });
+        }
 
-        final Set<Area<River>> boardRiverAreas = boardPartitions.rivers().areas();
-        Set<Area<River>> newRivers = boardRiverAreas.stream().filter(river ->
-                !rivers.contains(river)).collect(Collectors.toSet());
+        // Retrieve board forest areas only if forests is not null
+        Set<Area<Forest>> newForests = new HashSet<>();
+        if (boardPartitions.forests() != null) {
+            final Set<Area<Forest>> boardForestAreas = boardPartitions.forests().areas();
+            newForests = boardForestAreas.stream()
+                    .filter(forest -> forests == null || !forests.contains(forest))
+                    .collect(Collectors.toSet());
+        }
+        newForests.addAll(forestsWithoutOccupants);
+
+        // Retrieve board river areas only if rivers is not null
+        Set<Area<River>> newRivers = new HashSet<>();
+        if (boardPartitions.rivers() != null) {
+            final Set<Area<River>> boardRiverAreas = boardPartitions.rivers().areas();
+            newRivers = boardRiverAreas.stream()
+                    .filter(river -> rivers == null || !rivers.contains(river))
+                    .collect(Collectors.toSet());
+        }
         newRivers.addAll(riversWithoutOccupants);
 
         // Rebuild partitions
-        ZonePartitions updatedPartitions = new ZonePartitions(new ZonePartition<>(newForests),
-                boardPartitions.meadows(), new ZonePartition<>(newRivers), boardPartitions.riverSystems());
+        ZonePartitions updatedPartitions = new ZonePartitions(
+                new ZonePartition<>(newForests),
+                boardPartitions.meadows(),
+                new ZonePartition<>(newRivers),
+                boardPartitions.riverSystems());
 
         return new Board(placedTiles, placedTileIndices, updatedPartitions, cancelledAnimals);
     }
