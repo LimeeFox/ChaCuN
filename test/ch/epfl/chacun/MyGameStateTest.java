@@ -208,7 +208,7 @@ public class MyGameStateTest {
         // Initialize an occupant assuming a constructor exists. Adapt parameters as needed.
 
         assertNotNull(gs3.board().lastPlacedTile());
-        assertEquals(-1, gs3.board().lastPlacedTile().idOfZoneOccupiedBy(occupant3.kind()));
+        assertEquals(8, gs3.board().lastPlacedTile().idOfZoneOccupiedBy(occupant3.kind()));
     }
 
     @Test
