@@ -430,7 +430,7 @@ public record GameState(
      */
     public GameState withNewOccupant(Occupant occupant) {
         Preconditions.checkArgument(nextAction == Action.OCCUPY_TILE);
-
+        Occupant test = occupant;
         // todo check if the last placer was the same player, in which case next action might be place tile, but it can also be end_game
 
         // Si le joueur ne souhaite pas placer d'occupant
@@ -438,7 +438,6 @@ public record GameState(
             return new GameState(players, tileDecks, tileToPlace, board, Action.PLACE_TILE, messageBoard);
         }
 
-        List<PlayerColor> updatedPlayers = shiftAndGetPlayerList();
         // Pas de màj de tileDecks
         // Pas de màj de tileToPlace (traité dans withPlacedTile)
         Board updatedBoard = board.withOccupant(occupant);
@@ -446,7 +445,8 @@ public record GameState(
 
 
         // todo this method call depends highly on hiw withTurnFinished interacts with its parameters
-        return withTurnFinished();
+        return new GameState(players, tileDecks, tileToPlace, updatedBoard, nextAction, messageBoard)
+                .withTurnFinished();
     }
 
     /**
