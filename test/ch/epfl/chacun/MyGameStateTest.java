@@ -248,7 +248,20 @@ public class MyGameStateTest {
 
     @Test
     void testWithNewOccupant() {
-        // Test implementation here
+        List<PlayerColor> players = Arrays.asList(PlayerColor.RED, PlayerColor.BLUE);
+
+        GameState gs0 = GameState.initial(players, getTileDecks(), getMessageBoard().textMaker());
+        GameState gs1 = gs0.withStartingTilePlaced();
+        //Requires completion of withPlacedTile() to function
+        GameState gs2 = gs1.withPlacedTile(new PlacedTile(gs1.tileDecks().topTile(Tile.Kind.NORMAL), PlayerColor.RED,
+                        Rotation.HALF_TURN, new Pos(0, -1)))
+                .withNewOccupant(new Occupant(Occupant.Kind.PAWN, 0));
+        GameState expected = new GameState(players, getTileDecks(), getTileDecks().normalTiles().get(1),
+                gs1.board().withNewTile(new PlacedTile(gs1.tileDecks().topTile(Tile.Kind.NORMAL), PlayerColor.RED,
+                        Rotation.HALF_TURN, new Pos(0, -1))).withOccupant(new Occupant(Occupant.Kind.PAWN, 0)),
+                GameState.Action.PLACE_TILE, gs1.messageBoard());
+
+        assertEquals(expected, gs2);
     }
 
     @Test
@@ -285,8 +298,8 @@ public class MyGameStateTest {
                         Rotation.HALF_TURN, new Pos(0, -1)))
                 .withNewOccupant(new Occupant(Occupant.Kind.HUT, 8));
 
-        int standardPawnCount = gs0.board().occupantCount(PlayerColor.RED, Occupant.Kind.PAWN);
-        int standardHutCount = gs0.board().occupantCount(PlayerColor.RED, Occupant.Kind.HUT);
+        int standardPawnCount = Occupant.occupantsCount(Occupant.Kind.PAWN);
+        int standardHutCount = Occupant.occupantsCount(Occupant.Kind.HUT);
 
         assertEquals(standardPawnCount, gs1.freeOccupantsCount(PlayerColor.RED, Occupant.Kind.PAWN));
         assertEquals(standardHutCount, gs1.freeOccupantsCount(PlayerColor.RED, Occupant.Kind.HUT));
@@ -473,8 +486,6 @@ public class MyGameStateTest {
 
         GameState finalGameState2 = finalGameState2_PRE.withOccupantRemoved(occupant2);
     }
-
-     */
 
     // Additional test methods can be added as needed
 }
