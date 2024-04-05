@@ -388,9 +388,10 @@ public record GameState(
 
         if (occupant == null) {
             return new GameState(players, tileDecks, tileToPlace, board, Action.OCCUPY_TILE, messageBoard);
+
         }
 
-        GameState updatedGameSate = new GameState(shiftAndGetPlayerList(), tileDecks, tileToPlace,
+        GameState updatedGameSate = new GameState(players, tileDecks, tileToPlace,
                 board.withoutOccupant(occupant), Action.OCCUPY_TILE, messageBoard);
 
         return updatedGameSate.withTurnFinishedIfOccupationImpossible();
