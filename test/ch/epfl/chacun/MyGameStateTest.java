@@ -4,6 +4,10 @@ import org.junit.jupiter.api.Test;
 import org.w3c.dom.Text;
 
 import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -163,8 +167,8 @@ public class MyGameStateTest {
         GameState gsN = gs0.withStartingTilePlaced()
                 .withPlacedTile(normalTile);
         GameState gsM = gs0.withStartingTilePlaced()
-                .withPlacedTile(menhirTile0).withNewOccupant(null)
-                .withPlacedTile(menhirTile1).withNewOccupant(null)
+                .withPlacedTile(menhirTile0)
+                .withPlacedTile(menhirTile1)
                 .withPlacedTile(menhirTile2);
 
         List<PlayerColor> shiftedPlayerList = new ArrayList<>(List.of(PlayerColor.BLUE, PlayerColor.RED));
@@ -263,6 +267,8 @@ public class MyGameStateTest {
         assertEquals(PlayerColor.RED, gs1.currentPlayer());
         assertNull(gs0.currentPlayer());
         assertNull(gs2.currentPlayer());
+
+
     }
 
     @Test
@@ -294,39 +300,73 @@ public class MyGameStateTest {
         assertThrows(IllegalArgumentException.class, () -> {
             gs1.freeOccupantsCount(PlayerColor.RED, Occupant.Kind.HUT);
         });
+
     }
 
     @Test
     void testLastTilePotentialOccupants_pawnless_player() {
         List<PlayerColor> players = Arrays.asList(PlayerColor.RED, PlayerColor.BLUE);
 
+        Occupant occupant_pawn1 = new Occupant(Occupant.Kind.PAWN, 0);
+        Occupant occupant_pawn2 = new Occupant(Occupant.Kind.PAWN, 1);
+        Occupant occupant_pawn10 = new Occupant(Occupant.Kind.PAWN, 0);
+        Occupant occupant_pawn11 = new Occupant(Occupant.Kind.PAWN, 1);
+        Occupant occupant_pawn100 = new Occupant(Occupant.Kind.PAWN, 0);
+        Occupant occupant_pawn110 = new Occupant(Occupant.Kind.PAWN, 1); // potential
+        Occupant occupant_pawn1000 = new Occupant(Occupant.Kind.PAWN, 0); // potential
+        Occupant occupant_pawn1100 = new Occupant(Occupant.Kind.PAWN, 1); // potential
+        Occupant occupant_hut1 = new Occupant(Occupant.Kind.HUT, 8);
+        Occupant occupant_hut2 = new Occupant(Occupant.Kind.HUT, 8);
+        Occupant occupant_hut3 = new Occupant(Occupant.Kind.HUT, 8);
+        Occupant occupant_hut4 = new Occupant(Occupant.Kind.HUT, 8);
+
         GameState gs0 = GameState.initial(players, getTileDecks(), getMessageBoard().textMaker());
-        GameState gs1 = gs0.withStartingTilePlaced();
-        //Requires withPlacedTile() to function correctly
-        GameState gs2 = gs1.withPlacedTile(new PlacedTile(gs1.tileDecks().topTile(Tile.Kind.NORMAL), PlayerColor.RED,
+        GameState gs1 = gs0.withStartingTilePlaced().withNewOccupant(occupant_pawn1).withNewOccupant(occupant_pawn2);
+
+        // Requires withPlacedTile() && withNewOccupant to function correctly
+        GameState gs2 = gs1.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
+                Rotation.RIGHT, new Pos(1, 0))).withNewOccupant(occupant_pawn10).withNewOccupant(occupant_pawn11);
+        GameState gs3 = gs2.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
+                Rotation.HALF_TURN, new Pos(1, 1))).withNewOccupant(occupant_pawn100);
+        GameState gs4 = gs3.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
+                Rotation.LEFT, new Pos(0, 1)));
+        GameState gs5 = gs4.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
                 Rotation.HALF_TURN, new Pos(0, -1)));
 
-        PlacedTile lastPlacedTile = gs2.board().lastPlacedTile();
-        Set<Occupant> actualPotentialOccupants = gs2.lastTilePotentialOccupants();
-        Set<Occupant> expectedPotentialOccupants = lastPlacedTile.potentialOccupants(); // ignore the null warning, its not gonna happen cuz we added an initial tile
-
-        assertEquals(expectedPotentialOccupants, actualPotentialOccupants);
+        assertEquals(gs5.lastTilePotentialOccupants(), Set.of(occupant_hut1, occupant_hut2, occupant_hut3, occupant_hut4, occupant_pawn110, occupant_pawn1000, occupant_pawn1100));
     }
 
+    @Test
     void testLastTilePotentialOccupants_hutless_player() {
         List<PlayerColor> players = Arrays.asList(PlayerColor.RED, PlayerColor.BLUE);
 
+        Occupant occupant_pawn1 = new Occupant(Occupant.Kind.PAWN, 0);
+        Occupant occupant_pawn2 = new Occupant(Occupant.Kind.PAWN, 1);
+        Occupant occupant_pawn10 = new Occupant(Occupant.Kind.PAWN, 0);
+        Occupant occupant_pawn11 = new Occupant(Occupant.Kind.PAWN, 1);
+        Occupant occupant_pawn100 = new Occupant(Occupant.Kind.PAWN, 0);
+        Occupant occupant_pawn110 = new Occupant(Occupant.Kind.PAWN, 1);
+        Occupant occupant_pawn1000 = new Occupant(Occupant.Kind.PAWN, 0);
+        Occupant occupant_pawn1100 = new Occupant(Occupant.Kind.PAWN, 1);
+        Occupant occupant_hut1 = new Occupant(Occupant.Kind.HUT, 8);
+        Occupant occupant_hut2 = new Occupant(Occupant.Kind.HUT, 8);
+        Occupant occupant_hut3 = new Occupant(Occupant.Kind.HUT, 8);
+        Occupant occupant_hut4 = new Occupant(Occupant.Kind.HUT, 8);
+
         GameState gs0 = GameState.initial(players, getTileDecks(), getMessageBoard().textMaker());
-        GameState gs1 = gs0.withStartingTilePlaced();
-        //Requires withPlacedTile() to function correctly
-        GameState gs2 = gs1.withPlacedTile(new PlacedTile(gs1.tileDecks().topTile(Tile.Kind.NORMAL), PlayerColor.RED,
+        GameState gs1 = gs0.withStartingTilePlaced().withNewOccupant(occupant_hut1);
+
+        // Requires withPlacedTile() && withNewOccupant to function correctly
+        GameState gs2 = gs1.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
+                Rotation.RIGHT, new Pos(1, 0))).withNewOccupant(occupant_hut1);
+        GameState gs3 = gs2.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
+                Rotation.HALF_TURN, new Pos(1, 1))).withNewOccupant(occupant_hut2);
+        GameState gs4 = gs3.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
+                Rotation.LEFT, new Pos(0, 1))).withNewOccupant(occupant_hut3);
+        GameState gs5 = gs4.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
                 Rotation.HALF_TURN, new Pos(0, -1)));
 
-        PlacedTile lastPlacedTile = gs2.board().lastPlacedTile();
-        Set<Occupant> actualPotentialOccupants = gs2.lastTilePotentialOccupants();
-        Set<Occupant> expectedPotentialOccupants = lastPlacedTile.potentialOccupants(); // ignore the null warning, its not gonna happen cuz we added an initial tile
-
-        assertEquals(expectedPotentialOccupants, actualPotentialOccupants);
+        assertEquals(gs5.lastTilePotentialOccupants(), Set.of(occupant_pawn1, occupant_pawn2, occupant_pawn10, occupant_pawn11, occupant_pawn100, occupant_pawn110, occupant_pawn1000, occupant_pawn1100, occupant_hut4));
     }
 
     @Test
@@ -345,7 +385,10 @@ public class MyGameStateTest {
 
         assertEquals(expectedPotentialOccupants, actualPotentialOccupants);
     }
-/*
+
+    /**
+     * unfinished tests
+     */
     void testLastTilePotentialOccupants_pawnsOnly_occupied() {
         List<PlayerColor> players = Arrays.asList(PlayerColor.RED, PlayerColor.BLUE);
 
@@ -384,8 +427,6 @@ public class MyGameStateTest {
 
         GameState finalGameState2 = finalGameState2_PRE.withOccupantRemoved(occupant2);
     }
-
- */
 
     void testLastTilePotentialOccupants_MIXED() {
         List<PlayerColor> players = Arrays.asList(PlayerColor.RED, PlayerColor.BLUE);
