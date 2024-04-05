@@ -389,6 +389,7 @@ public class MyGameStateTest {
     /**
      * unfinished tests
      */
+    /*
     void testLastTilePotentialOccupants_pawnsOnly_occupied() {
         List<PlayerColor> players = Arrays.asList(PlayerColor.RED, PlayerColor.BLUE);
 
@@ -405,6 +406,7 @@ public class MyGameStateTest {
 
         GameState finalGameState2 = finalGameState2_PRE.withOccupantRemoved(occupant2);
     }
+*/
 
     void testLastTilePotentialOccupants_Huts() {
         List<PlayerColor> players = Arrays.asList(PlayerColor.RED, PlayerColor.BLUE);
