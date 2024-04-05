@@ -324,13 +324,13 @@ public class MyGameStateTest {
         GameState gs1 = gs0.withStartingTilePlaced();
 
         // Requires withPlacedTile() && withNewOccupant to function correctly
-        GameState gs2 = gs1.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
+        GameState gs2 = gs1.withPlacedTile(new PlacedTile(getTile(57, Tile.Kind.NORMAL), PlayerColor.RED,
                 Rotation.RIGHT, new Pos(1, 0))).withNewOccupant(occupant_pawn10).withNewOccupant(occupant_pawn11);
-        GameState gs3 = gs2.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
+        GameState gs3 = gs2.withPlacedTile(new PlacedTile(getTile(58, Tile.Kind.NORMAL), PlayerColor.RED,
                 Rotation.HALF_TURN, new Pos(1, 1))).withNewOccupant(occupant_pawn100);
-        GameState gs4 = gs3.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
+        GameState gs4 = gs3.withPlacedTile(new PlacedTile(getTile(59, Tile.Kind.NORMAL), PlayerColor.RED,
                 Rotation.LEFT, new Pos(0, 1))).withNewOccupant(occupant_pawn1000).withNewOccupant(occupant_pawn1100);
-        GameState gs5 = gs4.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
+        GameState gs5 = gs4.withPlacedTile(new PlacedTile(getTile(60, Tile.Kind.NORMAL), PlayerColor.RED,
                 Rotation.HALF_TURN, new Pos(0, -1)));
 
         assertEquals(gs5.lastTilePotentialOccupants(), Set.of(occupant_hut1, occupant_hut2, occupant_hut3, occupant_hut4, occupant_pawn110, occupant_pawn1, occupant_pawn2));
@@ -357,13 +357,13 @@ public class MyGameStateTest {
         GameState gs1 = gs0.withStartingTilePlaced();
 
         // Requires withPlacedTile() && withNewOccupant to function correctly
-        GameState gs2 = gs1.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
+        GameState gs2 = gs1.withPlacedTile(new PlacedTile(getTile(57, Tile.Kind.NORMAL), PlayerColor.RED,
                 Rotation.RIGHT, new Pos(1, 0))).withNewOccupant(occupant_hut2);
-        GameState gs3 = gs2.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
+        GameState gs3 = gs2.withPlacedTile(new PlacedTile(getTile(58, Tile.Kind.NORMAL), PlayerColor.RED,
                 Rotation.HALF_TURN, new Pos(1, 1))).withNewOccupant(occupant_hut3);
-        GameState gs4 = gs3.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
+        GameState gs4 = gs3.withPlacedTile(new PlacedTile(getTile(59, Tile.Kind.NORMAL), PlayerColor.RED,
                 Rotation.LEFT, new Pos(0, 1))).withNewOccupant(occupant_hut4);
-        GameState gs5 = gs4.withPlacedTile(new PlacedTile(getTile(Tile.Kind.START), PlayerColor.RED,
+        GameState gs5 = gs4.withPlacedTile(new PlacedTile(getTile(60, Tile.Kind.NORMAL), PlayerColor.RED,
                 Rotation.HALF_TURN, new Pos(0, -1)));
 
         assertEquals(gs5.lastTilePotentialOccupants(), Set.of(occupant_pawn1, occupant_pawn2, occupant_pawn10, occupant_pawn11, occupant_pawn100, occupant_pawn110, occupant_pawn1000, occupant_pawn1100, occupant_hut1));
