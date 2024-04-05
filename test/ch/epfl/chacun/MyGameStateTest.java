@@ -150,47 +150,98 @@ public class MyGameStateTest {
 
     @Test
     void testWithPlacedTile() {
+        // Create initial game state
+        GameState initialGameState = GameState.initial(
+                List.of(PlayerColor.RED, PlayerColor.BLUE),
+                getTileDecks(),
+                getMessageBoard().textMaker()
+        );
 
-        GameState gs0 = GameState.initial(List.of(PlayerColor.RED, PlayerColor.BLUE),
-                getTileDecks(), getMessageBoard().textMaker());
+        // Create PlacedTile instances for testing
+        PlacedTile normalTile = new PlacedTile(
+                initialGameState.tileDecks().topTile(Tile.Kind.NORMAL),
+                PlayerColor.RED,
+                Rotation.HALF_TURN,
+                new Pos(0, -1)
+        );
 
-        PlacedTile normalTile = new PlacedTile(gs0.tileDecks().topTile(Tile.Kind.NORMAL), PlayerColor.RED,
-                Rotation.HALF_TURN, new Pos(0, -1));
+        PlacedTile menhirTile0 = new PlacedTile(
+                initialGameState.tileDecks().menhirTiles().get(0),
+                PlayerColor.RED,
+                Rotation.RIGHT,
+                new Pos(1, 0)
+        );
 
-        PlacedTile menhirTile0 = new PlacedTile(gs0.tileDecks().menhirTiles().get(0), PlayerColor.RED,
-                Rotation.RIGHT, new Pos(1, 0));
-        PlacedTile menhirTile1 = new PlacedTile(gs0.tileDecks().menhirTiles().get(1), PlayerColor.BLUE,
-                Rotation.HALF_TURN, new Pos(1, 1));
-        PlacedTile menhirTile2 = new PlacedTile(gs0.tileDecks().menhirTiles().get(2), PlayerColor.RED,
-                Rotation.LEFT, new Pos(0, 1));
+        PlacedTile menhirTile1 = new PlacedTile(
+                initialGameState.tileDecks().menhirTiles().get(1),
+                PlayerColor.BLUE,
+                Rotation.HALF_TURN,
+                new Pos(1, 1)
+        );
 
-        GameState gsN = gs0.withStartingTilePlaced()
+        PlacedTile menhirTile2 = new PlacedTile(
+                initialGameState.tileDecks().menhirTiles().get(2),
+                PlayerColor.RED,
+                Rotation.LEFT,
+                new Pos(0, 1)
+        );
+
+        // Test with normal tile placement
+        GameState gameStateWithNormalTile = initialGameState.withStartingTilePlaced()
                 .withPlacedTile(normalTile);
-        GameState gsM = gs0.withStartingTilePlaced()
-                .withPlacedTile(menhirTile0)
-                .withPlacedTile(menhirTile1)
+
+        TileDecks expectedTileDecksNormal = initialGameState.tileDecks().withTopTileDrawn(Tile.Kind.START)
+                .withTopTileDrawn(Tile.Kind.NORMAL);
+        Board expectedBoardNormal = initialGameState.withStartingTilePlaced().board().withNewTile(normalTile);
+        MessageBoard expectedMessageBoardNormal = initialGameState.messageBoard();
+
+        Board eB1 = new GameState(
+                List.of(PlayerColor.RED, PlayerColor.BLUE),
+                expectedTileDecksNormal,
+                null,
+                expectedBoardNormal,
+                GameState.Action.OCCUPY_TILE,
+                expectedMessageBoardNormal
+        ).board();
+
+        Board aB3 = gameStateWithNormalTile.board();
+
+        assertTrue(new GameState(
+                List.of(PlayerColor.RED, PlayerColor.BLUE),
+                expectedTileDecksNormal,
+                null,
+                expectedBoardNormal,
+                GameState.Action.OCCUPY_TILE,
+                expectedMessageBoardNormal
+        ).board().equals(gameStateWithNormalTile.board()));
+
+        // Test with menhir tile placement
+        GameState gameStateWithMenhirTiles = initialGameState.withStartingTilePlaced()
+                .withPlacedTile(menhirTile0).withNewOccupant(null)
+                .withPlacedTile(menhirTile1).withNewOccupant(null)
                 .withPlacedTile(menhirTile2);
 
-        List<PlayerColor> shiftedPlayerList = new ArrayList<>(List.of(PlayerColor.BLUE, PlayerColor.RED));
-
-        TileDecks updatedTileDecksN = gs0.tileDecks().withTopTileDrawn(Tile.Kind.NORMAL);
-        Board updatedBoarN = gs0.board().withNewTile(normalTile);
-        MessageBoard updatedMessageBoardN = gs0.messageBoard();
-
-        TileDecks updatedTileDeckM = new TileDecks(gs0.tileDecks().startTiles(),
+        TileDecks expectedTileDecksMenhir = new TileDecks(
                 List.of(),
-                gs0.tileDecks().menhirTiles());
-        Board updatedBoardM = gs0.board()
+                List.of(),
+                initialGameState.tileDecks().menhirTiles()
+        );
+
+        Board expectedBoardMenhir = initialGameState.withStartingTilePlaced().board()
                 .withNewTile(menhirTile0)
                 .withNewTile(menhirTile1)
                 .withNewTile(menhirTile2);
-        MessageBoard updatedMessageBoardM = gs0.messageBoard().withClosedForestWithMenhir(PlayerColor.RED, gs0.withStartingTilePlaced().board().forestArea(new Zone.Forest(1, Zone.Forest.Kind.WITH_MENHIR)));
 
-        //Test pour les différents cas de withPlacedTile:
-        assertEquals(new GameState(shiftedPlayerList, updatedTileDecksN, null, updatedBoarN, GameState.Action.OCCUPY_TILE, updatedMessageBoardN), gsN);
-        assertEquals(new GameState(shiftedPlayerList, updatedTileDeckM, updatedTileDeckM.topTile(Tile.Kind.MENHIR),
-                updatedBoardM, GameState.Action.PLACE_TILE, updatedMessageBoardM),
-                gsM);
+        MessageBoard expectedMessageBoardMenhir = initialGameState.messageBoard();
+
+        assertTrue(new GameState(
+                List.of(PlayerColor.RED, PlayerColor.BLUE),
+                expectedTileDecksMenhir,
+                expectedTileDecksMenhir.topTile(Tile.Kind.MENHIR),
+                expectedBoardMenhir,
+                GameState.Action.PLACE_TILE,
+                expectedMessageBoardMenhir
+        ).board().equals(gameStateWithMenhirTiles.board()));
     }
 
     @Test

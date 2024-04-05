@@ -435,7 +435,7 @@ public record GameState(
 
         // Si le joueur ne souhaite pas placer d'occupant
         if (occupant == null) {
-            return new GameState(players, tileDecks, tileToPlace, board, Action.PLACE_TILE, messageBoard);
+            return withTurnFinished();
         }
 
         // Pas de màj de tileDecks
