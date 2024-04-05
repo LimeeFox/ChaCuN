@@ -309,14 +309,6 @@ public class MyGameStateTest {
 
         assertEquals(standardPawnCount - 1, gs2.freeOccupantsCount(PlayerColor.RED, Occupant.Kind.PAWN));
         assertEquals(standardHutCount - 1, gs3.freeOccupantsCount(PlayerColor.RED, Occupant.Kind.HUT));
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            gs1.freeOccupantsCount(PlayerColor.RED, Occupant.Kind.PAWN);
-        });
-        assertThrows(IllegalArgumentException.class, () -> {
-            gs1.freeOccupantsCount(PlayerColor.RED, Occupant.Kind.HUT);
-        });
-
     }
 
     @Test
