@@ -146,21 +146,21 @@ public record GameState(
         Preconditions.checkArgument(nextAction == Action.PLACE_TILE );
         Preconditions.checkArgument(tile.occupant() == null);
 
-        //Màj par défaut des paramètres de GameState
-        //Pas de màj de players (par défaut, le même joueur qui a posé la tuile devra poser un occupant)
+        // Màj par défaut des paramètres de GameState
+        // Pas de màj de players (par défaut, le même joueur qui a posé la tuile devra poser un occupant)
         List<PlayerColor> updatedPlayerList = players;
         final TileDecks updatedTileDecks = tileDecks.withTopTileDrawn(tile.kind());
         Tile updatedTileToPlace = null;
         Board updatedBoard = board.withNewTile(tile);
         Action updatedNextAction = Action.OCCUPY_TILE;
-        //La màj de messageBoard dépend des points obtenus et des pouvoirs utilisés
+        // La màj de messageBoard dépend des points obtenus et des pouvoirs utilisés
         MessageBoard updatedMessageBoard = messageBoard;
 
         PlayerColor scorer = currentPlayer();
 
         final int placedOccupants = updatedBoard.occupantCount(currentPlayer(), Occupant.Kind.PAWN);
 
-        //Traitement des pouvoirs spéciaux
+        // Traitement des pouvoirs spéciaux
         Zone specialPowerZone = tile.specialPowerZone();
         if (specialPowerZone != null) {
             List<Zone.SpecialPower> immediateEffectPowers = List.of(Zone.SpecialPower.SHAMAN, Zone.SpecialPower.LOGBOAT,
@@ -179,9 +179,30 @@ public record GameState(
                                 updatedBoard.riverSystemArea(logBoatZone));
                     }
                     case HUNTING_TRAP -> {
-                        Zone.Meadow huntingTrapZone = (Zone.Meadow) specialPowerZone;
-                        updatedMessageBoard = updatedMessageBoard.withScoredHuntingTrap(scorer,
-                                updatedBoard.meadowArea(huntingTrapZone));
+                        if (!(specialPowerZone instanceof Zone.Meadow meadowZone)) break;
+                        Area<Zone.Meadow> adjacentMeadow = updatedBoard.adjacentMeadow(tile.pos(), meadowZone);
+
+                        // Compter les animaux
+                        Set<Animal> animals = new HashSet<>();
+                        for (Zone.Meadow meadow : adjacentMeadow.zones()) {
+                            animals.addAll(meadow.animals());
+                        }
+                        Map<Animal.Kind, Long> animalCount = animals.stream()
+                                .collect(Collectors.groupingBy(Animal::kind, Collectors.counting()));
+
+                        // Filtrer les animaux
+                        Set<Animal> cancelledAnimals = new HashSet<>();
+                        long tigerCount = animalCount.getOrDefault(Animal.Kind.TIGER, 0L);
+                        long deerCount = animalCount.getOrDefault(Animal.Kind.DEER, 0L);
+                        // Compter le nombre de cerfs à anuller en fonction du nombre de tigres (qui les mangent)
+                        int deerToCancel = (int) Math.min(deerCount, tigerCount);
+                        animals.stream()
+                                .filter(animal -> animal.kind() == Animal.Kind.DEER)
+                                .limit(deerToCancel)
+                                .forEach(cancelledAnimals::add);
+
+                        updatedMessageBoard = updatedMessageBoard.withScoredHuntingTrap(scorer, adjacentMeadow);
+                        updatedBoard.withMoreCancelledAnimals(cancelledAnimals);
                     }
                 }
             }
@@ -359,17 +380,17 @@ public record GameState(
 
     private GameState withTurnFinishedIfOccupationImpossible() {
 
-        //Pas de màj de players, puisque le même joueur qui a retiré le pion et amener à en posé un autre (ou aucun)
-        //Pas de màj de tileDecks
-        //Pas de màj de tileToPlace
-        //Pas de màj de messageBoard
+        // Pas de màj de players, puisque le même joueur qui a retiré le pion et amener à en posé un autre (ou aucun)
+        // Pas de màj de tileDecks
+        // Pas de màj de tileToPlace
+        // Pas de màj de messageBoard
 
-        //Le joueur ne peut passer à OCCUPY_TILE seulement s'il reste de la place sur la dernière tuile
+        // Le joueur ne peut passer à OCCUPY_TILE seulement s'il reste de la place sur la dernière tuile
         if (!lastTilePotentialOccupants().isEmpty()) {
             return new GameState(players, tileDecks, tileToPlace, board, Action.OCCUPY_TILE, messageBoard);
         }
 
-        //Sinon on vérifie la fin du tour du joueur
+        // Sinon on vérifie la fin du tour du joueur
         return withTurnFinished(board, board.lastPlacedTile());
     }
 
@@ -410,20 +431,20 @@ public record GameState(
 
         // todo check if the last placer was the same player, in which case next action might be place tile, but it can also be end_game
 
-        //Si le joueur ne souhaite pas placer d'occupant
+        // Si le joueur ne souhaite pas placer d'occupant
         if (occupant == null) {
             return new GameState(players, tileDecks, tileToPlace, board, Action.PLACE_TILE, messageBoard);
         }
 
         List<PlayerColor> updatedPlayers = shiftAndGetPlayerList();
-        //Pas de màj de tileDecks
-        //Pas de màj de tileToPlace (traité dans withPlacedTile)
+        // Pas de màj de tileDecks
+        // Pas de màj de tileToPlace (traité dans withPlacedTile)
         Board updatedBoard = board.withOccupant(occupant);
-        //Pas de màj de messageBoard
+        // Pas de màj de messageBoard
 
         GameState updatedGameState = new GameState(updatedPlayers, tileDecks, tileToPlace, updatedBoard, Action.PLACE_TILE,
                 messageBoard);
-        //todo this method call depends highly on hiw withTurnFinished interacts with its parameters
+        // todo this method call depends highly on hiw withTurnFinished interacts with its parameters
         return updatedGameState.withTurnFinished(board, null);
     }
 
