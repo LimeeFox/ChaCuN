@@ -405,14 +405,15 @@ public final class Board {
      * @return un plateau identique au récepteur, mais avec l'occupant donné en plus
      */
     public Board withOccupant(Occupant occupant) {
-        final int id = Zone.tileId(occupant.zoneId());
+        final int zoneId = occupant.zoneId();
+        final int tileId = Zone.tileId(zoneId);
 
-        PlacedTile tile = tileWithId(id);
+        PlacedTile tile = tileWithId(tileId);
         PlacedTile[] updatedPlacedTiles = placedTiles.clone();
         updatedPlacedTiles[getIndexOfTile(tile)] = tile.withOccupant(occupant);
 
         ZonePartitions.Builder updatedPartition = new ZonePartitions.Builder(boardPartitions);
-        updatedPartition.addInitialOccupant(tile.placer(), occupant.kind(), tile.zoneWithId(id));
+        updatedPartition.addInitialOccupant(tile.placer(), occupant.kind(), tile.zoneWithId(zoneId));
 
         return new Board(updatedPlacedTiles, placedTileIndices.clone(), updatedPartition.build(), cancelledAnimals());
     }
