@@ -458,12 +458,11 @@ public record GameState(
      */
     private List<PlayerColor> shiftAndGetPlayerList() {
         List<PlayerColor> playerList = new ArrayList<>(players);
-        List<PlayerColor> newList = new ArrayList<>();
 
-        newList.add(playerList.getFirst());
-
+        PlayerColor lastPlayer = playerList.getFirst();
         playerList.removeFirst();
-        newList.addAll(playerList);
+        List<PlayerColor> newList = new ArrayList<>(playerList);
+        newList.add(lastPlayer);
 
         return newList;
     }
