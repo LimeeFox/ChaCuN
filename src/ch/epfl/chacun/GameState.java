@@ -175,7 +175,8 @@ public record GameState(
                 switch (tilePower) {
                     case SHAMAN -> {
                         if (placedOccupants > 0) {
-                            updatedNextAction = Action.RETAKE_PAWN;
+                            return new GameState(updatedPlayerList, updatedTileDecks, updatedTileToPlace, updatedBoard,
+                                    Action.RETAKE_PAWN, updatedMessageBoard);
                         }
                     }
                     case LOGBOAT -> {
@@ -248,6 +249,7 @@ public record GameState(
             }
         }
 
+
         Set<Area<Zone.Forest>> lastClosedForests = null;
         if (board.forestsClosedByLastTile() != null) {
             lastClosedForests = board.forestsClosedByLastTile();
@@ -275,7 +277,8 @@ public record GameState(
         updatedTileDecks = updatedTileDecks.withTopTileDrawnUntil(tileKind, tileCondition);
 
         if (updatedTileDecks.normalTiles().isEmpty()) {
-            return withFinalPointsCounted(updatedPlayers, updatedTileDecks, updatedBoard, updatedMessageBoard);
+            return new GameState(updatedPlayers, updatedTileDecks, updatedTileToPlace, updatedBoard, Action.END_GAME,
+                    updatedMessageBoard).withFinalPointsCounted();
         }
 
         updatedTileToPlace = updatedTileDecks.topTile(tileKind);
@@ -285,8 +288,7 @@ public record GameState(
                 updatedMessageBoard);
     }
 
-    private GameState withFinalPointsCounted(
-            List<PlayerColor> newPlayers, TileDecks newTileDecks, Board newBoard, MessageBoard newMessageBoard) {
+    private GameState withFinalPointsCounted() {
         Preconditions.checkArgument(nextAction.equals(Action.END_GAME));
 
         Board updatedBoard = board;
@@ -378,7 +380,7 @@ public record GameState(
 
         updatedMessageBoard = updatedMessageBoard.withWinners(winners, maxPts);
 
-        return new GameState(newPlayers, newTileDecks, null, null, Action.END_GAME, updatedMessageBoard);
+        return new GameState(players, tileDecks, null, board, Action.END_GAME, updatedMessageBoard);
     }
 
     private GameState withTurnFinishedIfOccupationImpossible() {
@@ -433,8 +435,13 @@ public record GameState(
     public GameState withNewOccupant(Occupant occupant) {
         Preconditions.checkArgument(nextAction == Action.OCCUPY_TILE);
 
+        boolean occupantZoneIsClosed = false;
+
+        //todo check if the zone the occupant is trying to occupy isn't part of a closed area, in which case...
+        //todo one cannot simply place on occupant on a closed area
+
         // Si le joueur ne souhaite pas placer d'occupant
-        if (occupant == null) {
+        if (occupant == null || occupantZoneIsClosed) {
             return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard)
                     .withTurnFinished();
         }
@@ -444,8 +451,6 @@ public record GameState(
         Board updatedBoard = board.withOccupant(occupant);
         // Pas de màj de messageBoard
 
-
-        // todo this method call depends highly on hiw withTurnFinished interacts with its parameters
         return new GameState(players, tileDecks, tileToPlace, updatedBoard, nextAction, messageBoard)
                 .withTurnFinished();
     }

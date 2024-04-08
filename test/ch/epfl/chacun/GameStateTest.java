@@ -191,6 +191,7 @@ class GameStateTest {
                 6,
                 Set.of(PlayerColor.RED),
                 Set.of(56, 1));
+        //assertEquals(null, state.board().lastPlacedTile().occupant());
         assertEquals(expectedRiverMessage, state.messageBoard().messages().getLast());
         assertEquals(5, state.freeOccupantsCount(PlayerColor.RED, Occupant.Kind.PAWN));
 
