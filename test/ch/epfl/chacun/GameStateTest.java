@@ -277,6 +277,9 @@ class GameStateTest {
                 .withPlacedTile(placedTile37)
                 .withNewOccupant(null);
 
+        assertEquals(List.of(PlayerColor.BLUE, PlayerColor.GREEN, PlayerColor.YELLOW,
+                PlayerColor.PURPLE, PlayerColor.RED), state.players());
+
         assertEquals(41, state.tileToPlace().id());
         var placedTile41 = new PlacedTile(state.tileToPlace(), PlayerColor.BLUE, Rotation.NONE, new Pos(1, 0));
         state = state

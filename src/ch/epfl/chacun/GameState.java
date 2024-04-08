@@ -389,7 +389,7 @@ public record GameState(
 
         // Le joueur ne peut passer à OCCUPY_TILE seulement s'il reste de la place sur la dernière tuile
         if (!lastTilePotentialOccupants().isEmpty()) {
-            return new GameState(shiftAndGetPlayerList(), tileDecks, tileToPlace, board, Action.OCCUPY_TILE,
+            return new GameState(players, tileDecks, tileToPlace, board, Action.OCCUPY_TILE,
                     messageBoard);
         }
 
@@ -434,7 +434,7 @@ public record GameState(
 
         // Si le joueur ne souhaite pas placer d'occupant
         if (occupant == null) {
-            return new GameState(shiftAndGetPlayerList(), tileDecks, tileToPlace, board, nextAction, messageBoard)
+            return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard)
                     .withTurnFinished();
         }
 
