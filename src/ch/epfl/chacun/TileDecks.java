@@ -72,22 +72,12 @@ public final record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, Lis
      *          nouveau triplet de pile de tuiles
      */
     public TileDecks withTopTileDrawn(Tile.Kind kind) {
-        TileDecks drawnDecks = new TileDecks(startTiles, normalTiles, menhirTiles);
-        switch (kind) {
-            case START -> {
-                Preconditions.checkArgument(!startTiles.isEmpty());
-                drawnDecks = new TileDecks(startTiles.subList(1, startTiles.size()), normalTiles, menhirTiles);
-            }
-            case NORMAL -> {
-                Preconditions.checkArgument(!normalTiles.isEmpty());
-                drawnDecks = new TileDecks(startTiles, normalTiles.subList(1, normalTiles.size()), menhirTiles);
-            }
-            case MENHIR -> {
-                Preconditions.checkArgument(!menhirTiles.isEmpty());
-                drawnDecks = new TileDecks(startTiles, normalTiles, menhirTiles.subList(1, menhirTiles.size()));
-            }
-        }
-        return drawnDecks;
+        Preconditions.checkArgument(deckSize(kind) > 0);
+        return switch (kind) {
+            case START -> new TileDecks(startTiles.subList(1, startTiles.size()), normalTiles, menhirTiles);
+            case NORMAL -> new TileDecks(startTiles, normalTiles.subList(1, normalTiles.size()), menhirTiles);
+            case MENHIR -> new TileDecks(startTiles, normalTiles, menhirTiles.subList(1, menhirTiles.size()));
+        };
     }
 
     /**

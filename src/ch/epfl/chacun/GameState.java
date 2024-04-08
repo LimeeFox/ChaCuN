@@ -134,7 +134,7 @@ public record GameState(
         Tile updatedTileToPlace = tileDecks.topTile(Tile.Kind.NORMAL);
         Board upatedBoard = board.withNewTile(new PlacedTile(tileDecks.topTile(Tile.Kind.START),
                 null, Rotation.NONE, Pos.ORIGIN));
-
+        updatedTileDecks = updatedTileDecks.withTopTileDrawn(Tile.Kind.NORMAL);
         return new GameState(players, updatedTileDecks, updatedTileToPlace, upatedBoard, Action.PLACE_TILE, messageBoard);
     }
 
@@ -148,7 +148,7 @@ public record GameState(
      * @throws IllegalArgumentException si la prochaine action n'est pas PLACE_TILE, ou si la tuile passée est déjà occupée
      */
     public GameState withPlacedTile(PlacedTile tile) {
-        Preconditions.checkArgument(nextAction == Action.PLACE_TILE );
+        Preconditions.checkArgument(nextAction == Action.PLACE_TILE);
         Preconditions.checkArgument(tile.occupant() == null);
 
         // Màj par défaut des paramètres de GameState
