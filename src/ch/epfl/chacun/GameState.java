@@ -154,7 +154,7 @@ public record GameState(
         // Màj par défaut des paramètres de GameState
         // Pas de màj de players (par défaut, le même joueur qui a posé la tuile devra poser un occupant)
         List<PlayerColor> updatedPlayerList = players;
-        final TileDecks updatedTileDecks = tileDecks.withTopTileDrawn(tile.kind());
+        final TileDecks updatedTileDecks = tileDecks;
         Tile updatedTileToPlace = null;
         Board updatedBoard = board.withNewTile(tile);
         Action updatedNextAction = Action.OCCUPY_TILE;
@@ -389,10 +389,11 @@ public record GameState(
 
         // Le joueur ne peut passer à OCCUPY_TILE seulement s'il reste de la place sur la dernière tuile
         if (!lastTilePotentialOccupants().isEmpty()) {
-            return new GameState(players, tileDecks, tileToPlace, board, Action.OCCUPY_TILE, messageBoard);
+            return new GameState(shiftAndGetPlayerList(), tileDecks, tileToPlace, board, Action.OCCUPY_TILE,
+                    messageBoard);
         }
 
-        // Sinon on vérifie la fin du tour du joueur
+        // Sinon, on vérifie la fin du tour du joueur
         return withTurnFinished();
     }
 
@@ -430,12 +431,11 @@ public record GameState(
      */
     public GameState withNewOccupant(Occupant occupant) {
         Preconditions.checkArgument(nextAction == Action.OCCUPY_TILE);
-        Occupant test = occupant;
-        // todo check if the last placer was the same player, in which case next action might be place tile, but it can also be end_game
 
         // Si le joueur ne souhaite pas placer d'occupant
         if (occupant == null) {
-            return withTurnFinished();
+            return new GameState(shiftAndGetPlayerList(), tileDecks, tileToPlace, board, nextAction, messageBoard)
+                    .withTurnFinished();
         }
 
         // Pas de màj de tileDecks
