@@ -405,9 +405,9 @@ public final class Board {
      * @return un plateau identique au récepteur, mais avec l'occupant donné en plus
      */
     public Board withOccupant(Occupant occupant) {
-        final int id = occupant.zoneId();
+        final int id = Zone.tileId(occupant.zoneId());
 
-        PlacedTile tile = tileWithId(id / 10);
+        PlacedTile tile = tileWithId(id);
         PlacedTile[] updatedPlacedTiles = placedTiles.clone();
         updatedPlacedTiles[getIndexOfTile(tile)] = tile.withOccupant(occupant);
 

@@ -279,6 +279,7 @@ public record GameState(
         }
 
         updatedTileToPlace = updatedTileDecks.topTile(tileKind);
+        updatedTileDecks = updatedTileDecks.withTopTileDrawn(tileKind);
 
         return new GameState(updatedPlayers, updatedTileDecks, updatedTileToPlace, updatedBoard, updatedNextAction,
                 updatedMessageBoard);
