@@ -151,17 +151,17 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
     public Set<Occupant> potentialOccupants() {
         final Set<Occupant> occupants = new HashSet<>();
 
-        // On récupère les occupents qu'on peut placer dans la forêt
+        // On récupère les occupants qu'on peut placer dans la forêt
         for (Zone.Forest zone : forestZones()) {
             occupants.add(new Occupant(Occupant.Kind.PAWN, zone.id()));
         }
 
-        // On récupère les occupents qu'on peut placer dans un pré
+        // On récupère les occupants qu'on peut placer dans un pré
         for (Zone.Meadow zone : meadowZones()) {
             occupants.add(new Occupant(Occupant.Kind.PAWN, zone.id()));
         }
 
-        // On récupère les occupents qu'on peut placer dans la rivière
+        // On récupère les occupants qu'on peut placer dans la rivière
         for (Zone.River zone : riverZones()) {
             final int id = zone.id();
             // Les rivières connectées à des lacs ne peuvent pas avoir de huttes

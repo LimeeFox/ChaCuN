@@ -96,23 +96,19 @@ public record GameState(
 
         tile.potentialOccupants().forEach(occupant -> {
             // On enlève l'occupant potentiel si le joueur n'a plus d'occupants libres
-            boolean isValid;
+            boolean hasFreeOccupants = freeOccupantsCount(currentPlayer(), occupant.kind()) > 0;
 
-            if (freeOccupantsCount(currentPlayer(), occupant.kind()) == 0) {
-                isValid = false;
-            } else {
+            boolean isValid = hasFreeOccupants;
+
+            if (hasFreeOccupants) {
                 Zone zone = tile.zoneWithId(occupant.zoneId());
                 switch (zone) {
                     case Zone.Forest forest -> isValid = !board.forestArea(forest).isOccupied();
                     case Zone.Meadow meadow -> isValid = !board.meadowArea(meadow).isOccupied();
                     case Zone.Lake lake -> isValid = !board.riverSystemArea(lake).isOccupied();
-                    case Zone.River river -> {
-                        if (occupant.kind() == Occupant.Kind.PAWN) {
-                            isValid = !board.riverArea(river).isOccupied();
-                        } else {
-                            isValid = !board.riverSystemArea(river).isOccupied();
-                        }
-                    }
+                    case Zone.River river -> isValid = (occupant.kind() == Occupant.Kind.PAWN) ?
+                                !board.riverArea(river).isOccupied() :
+                                !board.riverSystemArea(river).isOccupied();
                 }
             }
             if (isValid) filteredPotentialOccupants.add(occupant);
