@@ -241,7 +241,7 @@ public record GameState(
 
         boolean playerGetsMenhir = false;
 
-        Set<Area<Zone.River>> lastClosedRivers = null;
+        Set<Area<Zone.River>> lastClosedRivers = new HashSet<>();
         if (board.riversClosedByLastTile() != null) {
             lastClosedRivers = board.riversClosedByLastTile();
             for (Area<Zone.River> closedRiver : Objects.requireNonNull(lastClosedRivers)) {
@@ -250,7 +250,7 @@ public record GameState(
         }
 
 
-        Set<Area<Zone.Forest>> lastClosedForests = null;
+        Set<Area<Zone.Forest>> lastClosedForests = new HashSet<>();
         if (board.forestsClosedByLastTile() != null) {
             lastClosedForests = board.forestsClosedByLastTile();
             for (Area<Zone.Forest> closedForest : Objects.requireNonNull(lastClosedForests)) {
@@ -441,7 +441,7 @@ public record GameState(
         //todo one cannot simply place on occupant on a closed area
 
         // Si le joueur ne souhaite pas placer d'occupant
-        if (occupant == null || occupantZoneIsClosed) {
+        if (occupant == null) {
             return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard)
                     .withTurnFinished();
         }

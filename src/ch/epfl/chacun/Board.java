@@ -447,19 +447,15 @@ public final class Board {
     public Board withoutGatherersOrFishersIn(Set<Area<Forest>> forests, Set<Area<River>> rivers) {
         // Take care of Forests
         Set<Area<Forest>> forestsWithoutOccupants = new HashSet<>();
-        if (forests != null) {
-            forests.forEach(forest -> {
+        forests.forEach(forest -> {
                 forestsWithoutOccupants.add(forest.withoutOccupants());
-            });
-        }
+        });
 
         // Take care of Rivers
         Set<Area<River>> riversWithoutOccupants = new HashSet<>();
-        if (rivers != null) {
-            rivers.forEach(river -> {
-                riversWithoutOccupants.add(river.withoutOccupants());
-            });
-        }
+        rivers.forEach(river -> {
+            riversWithoutOccupants.add(river.withoutOccupants());
+        });
 
         // Retrieve board forest areas only if forests is not null
         Set<Area<Forest>> newForests = new HashSet<>();
