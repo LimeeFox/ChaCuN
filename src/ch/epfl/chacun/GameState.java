@@ -289,13 +289,12 @@ public record GameState(
             updatedPlayers = shiftAndGetPlayerList();
         }
 
-        updatedTileDecks = updatedTileDecks.withTopTileDrawnUntil(tileKind, tileCondition);
-
-        if (updatedTileDecks.normalTiles().isEmpty()) {
+        if (updatedTileDecks.normalTiles().isEmpty() && !playerGetsMenhir) {
             return new GameState(updatedPlayers, updatedTileDecks, updatedTileToPlace, updatedBoard, Action.END_GAME,
                     updatedMessageBoard).withFinalPointsCounted();
         }
 
+        updatedTileDecks = updatedTileDecks.withTopTileDrawnUntil(tileKind, tileCondition);
         updatedTileToPlace = updatedTileDecks.topTile(tileKind);
         updatedTileDecks = updatedTileDecks.withTopTileDrawn(tileKind);
 

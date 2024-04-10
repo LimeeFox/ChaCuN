@@ -741,9 +741,13 @@ class GameStateTest {
 
         // Place all tiles
         for (int i = 0; i < positions.size(); i += 1) {
+            List<Tile> test = state.tileDecks().normalTiles();
             var placedTile = nextPlacedTile.apply(state);
+            test = state.tileDecks().normalTiles();
             state = state.withPlacedTile(placedTile)
                     .withNewOccupant(occupants.get(placedTile.id()));
+            test = state.tileDecks().normalTiles();
+            boolean confirmation = test.size() == (9 - i);
         }
 
         var expectedPoints = Map.of(PlayerColor.RED, 6);
