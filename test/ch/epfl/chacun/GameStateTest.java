@@ -560,6 +560,7 @@ class GameStateTest {
         // Place all tiles
         for (int i = 0; i < positions.size(); i += 1) {
             var placedTile = nextPlacedTile.apply(state);
+            Occupant occupant = occupants.get(placedTile.id());
             state = state
                     .withPlacedTile(placedTile)
                     .withNewOccupant(occupants.get(placedTile.id()));

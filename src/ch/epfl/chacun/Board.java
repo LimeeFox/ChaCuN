@@ -232,9 +232,11 @@ public final class Board {
 
          */
 
-        long occupants = Arrays.stream(placedTileIndices)
-                .mapToObj(index -> placedTiles[index])
-                .filter(tile -> tile.placer() == player && tile.occupant() != null && tile.occupant().kind() == occupantKind)
+        long occupants = Arrays.stream(placedTiles)
+                .filter(tile -> tile != null
+                        && tile.placer() == player
+                        && tile.occupant() != null
+                        && tile.occupant().kind() == occupantKind)
                 .count();
         return (int) occupants;
     }
@@ -466,7 +468,9 @@ public final class Board {
             for (int id : riverArea.tileIds()) {
                 PlacedTile updatedPlaceTile = tileWithId(id);
 
-                updatedPlacedTiles[getIndexOfTile(updatedPlaceTile)] = updatedPlaceTile.withNoOccupant();
+                if (updatedPlaceTile.occupant() != null && updatedPlaceTile.occupant().kind().equals(Occupant.Kind.PAWN)) {
+                    updatedPlacedTiles[getIndexOfTile(updatedPlaceTile)] = updatedPlaceTile.withNoOccupant();
+                }
             }
         }
         // Retrieve board forest areas only if forests is not null

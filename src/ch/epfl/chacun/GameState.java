@@ -74,11 +74,12 @@ public record GameState(
      * Compter le nombre d'occupants d'un @kind spécifié appartenant à un @player qui ne sont pas placés sur le plateau
      *
      * @param player joueur dont on veut compter les occupants libres
-     * @param kind le type des occupents libres qu'on veut compter
+     * @param kind le type des occupants libres qu'on veut compter
      * @return le nombre d'occupants libres, c.-à-d. qui ne sont pas actuellement placés
      *         sur le plateau de jeu du type donné et appartenant au joueur donné
      */
     public int freeOccupantsCount(PlayerColor player, Occupant.Kind kind) {
+        int test = board.occupantCount(player, kind);
         return Occupant.occupantsCount(kind) - board.occupantCount(player, kind);
     }
 
@@ -96,6 +97,7 @@ public record GameState(
 
         tile.potentialOccupants().forEach(occupant -> {
             // On enlève l'occupant potentiel si le joueur n'a plus d'occupants libres
+            int freeOccupants = freeOccupantsCount(currentPlayer(), occupant.kind());
             boolean hasFreeOccupants = freeOccupantsCount(currentPlayer(), occupant.kind()) > 0;
 
             boolean isValid = hasFreeOccupants;
@@ -159,7 +161,7 @@ public record GameState(
 
         PlayerColor scorer = currentPlayer();
 
-        final int placedOccupants = updatedBoard.occupantCount(currentPlayer(), Occupant.Kind.PAWN);
+        final int placedPawns = updatedBoard.occupantCount(currentPlayer(), Occupant.Kind.PAWN);
 
         // Traitement des pouvoirs spéciaux
         Zone specialPowerZone = tile.specialPowerZone();
@@ -170,7 +172,7 @@ public record GameState(
             if (immediateEffectPowers.contains(tilePower)) {
                 switch (tilePower) {
                     case SHAMAN -> {
-                        if (placedOccupants > 0) {
+                        if (placedPawns > 0) {
                             return new GameState(updatedPlayerList, updatedTileDecks, updatedTileToPlace, updatedBoard,
                                     Action.RETAKE_PAWN, updatedMessageBoard);
                         }
