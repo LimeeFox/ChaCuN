@@ -303,6 +303,7 @@ public record GameState(
                 updatedMessageBoard);
     }
 
+    //todo change comment language to baguette
     private GameState withFinalPointsCounted() {
         Preconditions.checkArgument(nextAction.equals(Action.END_GAME));
 
