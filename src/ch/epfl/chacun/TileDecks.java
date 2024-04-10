@@ -16,7 +16,7 @@ import java.util.function.Predicate;
  * @param menhirTiles
  *          tas qui contient les tuiles menhir
  */
-public final record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, List<Tile> menhirTiles) {
+public record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, List<Tile> menhirTiles) {
 
     public TileDecks {
         startTiles = List.copyOf(startTiles);

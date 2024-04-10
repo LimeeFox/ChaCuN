@@ -5,6 +5,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
+ * @author Cyriac Philippe (360553)
+ * @author Vladislav Yarkovoy (362242)
  *
  * @param players la liste de tous les joueurs de la partie, dans l'ordre dans lequel ils doivent jouer
  *                donc avec le joueur courant en tête de liste
@@ -48,8 +50,8 @@ public record GameState(
     /**
      * Initialisation d'une partie avec un état initial
      *
-     * @param players
-     * @param tileDecks
+     * @param players la liste de joueurs qui vont jouer dans la partie
+     * @param tileDecks les piles de tuiles (1x START,
      * @param textMaker
      * @return l'état de jeu initial pour les joueurs, tas et «créateur de texte» donnés,
      *         dont la prochaine action est START_GAME (donc la tuile à placer est null),
@@ -212,14 +214,12 @@ public record GameState(
             }
         }
         return new GameState(updatedPlayerList, updatedTileDecks, updatedTileToPlace, updatedBoard, updatedNextAction,
-                updatedMessageBoard)
-                .withTurnFinishedIfOccupationImpossible();
+                updatedMessageBoard).withTurnFinishedIfOccupationImpossible();
     }
 
     /**
      * Methode d'aide qui permet de gerer la fin d'un tour
-     *
-     *
+     * //todo add clarification comments across the method
      * @return
      */
     private GameState withTurnFinished() {
@@ -254,7 +254,8 @@ public record GameState(
             for (Area<Zone.Forest> closedForest : Objects.requireNonNull(lastClosedForests)) {
                 updatedMessageBoard = updatedMessageBoard.withScoredForest(closedForest);
 
-                if (lastPlacedTile != null && Area.hasMenhir(closedForest) && !lastPlacedTile.tile().kind().equals(Tile.Kind.MENHIR)) {
+                if (lastPlacedTile != null && Area.hasMenhir(closedForest)
+                        && !lastPlacedTile.tile().kind().equals(Tile.Kind.MENHIR)) {
                     if (!playerGetsMenhir) {
                         playerGetsMenhir = true;
                         updatedMessageBoard = updatedMessageBoard.withClosedForestWithMenhir(currentPlayer(), closedForest);
@@ -382,16 +383,9 @@ public record GameState(
     }
 
     private GameState withTurnFinishedIfOccupationImpossible() {
-
-        // Pas de màj de players, puisque le même joueur qui a retiré le pion et amener à en posé un autre (ou aucun)
-        // Pas de màj de tileDecks
-        // Pas de màj de tileToPlace
-        // Pas de màj de messageBoard
-
         // Le joueur ne peut passer à OCCUPY_TILE seulement s'il reste de la place sur la dernière tuile
         if (!lastTilePotentialOccupants().isEmpty()) {
-            return new GameState(players, tileDecks, tileToPlace, board, Action.OCCUPY_TILE,
-                    messageBoard);
+            return new GameState(players, tileDecks, tileToPlace, board, Action.OCCUPY_TILE, messageBoard);
         }
 
         // Sinon, on vérifie la fin du tour du joueur
@@ -440,13 +434,13 @@ public record GameState(
 
         // Si le joueur ne souhaite pas placer d'occupant
         if (occupant == null) {
-            return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard)
-                    .withTurnFinished();
+            return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard).withTurnFinished();
         }
 
         // Pas de màj de tileDecks
         // Pas de màj de tileToPlace (traité dans withPlacedTile)
         Board updatedBoard = board.withOccupant(occupant);
+
         // Pas de màj de messageBoard
 
         return new GameState(players, tileDecks, tileToPlace, updatedBoard, nextAction, messageBoard)
