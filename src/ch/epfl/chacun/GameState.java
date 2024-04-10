@@ -313,7 +313,7 @@ public record GameState(
         // add the cancelled animals (smilodon burned, eaten dears, animals already captured)
         for (Area<Zone.Meadow> meadow : updatedBoard.meadowAreas()) {
             Set<Animal> animals = Area.animals(meadow, updatedBoard.cancelledAnimals());
-            Set<Animal> cancelledAnimals = updatedBoard.cancelledAnimals();
+            Set<Animal> cancelledAnimals = new HashSet<>(updatedBoard.cancelledAnimals()); //todo j'ai ecrit HashSet afin de pouvoir modifier un nouveau set mais jsp si c'est ce qu'il fallait faire?
 
             // get all non-canceled tigers and all non-cancelled deer
             Set<Animal> tigers = new HashSet<>();
