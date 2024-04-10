@@ -457,39 +457,41 @@ public final class Board {
 
         ZonePartitions.Builder zonePartitionsBuilder = new ZonePartitions.Builder(boardPartitions);
 
-        PlacedTile[] updatedPlacedTiles = placedTiles;
+        PlacedTile[] updatedPlacedTiles = placedTiles.clone();
 
-        // Take care of Forests
+        // Gérer les forêts
         forests.forEach(forestArea -> {
             zonePartitionsBuilder.clearGatherers(forestArea);
             forestArea.tileIds().forEach(id -> {
                 PlacedTile updatedPlacedTile = tileWithId(id);
-                updatedPlacedTiles[getIndexOfTile(updatedPlacedTile)] = updatedPlacedTile.withNoOccupant();
+                Occupant occupant = updatedPlacedTile.occupant();
+                if (occupant != null
+                        && updatedPlacedTile.zoneWithId(occupant.zoneId()) instanceof Zone.Forest forestZone
+                        && forestArea.zones().contains(forestZone)) {
+                    updatedPlacedTiles[getIndexOfTile(updatedPlacedTile)] = updatedPlacedTile.withNoOccupant();
+                }
             });
         });
 
-        // Take care of Rivers
-        for (Area<River> riverArea : rivers) {
+        // Gérer les rivières
+        rivers.forEach(riverArea -> {
             zonePartitionsBuilder.clearFishers(riverArea);
-
-            for (int id : riverArea.tileIds()) {
-                PlacedTile updatedPlaceTile = tileWithId(id);
-
-                if (updatedPlaceTile.occupant() != null && updatedPlaceTile.occupant().kind().equals(Occupant.Kind.PAWN)) {
-                    updatedPlacedTiles[getIndexOfTile(updatedPlaceTile)] = updatedPlaceTile.withNoOccupant();
+            riverArea.tileIds().forEach(id -> {
+                PlacedTile updatedPlacedTile = tileWithId(id);
+                Occupant occupant = updatedPlacedTile.occupant();
+                if (occupant != null
+                        && occupant.kind() == Occupant.Kind.PAWN
+                        && updatedPlacedTile.zoneWithId(occupant.zoneId()) instanceof Zone.River riverZone
+                        && riverArea.zones().contains(riverZone)) {
+                    updatedPlacedTiles[getIndexOfTile(updatedPlacedTile)] = updatedPlacedTile.withNoOccupant();
                 }
-            }
-        }
-        // Retrieve board forest areas only if forests is not null
-        Set<Area<Forest>> newForests = new HashSet<>();
-        if (boardPartitions.forests() != null) {
-            final Set<Area<Forest>> boardForestAreas = boardPartitions.forests().areas();
-            newForests = boardForestAreas.stream()
-                    .filter(forest -> !forests.contains(forest))
-                    .collect(Collectors.toSet());
-        }
+            });
+        });
 
-        return new Board(updatedPlacedTiles, placedTileIndices, zonePartitionsBuilder.build(), cancelledAnimals);
+        return new Board(updatedPlacedTiles,
+                placedTileIndices.clone(),
+                zonePartitionsBuilder.build(),
+                cancelledAnimals());
     }
 
     public Board withMoreCancelledAnimals(Set<Animal> newlyCancelledAnimals) {

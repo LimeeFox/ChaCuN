@@ -492,9 +492,9 @@ class GameStateTest {
         var occupants = Map.of(
                 55, new Occupant(Occupant.Kind.PAWN, 55_0), // gatherer (BLUE)
                 18, new Occupant(Occupant.Kind.PAWN, 18_2), // hunter (BLUE)
-                1, new Occupant(Occupant.Kind.PAWN, 1_3), // gatherer (BLUE)
+                1, new Occupant(Occupant.Kind.PAWN, 1_3), // fisherman (BLUE)
                 67, new Occupant(Occupant.Kind.PAWN, 67_0), // gatherer (BLUE)
-                3, new Occupant(Occupant.Kind.PAWN, 3_0) // hunter (BLUE)
+                3, new Occupant(Occupant.Kind.PAWN, 3_0) // fisherman (BLUE)
         );
 
         var normalTilesIds = List.of(61, 55, 51, 18, 62, 1, 34, 67, 31, 3, 49, 48);
