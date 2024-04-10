@@ -45,8 +45,10 @@ public final class Board {
      * si la position donnée n'appartient pas au plateau
      */
     public PlacedTile tileAt(Pos pos) {
-        if (pos.x() >= -12 && pos.x() <= 12
-                && pos.y() >= -12 && pos.y() <= 12) {
+        if (pos.x() >= -12
+                && pos.x() <= 12
+                && pos.y() >= -12
+                && pos.y() <= 12) {
             pos = pos.translated(REACH, REACH);
             int index = pos.x() + 25 * pos.y();
             return placedTiles[index];
@@ -101,6 +103,8 @@ public final class Board {
      * @param forest
      *         la forêt dont on recherche l'aire
      * @return l'aire qui contient la zone de forêt donnée, si elle existe
+     * @throws IllegalArgumentException
+     *         si la zone en question n'appartient pas au plateau
      */
     public Area<Forest> forestArea(Forest forest) {
         return boardPartitions.forests().areaContaining(forest);
@@ -112,6 +116,8 @@ public final class Board {
      * @param meadow
      *         le pré dont on recherche l'aire
      * @return l'aire qui contient la zone de pré donnée, si elle existe
+     * @throws IllegalArgumentException
+     *         si la zone en question n'appartient pas au plateau
      */
     public Area<Meadow> meadowArea(Meadow meadow) {
         return boardPartitions.meadows().areaContaining(meadow);
@@ -123,6 +129,8 @@ public final class Board {
      * @param riverZone
      *         la rivière dont on recherche l'aire
      * @return l'aire qui contient la zone de rivière donnée, si elle existe
+     * @throws IllegalArgumentException
+     *         si la zone en question n'appartient pas au plateau
      */
     public Area<River> riverArea(River riverZone) {
         return boardPartitions.rivers().areaContaining(riverZone);
@@ -134,6 +142,8 @@ public final class Board {
      * @param water
      *         la zone d'eau dont on recherche l'aire
      * @return l'aire qui contient la zone d'eau donnée, si elle existe
+     * @throws IllegalArgumentException
+     *         si la zone en question n'appartient pas au plateau
      */
     public Area<Zone.Water> riverSystemArea(Zone.Water water) {
         return boardPartitions.riverSystems().areaContaining(water);
@@ -206,35 +216,6 @@ public final class Board {
      * @return le nombre d'occupants sur le plateau étant d'une même sorte et appartenant à un même joueur
      */
     public int occupantCount(PlayerColor player, Occupant.Kind occupantKind) {
-        /*
-        final int[] playerCount = new int[1];
-        List<PlacedTile> tiles = Arrays.stream(placedTiles).toList();
-
-        Predicate<Area<Meadow>> meadowAreaFilter = meadowArea -> meadowArea.occupants() != null;
-        Predicate<PlayerColor> playerFilter = playerColor -> !(playerColor == player);
-
-        //Predicate<Meadow> meadowZoneFilter = meadowZone -> meadowZone.
-
-        boardPartitions.meadows().areas().stream().filter(meadowAreaFilter).forEach(area -> {
-            area.occupants().stream().filter(playerFilter).forEach(playerColor -> {
-                playerCount[0]++;
-            });
-        });
-
-        Predicate<Area<Forest>> forestAreaFilter = forestArea -> forestArea.occupants() != null;
-
-        boardPartitions.forests().areas().stream().filter(forestAreaFilter).forEach(area -> {
-            area.occupants().stream().filter(playerFilter).forEach(playerColor -> {
-                playerCount[0]++;
-            });
-        });
-
-        boardPartitions.
-
-        return playerCount[0];
-
-         */
-
         long occupants = Arrays.stream(placedTiles)
                 .filter(tile -> tile != null
                         && tile.placer() == player
@@ -373,6 +354,8 @@ public final class Board {
      * @param tile
      *         tuile placée dans le nouveau plateau
      * @return un nouveau plateau identique au récepteur, avec la tuile placée donnée
+     * @throws IllegalArgumentException
+     *         si le plateau n'est pas vide et la tuile donnée ne peut pas être ajoutée au plateau
      */
     public Board withNewTile(PlacedTile tile) {
         Preconditions.checkArgument(this.equals(EMPTY) || canAddTile(tile));
@@ -409,6 +392,8 @@ public final class Board {
      * @param occupant
      *         occupent à rajouter
      * @return un plateau identique au récepteur, mais avec l'occupant donné en plus
+     * @throws IllegalArgumentException
+     *         si la tuile sur laquelle se trouverait l'occupant est déjà occupée
      */
     public Board withOccupant(Occupant occupant) {
         final int zoneId = occupant.zoneId();

@@ -7,8 +7,6 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-// TODO: 07/03/2024 Test builder methods
-
 public class ZonePartitionTest0 {
 
     private final Zone.Meadow meadow1 = new Zone.Meadow(2,

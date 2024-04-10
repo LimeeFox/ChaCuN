@@ -5,17 +5,25 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
+ * @author Vladislav Yarkovoy (362242)
+ * @author Cyriac Philippe (36553)
+ *
+ * @param players
+ *         la liste de tous les joueurs de la partie, dans l'ordre dans lequel ils doivent jouer
+ *         donc avec le joueur courant en tête de liste
+ * @param tileDecks
+ *         les trois tas des tuiles restantes
+ * @param tileToPlace
+ *         l'éventuelle tuile à placer, qui à été prise du sommet du tas des tuiles normales
+ *         ou du tas des tuiles menhir, et qui peut être null si aucune tuile n'est à placer actuellement
+ * @param board
+ *         le plateau de jeu
+ * @param nextAction
+ *         la prochaine action à effectuer
+ * @param messageBoard
+ *         le tableau d'affichage contenant les messages générés jusqu'à présent dans la partie
  * @author Cyriac Philippe (360553)
  * @author Vladislav Yarkovoy (362242)
- *
- * @param players la liste de tous les joueurs de la partie, dans l'ordre dans lequel ils doivent jouer
- *                donc avec le joueur courant en tête de liste
- * @param tileDecks les trois tas des tuiles restantes
- * @param tileToPlace l'éventuelle tuile à placer, qui à été prise du sommet du tas des tuiles normales
- *                    ou du tas des tuiles menhir, et qui peut être null si aucune tuile n'est à placer actuellement
- * @param board le plateau de jeu
- * @param nextAction la prochaine action à effectuer
- * @param messageBoard le tableau d'affichage contenant les messages générés jusqu'à présent dans la partie
  */
 public record GameState(
         List<PlayerColor> players,
@@ -34,7 +42,7 @@ public record GameState(
         RETAKE_PAWN,
         OCCUPY_TILE,
         END_GAME
-        }
+    }
 
     public GameState {
         Preconditions.checkArgument(players.size() >= 2);
@@ -50,12 +58,15 @@ public record GameState(
     /**
      * Initialisation d'une partie avec un état initial
      *
-     * @param players la liste de joueurs qui vont jouer dans la partie
-     * @param tileDecks les piles de tuiles (1x START,
+     * @param players
+     *         la liste de joueurs qui vont jouer dans la partie
+     * @param tileDecks
+     *         les piles de tuiles (1x START,
      * @param textMaker
+     *         l'état initial d'un
      * @return l'état de jeu initial pour les joueurs, tas et «créateur de texte» donnés,
-     *         dont la prochaine action est START_GAME (donc la tuile à placer est null),
-     *         et dont le plateau et le tableau d'affichage sont vides
+     * dont la prochaine action est START_GAME (donc la tuile à placer est null),
+     * et dont le plateau et le tableau d'affichage sont vides
      */
     public static GameState initial(List<PlayerColor> players, TileDecks tileDecks, TextMaker textMaker) {
         return new GameState(players, tileDecks, null, Board.EMPTY, Action.START_GAME,
@@ -68,20 +79,20 @@ public record GameState(
      * @return le joueur courant, ou null s'il n'y en a pas, c.-à-d. si la prochaine action est START_GAME ou END_GAME
      */
     public PlayerColor currentPlayer() {
-        if (nextAction != Action.START_GAME && nextAction != Action.END_GAME) return players.getFirst();
-        return null;
+        return (nextAction != Action.START_GAME && nextAction != Action.END_GAME) ? players.getFirst() : null;
     }
 
     /**
      * Compter le nombre d'occupants d'un @kind spécifié appartenant à un @player qui ne sont pas placés sur le plateau
      *
-     * @param player joueur dont on veut compter les occupants libres
-     * @param kind le type des occupants libres qu'on veut compter
+     * @param player
+     *         joueur dont on veut compter les occupants libres
+     * @param kind
+     *         le type des occupants libres qu'on veut compter
      * @return le nombre d'occupants libres, c.-à-d. qui ne sont pas actuellement placés
-     *         sur le plateau de jeu du type donné et appartenant au joueur donné
+     * sur le plateau de jeu du type donné et appartenant au joueur donné
      */
     public int freeOccupantsCount(PlayerColor player, Occupant.Kind kind) {
-        int test = board.occupantCount(player, kind);
         return Occupant.occupantsCount(kind) - board.occupantCount(player, kind);
     }
 
@@ -89,8 +100,9 @@ public record GameState(
      * Obtenir un ensemble d'occupants potentiels de la dernière tuile posée
      *
      * @return l'ensemble des occupants potentiels de la dernière tuile posée que le joueur courant pourrait
-     *         effectivement placer
-     * @throws IllegalArgumentException si le plateau est vide
+     * effectivement placer
+     * @throws IllegalArgumentException
+     *         si le plateau est vide
      */
     public Set<Occupant> lastTilePotentialOccupants() {
         Preconditions.checkArgument(!board.equals(Board.EMPTY));
@@ -111,8 +123,8 @@ public record GameState(
                     case Zone.Meadow meadow -> isValid = !board.meadowArea(meadow).isOccupied();
                     case Zone.Lake lake -> isValid = !board.riverSystemArea(lake).isOccupied();
                     case Zone.River river -> isValid = (occupant.kind() == Occupant.Kind.PAWN) ?
-                                !board.riverArea(river).isOccupied() :
-                                !board.riverSystemArea(river).isOccupied();
+                            !board.riverArea(river).isOccupied() :
+                            !board.riverSystemArea(river).isOccupied();
                 }
             }
             if (isValid) filteredPotentialOccupants.add(occupant);
@@ -125,7 +137,8 @@ public record GameState(
      * et en tirant la première tuile du tas des tuiles normales, qui devient la tuile à jouer
      *
      * @return le nouvel état du jeu, mis à jour.
-     * @throws IllegalArgumentException si la prochaine action n'est pas START_GAME
+     * @throws IllegalArgumentException
+     *         si la prochaine action n'est pas START_GAME
      */
     public GameState withStartingTilePlaced() {
         Preconditions.checkArgument(nextAction == Action.START_GAME);
@@ -143,9 +156,11 @@ public record GameState(
      * attribuant les éventuels points obtenus suite à la pose de la pirogue ou de la fosse à pieux
      * et déterminant l'action suivante, qui peut être RETAKE_PAWN si la tuile posée contient le chaman;
      *
-     * @param tile la tuile qu'on aimerait ajouter au plateau
+     * @param tile
+     *         la tuile qu'on aimerait ajouter au plateau
      * @return le nouvel état du jeu, mis à jour.
-     * @throws IllegalArgumentException si la prochaine action n'est pas PLACE_TILE, ou si la tuile passée est déjà occupée
+     * @throws IllegalArgumentException
+     *         si la prochaine action n'est pas PLACE_TILE, ou si la tuile passée est déjà occupée
      */
     public GameState withPlacedTile(PlacedTile tile) {
         Preconditions.checkArgument(nextAction == Action.PLACE_TILE);
@@ -220,6 +235,7 @@ public record GameState(
     /**
      * Methode d'aide qui permet de gerer la fin d'un tour
      * //todo add clarification comments across the method
+     *
      * @return
      */
     private GameState withTurnFinished() {
@@ -396,10 +412,12 @@ public record GameState(
      * Gère toutes les transitions à partir de RETAKE_PAWN, en supprimant l'occupant donné, sauf s'il vaut null,
      * ce qui indique que le joueur ne désire pas reprendre de pion
      *
-     * @param occupant l'occupant à supprimer du Plateau du jeu
+     * @param occupant
+     *         l'occupant à supprimer du Plateau du jeu
      * @return le nouvel état du jeu, mis à jour.
-     * @throws IllegalArgumentException si la prochaine action n'est pas RETAKE_PAWN,
-     *                                  ou si l'occupant donné n'est ni null, ni un pion
+     * @throws IllegalArgumentException
+     *         si la prochaine action n'est pas RETAKE_PAWN,
+     *         ou si l'occupant donné n'est ni null, ni un pion
      */
     public GameState withOccupantRemoved(Occupant occupant) {
         Preconditions.checkArgument(nextAction == Action.RETAKE_PAWN &&
@@ -420,28 +438,21 @@ public record GameState(
      * Gère toutes les transitions à partir de OCCUPY_TILE en ajoutant l'occupant donné à la dernière tuile posée,
      * sauf s'il vaut null, ce qui indique que le joueur ne désire pas placer d'occupant
      *
-     * @param occupant l'occupant à rajouter à la dernière tuile posée
+     * @param occupant
+     *         l'occupant à rajouter à la dernière tuile posée
      * @return le nouvel état du jeu, mis à jour.
-     * @throws IllegalArgumentException si la prochaine action n'est pas OCCUPY_TILE
+     * @throws IllegalArgumentException
+     *         si la prochaine action n'est pas OCCUPY_TILE
      */
     public GameState withNewOccupant(Occupant occupant) {
         Preconditions.checkArgument(nextAction == Action.OCCUPY_TILE);
-
-        boolean occupantZoneIsClosed = false;
-
-        //todo check if the zone the occupant is trying to occupy isn't part of a closed area, in which case...
-        //todo one cannot simply place on occupant on a closed area
 
         // Si le joueur ne souhaite pas placer d'occupant
         if (occupant == null) {
             return new GameState(players, tileDecks, tileToPlace, board, nextAction, messageBoard).withTurnFinished();
         }
 
-        // Pas de màj de tileDecks
-        // Pas de màj de tileToPlace (traité dans withPlacedTile)
         Board updatedBoard = board.withOccupant(occupant);
-
-        // Pas de màj de messageBoard
 
         return new GameState(players, tileDecks, tileToPlace, updatedBoard, nextAction, messageBoard)
                 .withTurnFinished();
@@ -452,7 +463,7 @@ public record GameState(
      * celui qui est en tête de la liste est celui qui joue actuellement
      *
      * @return la liste de tous les joueurs de la partie, dans l'ordre dans lequel ils doivent jouer
-     *         donc avec le joueur courant en tête de liste
+     * donc avec le joueur courant en tête de liste
      */
     private List<PlayerColor> shiftAndGetPlayerList() {
         List<PlayerColor> playerList = new ArrayList<>(players);
