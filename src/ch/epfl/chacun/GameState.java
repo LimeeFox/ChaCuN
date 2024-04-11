@@ -233,11 +233,12 @@ public record GameState(
     }
 
     /**
-     * Methode d'aide qui permet de gerer la fin d'un tour
-     * //todo add clarification comments across the method
-     * //todo also see if we can optimize this
+     * Methode d'aide qui permet de gerer la fin d'un tour. Le joueur actuel devient le prochain joueur
+     * si il a posé une tuile forêt avec un menhir ou si il a fermé une aire forêt qui contenait un menhir, tant qu'il
+     * n'a joué qu'une seule fois à présent. Autrement, l'ordre des joueurs change.
+     * Cette méthode accorde aussi certains points si des aires ont été fermées
      *
-     * @return
+     * @return l'état du jeu avec le tour terminé
      */
     private GameState withTurnFinished() {
         Preconditions.checkArgument(!board().equals(Board.EMPTY));
@@ -246,16 +247,15 @@ public record GameState(
         TileDecks updatedTileDecks = tileDecks;
         Tile updatedTileToPlace = tileToPlace;
         Board updatedBoard = board;
-        Action updatedNextAction = Action.PLACE_TILE;
         MessageBoard updatedMessageBoard = messageBoard;
 
-        Predicate<Tile> tileCondition = board::couldPlaceTile;
         Tile.Kind tileKind = Tile.Kind.NORMAL;
 
         PlacedTile lastPlacedTile = board.lastPlacedTile();
 
         boolean playerGetsMenhir = false;
 
+        // Gérer les aires rivères fermées lors de ce tour
         Set<Area<Zone.River>> lastClosedRivers = new HashSet<>();
         if (board.riversClosedByLastTile() != null) {
             lastClosedRivers = board.riversClosedByLastTile();
@@ -264,47 +264,52 @@ public record GameState(
             }
         }
 
-
+        // Gérer les aires forêt fermées lors de ce tour
         Set<Area<Zone.Forest>> lastClosedForests = new HashSet<>();
         if (board.forestsClosedByLastTile() != null) {
             lastClosedForests = board.forestsClosedByLastTile();
             for (Area<Zone.Forest> closedForest : Objects.requireNonNull(lastClosedForests)) {
                 updatedMessageBoard = updatedMessageBoard.withScoredForest(closedForest);
 
-                if (lastPlacedTile != null && Area.hasMenhir(closedForest)
-                        && !lastPlacedTile.tile().kind().equals(Tile.Kind.MENHIR)) {
-                    if (!playerGetsMenhir) {
-                        playerGetsMenhir = true;
-                        updatedMessageBoard = updatedMessageBoard.withClosedForestWithMenhir(currentPlayer(), closedForest);
-                    }
+                if (lastPlacedTile != null
+                        && Area.hasMenhir(closedForest)
+                        && !lastPlacedTile.tile().kind().equals(Tile.Kind.MENHIR)
+                        && !playerGetsMenhir) {
+                    playerGetsMenhir = true;
+                    updatedMessageBoard = updatedMessageBoard.withClosedForestWithMenhir(currentPlayer(), closedForest);
                 }
             }
         }
 
         updatedBoard = updatedBoard.withoutGatherersOrFishersIn(lastClosedForests, lastClosedRivers);
 
+        // Si le joueur courant a posé une forêt contenant un menhir, on lui accorde un deuxième tour
+        // todo enfaite il n'y a pas de TEST provided pour voir si on traite le cas ou le joueur joue plus de 2 fois, de ce que je vois.
+        // todo est-ce que on traite bien le cas ou joueur pose une tuile forest avec menhir -> obtien une tuile du type MENHIR qu'il pose et ferme ainsi une autre foret avec un menhir -> etc...?
         if (playerGetsMenhir) {
             tileKind = Tile.Kind.MENHIR;
-            updatedNextAction = Action.PLACE_TILE; //todo par exemple ici bah intellij dit que c'est redondant
         } else {
             updatedPlayers = shiftAndGetPlayerList();
         }
 
+        // Si il n'y a plus de tuiles à poser, alors c'est la fin du jeu
         if (updatedTileDecks.normalTiles().isEmpty() && !playerGetsMenhir) {
             return new GameState(updatedPlayers, updatedTileDecks, updatedTileToPlace, updatedBoard, Action.END_GAME,
                     updatedMessageBoard).withFinalPointsCounted();
         }
 
-        updatedTileDecks = updatedTileDecks.withTopTileDrawnUntil(tileKind, tileCondition);
+        // Mise à jour du tas des tuiles à piocher
+        updatedTileDecks = updatedTileDecks.withTopTileDrawnUntil(tileKind, board::couldPlaceTile);
         updatedTileToPlace = updatedTileDecks.topTile(tileKind);
         updatedTileDecks = updatedTileDecks.withTopTileDrawn(tileKind);
 
-        return new GameState(updatedPlayers, updatedTileDecks, updatedTileToPlace, updatedBoard, updatedNextAction,
+        return new GameState(updatedPlayers, updatedTileDecks, updatedTileToPlace, updatedBoard, Action.PLACE_TILE,
                 updatedMessageBoard);
     }
 
     //todo optimise cuz this is a very adrien-optimal code (manière "rudimentaire")
     //todo also it's still litterally a copy paste of his work so this is dangerous. Have to do things our way
+    //todo CYRIAC CETTE METHODE J'EN PEUX PLUS A L'AIDE STP <33333333
     private GameState withFinalPointsCounted() {
         Preconditions.checkArgument(nextAction.equals(Action.END_GAME));
 
@@ -312,8 +317,8 @@ public record GameState(
         MessageBoard updatedMessageBoard = messageBoard;
 
         // Gérer les animaux annulés
-        for (Area<Zone.Meadow> meadow : updatedBoard.meadowAreas()) {
-            Set<Animal> animals = Area.animals(meadow, updatedBoard.cancelledAnimals());
+        for (Area<Zone.Meadow> meadowArea : updatedBoard.meadowAreas()) {
+            Set<Animal> animals = Area.animals(meadowArea, updatedBoard.cancelledAnimals());
             Set<Animal> cancelledAnimals = new HashSet<>(updatedBoard.cancelledAnimals());
 
             // Obtention de tous les tigres et cerfs non-annulés
@@ -327,29 +332,30 @@ public record GameState(
             }
 
             // Si la zonne contient du feu, alors les tigres dans l'aire doivent être annulés
-            Zone.Meadow fire = (Zone.Meadow) meadow.zoneWithSpecialPower(Zone.SpecialPower.WILD_FIRE);
+            Zone.Meadow fire = (Zone.Meadow) meadowArea.zoneWithSpecialPower(Zone.SpecialPower.WILD_FIRE);
             if (fire != null) {
                 updatedBoard = updatedBoard.withMoreCancelledAnimals(tigers);
                 cancelledAnimals.addAll(tigers);
             }
 
-            // Récuperer les cerfs dans les zones adjacentes
-            Zone.Meadow trap = (Zone.Meadow) meadow.zoneWithSpecialPower(Zone.SpecialPower.PIT_TRAP);
-            Area<Zone.Meadow> adjacent = new Area<>(Set.of(), List.of(), 0);
-            if (trap != null)
-                adjacent = updatedBoard.adjacentMeadow(updatedBoard.tileWithId(Zone.tileId(trap.id())).pos(), trap);
-            Set<Animal> adjacentAnimal = Area.animals(adjacent, cancelledAnimals);
+            // Récuperer les cerfs dans les zones adjacentes à
+            Zone.Meadow trapZone = (Zone.Meadow) meadowArea.zoneWithSpecialPower(Zone.SpecialPower.PIT_TRAP);
+            Area<Zone.Meadow> adjacentArea = new Area<>(Set.of(), List.of(), 0);
+            if (trapZone != null) {
+                adjacentArea = updatedBoard
+                        .adjacentMeadow(updatedBoard.tileWithId(Zone.tileId(trapZone.id())).pos(), trapZone);
+            }
+            Set<Animal> adjacentAnimals = Area.animals(adjacentArea, cancelledAnimals);
 
             List<Animal> adjacentDeer = new ArrayList<>();
-            for (Animal animal : adjacentAnimal) {
-                if (animal.kind() == Animal.Kind.DEER)
-                    adjacentDeer.add(animal);
-            }
+            adjacentAnimals.forEach(animal -> {
+                if (animal.kind() == Animal.Kind.DEER) adjacentDeer.add(animal);
+            });
+
             List<Animal> nonAdjacentDeer = new ArrayList<>();
-            for (Animal animal : animals) {
-                if (animal.kind() == Animal.Kind.DEER && !adjacentAnimal.contains(animal))
-                    nonAdjacentDeer.add(animal);
-            }
+            animals.forEach(animal -> {
+                if (animal.kind() == Animal.Kind.DEER && !adjacentAnimals.contains(animal)) nonAdjacentDeer.add(animal);
+            });
 
             //@Deprecated// OLD COMMENT: cancel first the deer that aren't in the adjacent meadow
             // Annuler les animaux qui ne sont pas dans les zones pré adjacentes
@@ -371,9 +377,9 @@ public record GameState(
             }
 
             // Calcul des points
-            if (trap != null)
-                updatedMessageBoard = updatedMessageBoard.withScoredPitTrap(adjacent, updatedBoard.cancelledAnimals());
-            updatedMessageBoard = updatedMessageBoard.withScoredMeadow(meadow, updatedBoard.cancelledAnimals());
+            if (trapZone != null)
+                updatedMessageBoard = updatedMessageBoard.withScoredPitTrap(adjacentArea, updatedBoard.cancelledAnimals());
+            updatedMessageBoard = updatedMessageBoard.withScoredMeadow(meadowArea, updatedBoard.cancelledAnimals());
         }
 
         // Les systèmes hydrographiques
