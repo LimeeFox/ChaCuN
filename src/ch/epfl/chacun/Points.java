@@ -74,8 +74,7 @@ public final class Points {
      */
     public static int forRiverSystem(int fishCount) {
         Preconditions.checkArgument(fishCount >= 0);
-        int points = fishCount;
-        return points;
+        return fishCount;
     }
 
     /**
@@ -88,8 +87,7 @@ public final class Points {
      */
     public static int forLogboat(int lakeCount) {
         Preconditions.checkArgument(lakeCount > 0);
-        int points = 2 * lakeCount;
-        return points;
+        return 2 * lakeCount;
     }
 
     /**
@@ -102,7 +100,6 @@ public final class Points {
      */
     public static int forRaft(int lakeCount) {
         Preconditions.checkArgument(lakeCount > 0);
-        int points = lakeCount;
-        return points;
+        return lakeCount;
     }
 }
