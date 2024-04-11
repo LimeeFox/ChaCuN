@@ -5,8 +5,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * @author Vladislav Yarkovoy (362242)
- * @author Cyriac Philippe (36553)
+ * Classe qui définit les différents état de jeu.
  *
  * @param players
  *         la liste de tous les joueurs de la partie, dans l'ordre dans lequel ils doivent jouer
@@ -148,7 +147,8 @@ public record GameState(
         Board upatedBoard = board.withNewTile(new PlacedTile(tileDecks.topTile(Tile.Kind.START),
                 null, Rotation.NONE, Pos.ORIGIN));
         updatedTileDecks = updatedTileDecks.withTopTileDrawn(Tile.Kind.NORMAL);
-        return new GameState(players, updatedTileDecks, updatedTileToPlace, upatedBoard, Action.PLACE_TILE, messageBoard);
+        return new GameState(
+                players, updatedTileDecks, updatedTileToPlace, upatedBoard, Action.PLACE_TILE, messageBoard);
     }
 
     /**
@@ -235,6 +235,7 @@ public record GameState(
     /**
      * Methode d'aide qui permet de gerer la fin d'un tour
      * //todo add clarification comments across the method
+     * //todo also see if we can optimize this
      *
      * @return
      */
@@ -284,7 +285,7 @@ public record GameState(
 
         if (playerGetsMenhir) {
             tileKind = Tile.Kind.MENHIR;
-            updatedNextAction = Action.PLACE_TILE;
+            updatedNextAction = Action.PLACE_TILE; //todo par exemple ici bah intellij dit que c'est redondant
         } else {
             updatedPlayers = shiftAndGetPlayerList();
         }
@@ -302,43 +303,43 @@ public record GameState(
                 updatedMessageBoard);
     }
 
-    //todo change comment language to baguette
+    //todo optimise cuz this is a very adrien-optimal code (manière "rudimentaire")
+    //todo also it's still litterally a copy paste of his work so this is dangerous. Have to do things our way
     private GameState withFinalPointsCounted() {
         Preconditions.checkArgument(nextAction.equals(Action.END_GAME));
 
         Board updatedBoard = board;
         MessageBoard updatedMessageBoard = messageBoard;
 
-        // add the cancelled animals (smilodon burned, eaten dears, animals already captured)
+        // Gérer les animaux annulés
         for (Area<Zone.Meadow> meadow : updatedBoard.meadowAreas()) {
             Set<Animal> animals = Area.animals(meadow, updatedBoard.cancelledAnimals());
-            Set<Animal> cancelledAnimals = new HashSet<>(updatedBoard.cancelledAnimals()); //todo j'ai ecrit HashSet afin de pouvoir modifier un nouveau set mais jsp si c'est ce qu'il fallait faire?
+            Set<Animal> cancelledAnimals = new HashSet<>(updatedBoard.cancelledAnimals());
 
-            // get all non-canceled tigers and all non-cancelled deer
+            // Obtention de tous les tigres et cerfs non-annulés
             Set<Animal> tigers = new HashSet<>();
             Set<Animal> deer = new HashSet<>();
             for (Animal animal : animals) {
-                if (animal.kind() == Animal.Kind.TIGER && !cancelledAnimals.contains(animal))
-                    tigers.add(animal);
-                else if (animal.kind() == Animal.Kind.DEER && !cancelledAnimals.contains(animal))
-                    deer.add(animal);
+                if (!cancelledAnimals.contains(animal)) {
+                    if (animal.kind() == Animal.Kind.TIGER) tigers.add(animal);
+                    else if (animal.kind() == Animal.Kind.DEER) deer.add(animal);
+                }
             }
 
-            // if there is a fire, cancel the tigers
+            // Si la zonne contient du feu, alors les tigres dans l'aire doivent être annulés
             Zone.Meadow fire = (Zone.Meadow) meadow.zoneWithSpecialPower(Zone.SpecialPower.WILD_FIRE);
             if (fire != null) {
                 updatedBoard = updatedBoard.withMoreCancelledAnimals(tigers);
                 cancelledAnimals.addAll(tigers);
             }
 
-            // get the adjacent meadow and all the deer
+            // Récuperer les cerfs dans les zones adjacentes
             Zone.Meadow trap = (Zone.Meadow) meadow.zoneWithSpecialPower(Zone.SpecialPower.PIT_TRAP);
             Area<Zone.Meadow> adjacent = new Area<>(Set.of(), List.of(), 0);
             if (trap != null)
                 adjacent = updatedBoard.adjacentMeadow(updatedBoard.tileWithId(Zone.tileId(trap.id())).pos(), trap);
             Set<Animal> adjacentAnimal = Area.animals(adjacent, cancelledAnimals);
 
-            // tell if a deer of the meadow is adjacent or not
             List<Animal> adjacentDeer = new ArrayList<>();
             for (Animal animal : adjacentAnimal) {
                 if (animal.kind() == Animal.Kind.DEER)
@@ -350,7 +351,8 @@ public record GameState(
                     nonAdjacentDeer.add(animal);
             }
 
-            // cancel first the deer that aren't in the adjacent meadow
+            //@Deprecated// OLD COMMENT: cancel first the deer that aren't in the adjacent meadow
+            // Annuler les animaux qui ne sont pas dans les zones pré adjacentes
             if (fire == null) {
                 if (tigers.size() < deer.size()) {
                     Set<Animal> toCancel = new HashSet<>();
@@ -368,20 +370,20 @@ public record GameState(
                 }
             }
 
-            // compute the points
+            // Calcul des points
             if (trap != null)
                 updatedMessageBoard = updatedMessageBoard.withScoredPitTrap(adjacent, updatedBoard.cancelledAnimals());
             updatedMessageBoard = updatedMessageBoard.withScoredMeadow(meadow, updatedBoard.cancelledAnimals());
         }
 
-        // hydrographic channels (Raft included)
+        // Les systèmes hydrographiques
         for (Area<Zone.Water> riverSystem : updatedBoard.riverSystemAreas()) {
             if (riverSystem.zoneWithSpecialPower(Zone.SpecialPower.RAFT) != null)
                 updatedMessageBoard = updatedMessageBoard.withScoredRaft(riverSystem);
             updatedMessageBoard = updatedMessageBoard.withScoredRiverSystem(riverSystem);
         }
 
-        // final message
+        // Message final
         Map<PlayerColor, Integer> pts = updatedMessageBoard.points();
 
         int maxPts = pts.values().stream()
