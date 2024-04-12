@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
  * @param messages
  *         liste des messages affichés sur le tableau, du plus ancien au plus récent
  * @author Cyriac Philippe (360553)
+ * @author Vladislav Yarkovoy (362242)
  */
 public record MessageBoard(TextMaker textMaker, List<Message> messages) {
 
@@ -209,7 +210,15 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return this;
     }
 
-    // todo we won't lose points if we add a description to this (it's a request, please <3)
+    /**
+     * Méthode d'aide qui sert à compter les animaux par leur type
+     *
+     * @param meadow
+     *         le pré dans lequel on compte les animaux
+     * @param cancelledAnimals
+     *         les animaux annulés, si il y en a
+     * @return une Map où chaque type d'animal a un nombre d'occurence qui lui est attribué
+     */
     private Map<Animal.Kind, Integer> animalMap(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
         Set<Animal> validAnimals = Area.animals(meadow, cancelledAnimals);
 

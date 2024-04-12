@@ -7,7 +7,7 @@ package ch.epfl.chacun;
  *         identifiant général de l'animal
  * @param kind
  *         type de l'animal : mammouth, auroch, cerf, smilodon
- * @author //todo
+ * @author Vladislav Yarkovoy (362242)
  * @author Cyriac Philippe (360553)
  */
 public record Animal(int id, Kind kind) {

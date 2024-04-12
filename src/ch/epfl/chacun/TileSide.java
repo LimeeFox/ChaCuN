@@ -1,12 +1,11 @@
 package ch.epfl.chacun;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Interface pour un bord de tuile
  *
+ * @author Vladislav Yarkovoy (362242)
  * @author Cyriac Philippe (360553)
  */
 public sealed interface TileSide {

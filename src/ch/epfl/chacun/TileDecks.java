@@ -1,7 +1,6 @@
 package ch.epfl.chacun;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Predicate;
 
 /**
@@ -13,6 +12,7 @@ import java.util.function.Predicate;
  *         tas qui contient les tuiles normales
  * @param menhirTiles
  *         tas qui contient les tuiles menhir
+ * @author Vladislav Yarkovoy (362242)
  * @author Cyriac Philippe (360553)
  */
 public record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, List<Tile> menhirTiles) {

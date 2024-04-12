@@ -18,6 +18,7 @@ import java.util.Set;
  * @param occupant
  *         l'occupant de la tuile, ou null si elle n'est pas occupée
  * @author Vladislav Yarkovoy (362242)
+ * @author Cyriac Philippe (360553)
  */
 public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos pos, Occupant occupant) {
 
