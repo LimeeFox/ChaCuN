@@ -12,6 +12,7 @@ import java.util.List;
  * @param riverSystems
  *         les partitions des systèmes hydrographiques initiales
  * @author Vladislav Yarkovoy (362242)
+ * @author Cyriac Philippe (360553)
  */
 public record ZonePartitions(
         ZonePartition<Zone.Forest> forests,
@@ -48,11 +49,10 @@ public record ZonePartitions(
          *         la tuile à ajouter à la partition
          */
         public void addTile(Tile tile) {
-            // Ici le problème c'est que nous devons calculer le nombre de connexions ouvertes de
-            // chaque zone. Ce qu'on va faire, c'est itérer sur tout les TileSide (côtés de la tuile) [1]
+            // Le défi ici, c'est de calculer le nombre de connexions ouvertes de chaque zone.
+            // Ce qu'on va faire, c'est itérer sur tout les TileSide (côtés de la tuile) [1]
             // et regarder quelles sont les zones qui appartiennent à ce côté [2]. Pour chaque telle zone, nous allons
             // incrémenter le nombre de connexion ouvertes de 1. [3]
-            // todo: see if we need to rephrase this shit or not
             int[] nbOpenings = new int[10];
 
             // On va parcourir d'abord toutes les zones sur les côtés de la tuile [1]
@@ -149,12 +149,12 @@ public record ZonePartitions(
         public void addInitialOccupant(PlayerColor player, Occupant.Kind occupantKind, Zone occupiedZone)
                 throws IllegalArgumentException {
             switch (occupiedZone) {
-                case Zone.Forest f1 when occupantKind == Occupant.Kind.PAWN ->
-                        forestBuilder.addInitialOccupant(f1, player);
-                case Zone.Meadow m1 when occupantKind == Occupant.Kind.PAWN ->
-                        meadowBuilder.addInitialOccupant(m1, player);
-                case Zone.River r1 when occupantKind == Occupant.Kind.PAWN ->
-                        riverBuilder.addInitialOccupant(r1, player);
+                case Zone.Forest forest when occupantKind == Occupant.Kind.PAWN ->
+                        forestBuilder.addInitialOccupant(forest, player);
+                case Zone.Meadow meadow when occupantKind == Occupant.Kind.PAWN ->
+                        meadowBuilder.addInitialOccupant(meadow, player);
+                case Zone.River river when occupantKind == Occupant.Kind.PAWN ->
+                        riverBuilder.addInitialOccupant(river, player);
                 case Zone.Water water when occupantKind == Occupant.Kind.HUT ->
                         riverSystemBuilder.addInitialOccupant(water, player);
                 default -> throw new IllegalArgumentException();
@@ -208,7 +208,8 @@ public record ZonePartitions(
          * @return la ZonePartitions finalisée
          */
         public ZonePartitions build() {
-            return new ZonePartitions(forestBuilder.build(), meadowBuilder.build(), riverBuilder.build(), riverSystemBuilder.build());
+            return new ZonePartitions(forestBuilder.build(), meadowBuilder.build(), riverBuilder.build(),
+                    riverSystemBuilder.build());
         }
     }
 }

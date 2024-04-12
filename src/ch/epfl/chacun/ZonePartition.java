@@ -15,8 +15,14 @@ import java.util.Set;
 
 public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
 
+    /**
+     * Baptisseur de partition de zone
+     *
+     * @param <Z>
+     *         le type de la zone en construction
+     */
     public static final class Builder<Z extends Zone> {
-        private Set<Area<Z>> builderAreas = new HashSet<>();
+        private final Set<Area<Z>> builderAreas;
 
         public Builder(ZonePartition<Z> partition) {
             this.builderAreas = new HashSet<>(partition.areas());
@@ -129,7 +135,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
     }
 
     public ZonePartition() {
-        this(new HashSet<Area<Z>>());
+        this(new HashSet<>());
     }
 
     /**
@@ -137,8 +143,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
      *
      * @param zone
      *         zone qui doit contenir l'aire recherchée
-     * @return area
-     * l'air qui contient la zone demandée
+     * @return l'air qui contient la zone demandée
      * @throws IllegalArgumentException
      *         si aucune des aires ne contient la zone demandée
      */

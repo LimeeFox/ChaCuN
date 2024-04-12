@@ -81,7 +81,7 @@ public final class Board {
      * @return ensemble des animaux annulés
      */
     public Set<Animal> cancelledAnimals() {
-        //permet de retourner le set immodifiable sans faire de copies
+        //permet de retourner l'ensemble immodifiable sans faire de copies
         return Collections.unmodifiableSet(cancelledAnimals);
     }
 
@@ -180,11 +180,9 @@ public final class Board {
      */
     public Area<Meadow> adjacentMeadow(Pos pos, Meadow meadowZone) {
         ZonePartition<Meadow> meadowZonePartition = boardPartitions.meadows();
-
         Area<Meadow> validMeadowArea = meadowZonePartition.areaContaining(meadowZone);
 
         Set<Meadow> allNeighbourMeadowZones = new HashSet<>();
-
         Set<Meadow> adjacentMeadowZones = new HashSet<>();
 
         for (int x = -1; x <= 1; x++) {
@@ -201,7 +199,6 @@ public final class Board {
         allNeighbourMeadowZones.stream()
                 .filter(zone -> validMeadowArea.zones().contains(zone))
                 .forEach(adjacentMeadowZones::add);
-
 
         return new Area<>(adjacentMeadowZones, validMeadowArea.occupants(), 0);
     }
@@ -258,10 +255,7 @@ public final class Board {
      * @return la dernière tuile placée sur le plateau, ou null si aucune tuile n'a encore été placée
      */
     public PlacedTile lastPlacedTile() {
-        if (!this.equals(EMPTY)) {
-            return placedTiles[placedTileIndices[placedTileIndices.length - 1]];
-        }
-        return null;
+        return (!this.equals(EMPTY)) ? placedTiles[placedTileIndices[placedTileIndices.length - 1]] : null;
     }
 
     /**
@@ -270,18 +264,16 @@ public final class Board {
      * @return l'ensemble des aires de type forêt fermées par la dernière tuile placée sur le plateau
      */
     public Set<Area<Forest>> forestsClosedByLastTile() {
-        if (!this.equals(EMPTY)) {
-            PlacedTile lastPlacedTile = lastPlacedTile();
-            if (lastPlacedTile != null) {
-                Set<Forest> forestZones = new HashSet<>(lastPlacedTile.forestZones());
+        if (this.equals(EMPTY)) return null;
 
-                return boardPartitions.forests().areas().stream()
-                        .filter(forestArea -> forestArea.zones().stream().anyMatch(forestZones::contains))
-                        .filter(Area::isClosed)
-                        .collect(Collectors.toSet());
-            }
-        }
-        return null;
+        PlacedTile lastPlacedTile = lastPlacedTile();
+        if (lastPlacedTile == null) return null;
+
+        Set<Forest> forestZones = new HashSet<>(lastPlacedTile.forestZones());
+        return boardPartitions.forests().areas().stream()
+                .filter(forestArea -> forestArea.zones().stream().anyMatch(forestZones::contains))
+                .filter(Area::isClosed)
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -290,18 +282,16 @@ public final class Board {
      * @return l'ensemble des aires de type rivière fermées par la dernière tuile placée sur le plateau
      */
     public Set<Area<River>> riversClosedByLastTile() {
-        if (!this.equals(EMPTY)) {
-            PlacedTile lastPlacedTile = lastPlacedTile();
-            if (lastPlacedTile != null) {
-                Set<River> riverZones = new HashSet<>(lastPlacedTile.riverZones());
+        if (this.equals(EMPTY)) return null;
 
-                return boardPartitions.rivers().areas().stream()
-                        .filter(riverArea -> riverArea.zones().stream().anyMatch(riverZones::contains))
-                        .filter(Area::isClosed)
-                        .collect(Collectors.toSet());
-            }
-        }
-        return null;
+        PlacedTile lastPlacedTile = lastPlacedTile();
+        if (lastPlacedTile == null) return null;
+
+        Set<River> riverZones = new HashSet<>(lastPlacedTile.riverZones());
+        return boardPartitions.rivers().areas().stream()
+                .filter(riverArea -> riverArea.zones().stream().anyMatch(riverZones::contains))
+                .filter(Area::isClosed)
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -368,6 +358,7 @@ public final class Board {
         int[] updatedPlacedTileIndices = Arrays.copyOf(placedTileIndices, placedTileIndices.length + 1);
         updatedPlacedTileIndices[updatedPlacedTileIndices.length - 1] = tileIndex;
 
+        // Ajout de la tuile
         ZonePartitions.Builder boardPartitionsBuilder = new ZonePartitions.Builder(this.boardPartitions);
         boardPartitionsBuilder.addTile(tile.tile());
         for (Direction direction : Direction.ALL) {
@@ -377,13 +368,14 @@ public final class Board {
             }
         }
 
+        // Ajout d'un occupant initial si besoin
         if (tile.occupant() != null) {
             boardPartitionsBuilder.addInitialOccupant(tile.placer(), tile.occupant().kind(),
                     tile.zoneWithId(tile.occupant().zoneId()));
         }
 
         return new Board(updatedPlacedTiles, updatedPlacedTileIndices,
-                boardPartitionsBuilder.build(), cancelledAnimals());
+                boardPartitionsBuilder.build(), cancelledAnimals);
     }
 
     /**
@@ -406,7 +398,7 @@ public final class Board {
         ZonePartitions.Builder updatedPartition = new ZonePartitions.Builder(boardPartitions);
         updatedPartition.addInitialOccupant(tile.placer(), occupant.kind(), tile.zoneWithId(zoneId));
 
-        return new Board(updatedPlacedTiles, placedTileIndices.clone(), updatedPartition.build(), cancelledAnimals());
+        return new Board(updatedPlacedTiles, placedTileIndices.clone(), updatedPartition.build(), cancelledAnimals);
     }
 
     /**
@@ -426,7 +418,7 @@ public final class Board {
         ZonePartitions.Builder updatedPartition = new ZonePartitions.Builder(boardPartitions);
         updatedPartition.removePawn(tile.placer(), tile.zoneWithId(id));
 
-        return new Board(updatedPlacedTiles, placedTileIndices.clone(), updatedPartition.build(), cancelledAnimals());
+        return new Board(updatedPlacedTiles, placedTileIndices.clone(), updatedPartition.build(), cancelledAnimals);
     }
 
     /**
@@ -476,12 +468,21 @@ public final class Board {
         return new Board(updatedPlacedTiles,
                 placedTileIndices.clone(),
                 zonePartitionsBuilder.build(),
-                cancelledAnimals());
+                cancelledAnimals);
     }
 
+    /**
+     * Annulation de l'ensemble des animaux donnée
+     *
+     * @param newlyCancelledAnimals
+     *          animaux à annuler
+     * @return un plateau de jeu identique au récepteur, mais avec l'ensemble des animaux passé en argument ajoutés à
+     *          l'ensemble des animaux annulés
+     */
     public Board withMoreCancelledAnimals(Set<Animal> newlyCancelledAnimals) {
         Set<Animal> allAnimalsToCancel = new HashSet<>(cancelledAnimals);
         allAnimalsToCancel.addAll(newlyCancelledAnimals);
+
         return new Board(placedTiles, placedTileIndices, boardPartitions, allAnimalsToCancel);
     }
 
@@ -500,7 +501,7 @@ public final class Board {
     public int hashCode() {
         final int firstDigit = Arrays.hashCode(placedTiles);
         final int secondDigit = Arrays.hashCode(placedTileIndices);
-        return Objects.hash(firstDigit, secondDigit, boardPartitions, cancelledAnimals());
+        return Objects.hash(firstDigit, secondDigit, boardPartitions, cancelledAnimals);
     }
 
     /**
@@ -514,11 +515,5 @@ public final class Board {
         final Pos tilePos = tile.pos().translated(REACH, REACH);
 
         return tilePos.x() + 25 * tilePos.y();
-    }
-
-    private Pos indexToPos(int index) {
-        int x = (index % 25) - REACH;
-        int y = (index / 25) - REACH;
-        return new Pos(x, y);
     }
 }

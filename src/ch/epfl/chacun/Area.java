@@ -11,7 +11,7 @@ import java.util.function.Predicate;
  * @param openConnections
  * @param <Z>
  * @author Vladislav Yarkovoy (362242)
- * @author //todo
+ * @author Cyriac Philippe (360553)
  */
 public record Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, int openConnections) {
 

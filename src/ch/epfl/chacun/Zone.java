@@ -6,6 +6,7 @@ import java.util.List;
  * Interface pour les zones d'une tuile
  *
  * @author Vladislav Yarkovoy (362242)
+ * @author Cyriac Philippe (360553)
  */
 public sealed interface Zone {
 
@@ -90,10 +91,6 @@ public sealed interface Zone {
         public Meadow {
             animals = List.copyOf(animals);
         }
-
-        public SpecialPower SpecialPower() {
-            return specialPower;
-        } //todo is this even useful? ask assistant
     }
 
     /**
@@ -113,9 +110,7 @@ public sealed interface Zone {
      * @param specialPower
      *         pouvoir spécial de la zone
      */
-    record Lake(int id, int fishCount, SpecialPower specialPower) implements Zone, Zone.Water {
-        //todo why is this empty? it could have SpecialPower() like lake but i dont see the point
-    }
+    record Lake(int id, int fishCount, SpecialPower specialPower) implements Zone, Zone.Water {}
 
     /**
      * Zone de rivière qui peut posséder 0 ou plusieurs poissons, et qui peut (ou pas) faire partie d'un lac
