@@ -19,7 +19,6 @@ import static ch.epfl.chacun.Zone.Meadow;
  * @author Vladislav Yarkovoy (362242)
  */
 public final class Board {
-
     private final PlacedTile[] placedTiles;
     private final int[] placedTileIndices;
     private final ZonePartitions boardPartitions;
@@ -41,13 +40,15 @@ public final class Board {
      * Tuile placée dans une position donnée
      *
      * @param pos
-     *          position à laquelle la tuile est placée
+     *         position à laquelle la tuile est placée
      * @return la tuile placée à la position donnée, ou bien null si aucune tuile n'est placée à la position donnée ou
-     *          si la position donnée n'appartient pas au plateau
+     * si la position donnée n'appartient pas au plateau
      */
     public PlacedTile tileAt(Pos pos) {
-        if (pos.x() >= -12 && pos.x() <= 12
-                && pos.y() >= -12 && pos.y() <= 12) {
+        if (pos.x() >= -12
+                && pos.x() <= 12
+                && pos.y() >= -12
+                && pos.y() <= 12) {
             pos = pos.translated(REACH, REACH);
             int index = pos.x() + 25 * pos.y();
             return placedTiles[index];
@@ -59,12 +60,11 @@ public final class Board {
      * Tuile placée possédant une identité donnée
      *
      * @param tileId
-     *          identité de la tuile recherchée
+     *         identité de la tuile recherchée
      * @return la tuile placée dont l'identité correspond avec celle passée en argument
-     *
      * @throws IllegalArgumentException
-     *          si la tuile n'est pas présente sur le plateau, autrement dit, la tuile recherchée n'est pas encore placé
-     *          ou l'identité donnée n'existe pas
+     *         si la tuile n'est pas présente sur le plateau, autrement dit, la tuile recherchée n'est pas encore placé
+     *         ou l'identité donnée n'existe pas
      */
     public PlacedTile tileWithId(int tileId) {
         for (int index : placedTileIndices) {
@@ -81,7 +81,7 @@ public final class Board {
      * @return ensemble des animaux annulés
      */
     public Set<Animal> cancelledAnimals() {
-        //permet de retourner le set immodifiable sans faire de copies
+        //permet de retourner l'ensemble immodifiable sans faire de copies
         return Collections.unmodifiableSet(cancelledAnimals);
     }
 
@@ -101,7 +101,10 @@ public final class Board {
      * Obtenir une aire avec la zone de forêt donnée
      *
      * @param forest
-     * @return l'aire avec la zone de forêt donnée, si elle existe
+     *         la forêt dont on recherche l'aire
+     * @return l'aire qui contient la zone de forêt donnée, si elle existe
+     * @throws IllegalArgumentException
+     *         si la zone en question n'appartient pas au plateau
      */
     public Area<Forest> forestArea(Forest forest) {
         return boardPartitions.forests().areaContaining(forest);
@@ -111,7 +114,10 @@ public final class Board {
      * Obtenir une aire avec la zone de pré donnée
      *
      * @param meadow
-     * @return l'aire avec la zone de pré donnée, si elle existe
+     *         le pré dont on recherche l'aire
+     * @return l'aire qui contient la zone de pré donnée, si elle existe
+     * @throws IllegalArgumentException
+     *         si la zone en question n'appartient pas au plateau
      */
     public Area<Meadow> meadowArea(Meadow meadow) {
         return boardPartitions.meadows().areaContaining(meadow);
@@ -121,7 +127,10 @@ public final class Board {
      * Obtenir une aire avec la zone de rivière donnée
      *
      * @param riverZone
-     * @return l'aire avec la zone de rivière donnée, si elle existe
+     *         la rivière dont on recherche l'aire
+     * @return l'aire qui contient la zone de rivière donnée, si elle existe
+     * @throws IllegalArgumentException
+     *         si la zone en question n'appartient pas au plateau
      */
     public Area<River> riverArea(River riverZone) {
         return boardPartitions.rivers().areaContaining(riverZone);
@@ -131,7 +140,10 @@ public final class Board {
      * Obtenir une aire avec la zone d'eau donnée
      *
      * @param water
-     * @return l'aire avec la zone d'eau donnée, si elle existe
+     *         la zone d'eau dont on recherche l'aire
+     * @return l'aire qui contient la zone d'eau donnée, si elle existe
+     * @throws IllegalArgumentException
+     *         si la zone en question n'appartient pas au plateau
      */
     public Area<Zone.Water> riverSystemArea(Zone.Water water) {
         return boardPartitions.riverSystems().areaContaining(water);
@@ -161,18 +173,16 @@ public final class Board {
      * et qui, pour simplifier, ne possède aucune connexion ouverte
      *
      * @param pos
-     *          position de la tuile centrale des prés adjacents
+     *         position de la tuile centrale des prés adjacents
      * @param meadowZone
-     *          zone centrale des prés adjacents
+     *         zone centrale des prés adjacents
      * @return aire de prés adjacents à la zone de type pré donnée
      */
     public Area<Meadow> adjacentMeadow(Pos pos, Meadow meadowZone) {
         ZonePartition<Meadow> meadowZonePartition = boardPartitions.meadows();
-
         Area<Meadow> validMeadowArea = meadowZonePartition.areaContaining(meadowZone);
 
         Set<Meadow> allNeighbourMeadowZones = new HashSet<>();
-
         Set<Meadow> adjacentMeadowZones = new HashSet<>();
 
         for (int x = -1; x <= 1; x++) {
@@ -190,51 +200,24 @@ public final class Board {
                 .filter(zone -> validMeadowArea.zones().contains(zone))
                 .forEach(adjacentMeadowZones::add);
 
-
         return new Area<>(adjacentMeadowZones, validMeadowArea.occupants(), 0);
     }
 
     /**
      * Nombre d'occupants d'une même sorte placés par un même joueur sur le plateau
+     *
      * @param player
-     *          joueur auquel appartiennent les occupants
+     *         joueur auquel appartiennent les occupants
      * @param occupantKind
-     *          type d'occupant recherché
+     *         type d'occupant recherché
      * @return le nombre d'occupants sur le plateau étant d'une même sorte et appartenant à un même joueur
      */
     public int occupantCount(PlayerColor player, Occupant.Kind occupantKind) {
-        /*
-        final int[] playerCount = new int[1];
-        List<PlacedTile> tiles = Arrays.stream(placedTiles).toList();
-
-        Predicate<Area<Meadow>> meadowAreaFilter = meadowArea -> meadowArea.occupants() != null;
-        Predicate<PlayerColor> playerFilter = playerColor -> !(playerColor == player);
-
-        //Predicate<Meadow> meadowZoneFilter = meadowZone -> meadowZone.
-
-        boardPartitions.meadows().areas().stream().filter(meadowAreaFilter).forEach(area -> {
-            area.occupants().stream().filter(playerFilter).forEach(playerColor -> {
-                playerCount[0]++;
-            });
-        });
-
-        Predicate<Area<Forest>> forestAreaFilter = forestArea -> forestArea.occupants() != null;
-
-        boardPartitions.forests().areas().stream().filter(forestAreaFilter).forEach(area -> {
-            area.occupants().stream().filter(playerFilter).forEach(playerColor -> {
-                playerCount[0]++;
-            });
-        });
-
-        boardPartitions.
-
-        return playerCount[0];
-
-         */
-
-        long occupants = Arrays.stream(placedTileIndices)
-                .mapToObj(index -> placedTiles[index])
-                .filter(tile -> tile.placer() == player && tile.occupant() != null && tile.occupant().kind() == occupantKind)
+        long occupants = Arrays.stream(placedTiles)
+                .filter(tile -> tile != null
+                        && tile.placer() == player
+                        && tile.occupant() != null
+                        && tile.occupant().kind() == occupantKind)
                 .count();
         return (int) occupants;
     }
@@ -271,11 +254,8 @@ public final class Board {
      *
      * @return la dernière tuile placée sur le plateau, ou null si aucune tuile n'a encore été placée
      */
-    public PlacedTile lastPlacedTile(){
-        if (!this.equals(EMPTY)) {
-            return placedTiles[placedTileIndices[placedTileIndices.length - 1]];
-        }
-        return null;
+    public PlacedTile lastPlacedTile() {
+        return (!this.equals(EMPTY)) ? placedTiles[placedTileIndices[placedTileIndices.length - 1]] : null;
     }
 
     /**
@@ -284,18 +264,16 @@ public final class Board {
      * @return l'ensemble des aires de type forêt fermées par la dernière tuile placée sur le plateau
      */
     public Set<Area<Forest>> forestsClosedByLastTile() {
-        if (!this.equals(EMPTY)) {
-            PlacedTile lastPlacedTile = lastPlacedTile();
-            if (lastPlacedTile != null) {
-                Set<Forest> forestZones = new HashSet<>(lastPlacedTile.forestZones());
+        if (this.equals(EMPTY)) return null;
 
-                return boardPartitions.forests().areas().stream()
-                        .filter(forestArea -> forestArea.zones().stream().anyMatch(forestZones::contains))
-                        .filter(Area::isClosed)
-                        .collect(Collectors.toSet());
-            }
-        }
-        return null;
+        PlacedTile lastPlacedTile = lastPlacedTile();
+        if (lastPlacedTile == null) return null;
+
+        Set<Forest> forestZones = new HashSet<>(lastPlacedTile.forestZones());
+        return boardPartitions.forests().areas().stream()
+                .filter(forestArea -> forestArea.zones().stream().anyMatch(forestZones::contains))
+                .filter(Area::isClosed)
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -304,27 +282,25 @@ public final class Board {
      * @return l'ensemble des aires de type rivière fermées par la dernière tuile placée sur le plateau
      */
     public Set<Area<River>> riversClosedByLastTile() {
-        if (!this.equals(EMPTY)) {
-            PlacedTile lastPlacedTile = lastPlacedTile();
-            if(lastPlacedTile != null) {
-                Set<River> riverZones = new HashSet<>(lastPlacedTile.riverZones());
+        if (this.equals(EMPTY)) return null;
 
-                return boardPartitions.rivers().areas().stream()
-                        .filter(riverArea -> riverArea.zones().stream().anyMatch(riverZones::contains))
-                        .filter(Area::isClosed)
-                        .collect(Collectors.toSet());
-            }
-        }
-        return null;
+        PlacedTile lastPlacedTile = lastPlacedTile();
+        if (lastPlacedTile == null) return null;
+
+        Set<River> riverZones = new HashSet<>(lastPlacedTile.riverZones());
+        return boardPartitions.rivers().areas().stream()
+                .filter(riverArea -> riverArea.zones().stream().anyMatch(riverZones::contains))
+                .filter(Area::isClosed)
+                .collect(Collectors.toSet());
     }
 
     /**
      * Indique si la tuile placée donnée pourrait être ajoutée au plateau
      *
      * @param tile
-     *          tuile placée donnée
+     *         tuile placée donnée
      * @return vrai si la position de la tuile placée donnée est une position d'insertion et que chaque bord de la
-     *          tuile qui un bord de tuile déjà posée est de la mêmê sorte que lui
+     * tuile qui un bord de tuile déjà posée est de la mêmê sorte que lui
      */
     public boolean canAddTile(PlacedTile tile) {
 
@@ -345,7 +321,7 @@ public final class Board {
      * Vérifie si une tuile donnée peut être placée sur le plateau, éventuellement, après rotation
      *
      * @param tile
-     *          tuile dont on cherche à vérifier la validité
+     *         tuile dont on cherche à vérifier la validité
      * @return vrai si la tuile donnée peut être placée sur le plateau, possiblement après rotation, et faux sinon
      */
     public boolean couldPlaceTile(Tile tile) {
@@ -366,8 +342,10 @@ public final class Board {
      * Nouveau plateau contenant une nouvelle tuile placée donnée
      *
      * @param tile
-     *          tuile placée dans le nouveau plateau
+     *         tuile placée dans le nouveau plateau
      * @return un nouveau plateau identique au récepteur, avec la tuile placée donnée
+     * @throws IllegalArgumentException
+     *         si le plateau n'est pas vide et la tuile donnée ne peut pas être ajoutée au plateau
      */
     public Board withNewTile(PlacedTile tile) {
         Preconditions.checkArgument(this.equals(EMPTY) || canAddTile(tile));
@@ -380,47 +358,54 @@ public final class Board {
         int[] updatedPlacedTileIndices = Arrays.copyOf(placedTileIndices, placedTileIndices.length + 1);
         updatedPlacedTileIndices[updatedPlacedTileIndices.length - 1] = tileIndex;
 
+        // Ajout de la tuile
         ZonePartitions.Builder boardPartitionsBuilder = new ZonePartitions.Builder(this.boardPartitions);
         boardPartitionsBuilder.addTile(tile.tile());
-        for (Direction direction: Direction.ALL) {
+        for (Direction direction : Direction.ALL) {
             PlacedTile neighbourTile = tileAt(tile.pos().neighbor(direction));
             if (neighbourTile != null) {
                 boardPartitionsBuilder.connectSides(tile.side(direction), neighbourTile.side(direction.opposite()));
             }
         }
 
+        // Ajout d'un occupant initial si besoin
         if (tile.occupant() != null) {
             boardPartitionsBuilder.addInitialOccupant(tile.placer(), tile.occupant().kind(),
                     tile.zoneWithId(tile.occupant().zoneId()));
         }
 
         return new Board(updatedPlacedTiles, updatedPlacedTileIndices,
-                boardPartitionsBuilder.build(), cancelledAnimals());
+                boardPartitionsBuilder.build(), cancelledAnimals);
     }
 
     /**
      * Obtenir un plateau qui rajoute l'occupent à la zone qui correspond à son ID
      *
-     * @param occupant occupent à rajouter
+     * @param occupant
+     *         occupent à rajouter
      * @return un plateau identique au récepteur, mais avec l'occupant donné en plus
+     * @throws IllegalArgumentException
+     *         si la tuile sur laquelle se trouverait l'occupant est déjà occupée
      */
     public Board withOccupant(Occupant occupant) {
-        final int id = occupant.zoneId();
+        final int zoneId = occupant.zoneId();
+        final int tileId = Zone.tileId(zoneId);
 
-        PlacedTile tile = tileWithId(id / 10);
+        PlacedTile tile = tileWithId(tileId);
         PlacedTile[] updatedPlacedTiles = placedTiles.clone();
         updatedPlacedTiles[getIndexOfTile(tile)] = tile.withOccupant(occupant);
 
         ZonePartitions.Builder updatedPartition = new ZonePartitions.Builder(boardPartitions);
-        updatedPartition.addInitialOccupant(tile.placer(), occupant.kind(), tile.zoneWithId(id));
+        updatedPartition.addInitialOccupant(tile.placer(), occupant.kind(), tile.zoneWithId(zoneId));
 
-        return new Board(updatedPlacedTiles, placedTileIndices.clone(), updatedPartition.build(), cancelledAnimals());
+        return new Board(updatedPlacedTiles, placedTileIndices.clone(), updatedPartition.build(), cancelledAnimals);
     }
 
     /**
      * Obtenir un plateau qui enlève l'occupent à la zone qui correspond à son ID
      *
-     * @param occupant l'occupent à enlever
+     * @param occupant
+     *         l'occupent à enlever
      * @return un plateau identique au récepteur, mais avec l'occupant donné en moins
      */
     public Board withoutOccupant(Occupant occupant) {
@@ -433,66 +418,71 @@ public final class Board {
         ZonePartitions.Builder updatedPartition = new ZonePartitions.Builder(boardPartitions);
         updatedPartition.removePawn(tile.placer(), tile.zoneWithId(id));
 
-        return new Board(updatedPlacedTiles, placedTileIndices.clone(), updatedPartition.build(), cancelledAnimals());
+        return new Board(updatedPlacedTiles, placedTileIndices.clone(), updatedPartition.build(), cancelledAnimals);
     }
 
     /**
-     * //todo
+     * Obtenir un plateau identique au récépteur mais sans occupant dans les forêts et les rivières données
      *
      * @param forests
+     *         l'ensemble d'aires forêts où on doit enlever les occupants
      * @param rivers
+     *         l'ensemble d'aires rivières où on doit enlever les occupants
      * @return un plateau identique au récepteur mais sans aucun occupant dans les forêts et les rivières données
      */
     public Board withoutGatherersOrFishersIn(Set<Area<Forest>> forests, Set<Area<River>> rivers) {
-        // Take care of Forests
-        Set<Area<Forest>> forestsWithoutOccupants = new HashSet<>();
-        if (forests != null) {
-            forests.forEach(forest -> {
-                forestsWithoutOccupants.add(forest.withoutOccupants());
+
+        ZonePartitions.Builder zonePartitionsBuilder = new ZonePartitions.Builder(boardPartitions);
+
+        PlacedTile[] updatedPlacedTiles = placedTiles.clone();
+
+        // Gérer les forêts
+        forests.forEach(forestArea -> {
+            zonePartitionsBuilder.clearGatherers(forestArea);
+            forestArea.tileIds().forEach(id -> {
+                PlacedTile updatedPlacedTile = tileWithId(id);
+                Occupant occupant = updatedPlacedTile.occupant();
+                if (occupant != null
+                        && updatedPlacedTile.zoneWithId(occupant.zoneId()) instanceof Zone.Forest forestZone
+                        && forestArea.zones().contains(forestZone)) {
+                    updatedPlacedTiles[getIndexOfTile(updatedPlacedTile)] = updatedPlacedTile.withNoOccupant();
+                }
             });
-        }
+        });
 
-        // Take care of Rivers
-        Set<Area<River>> riversWithoutOccupants = new HashSet<>();
-        if (rivers != null) {
-            rivers.forEach(river -> {
-                riversWithoutOccupants.add(river.withoutOccupants());
+        // Gérer les rivières
+        rivers.forEach(riverArea -> {
+            zonePartitionsBuilder.clearFishers(riverArea);
+            riverArea.tileIds().forEach(id -> {
+                PlacedTile updatedPlacedTile = tileWithId(id);
+                Occupant occupant = updatedPlacedTile.occupant();
+                if (occupant != null
+                        && occupant.kind() == Occupant.Kind.PAWN
+                        && updatedPlacedTile.zoneWithId(occupant.zoneId()) instanceof Zone.River riverZone
+                        && riverArea.zones().contains(riverZone)) {
+                    updatedPlacedTiles[getIndexOfTile(updatedPlacedTile)] = updatedPlacedTile.withNoOccupant();
+                }
             });
-        }
+        });
 
-        // Retrieve board forest areas only if forests is not null
-        Set<Area<Forest>> newForests = new HashSet<>();
-        if (boardPartitions.forests() != null) {
-            final Set<Area<Forest>> boardForestAreas = boardPartitions.forests().areas();
-            newForests = boardForestAreas.stream()
-                    .filter(forest -> forests == null || !forests.contains(forest))
-                    .collect(Collectors.toSet());
-        }
-        newForests.addAll(forestsWithoutOccupants);
-
-        // Retrieve board river areas only if rivers is not null
-        Set<Area<River>> newRivers = new HashSet<>();
-        if (boardPartitions.rivers() != null) {
-            final Set<Area<River>> boardRiverAreas = boardPartitions.rivers().areas();
-            newRivers = boardRiverAreas.stream()
-                    .filter(river -> rivers == null || !rivers.contains(river))
-                    .collect(Collectors.toSet());
-        }
-        newRivers.addAll(riversWithoutOccupants);
-
-        // Rebuild partitions
-        ZonePartitions updatedPartitions = new ZonePartitions(
-                new ZonePartition<>(newForests),
-                boardPartitions.meadows(),
-                new ZonePartition<>(newRivers),
-                boardPartitions.riverSystems());
-
-        return new Board(placedTiles, placedTileIndices, updatedPartitions, cancelledAnimals);
+        return new Board(updatedPlacedTiles,
+                placedTileIndices.clone(),
+                zonePartitionsBuilder.build(),
+                cancelledAnimals);
     }
 
+    /**
+     * Annulation de l'ensemble des animaux donnée
+     *
+     * @param newlyCancelledAnimals
+     *          animaux à annuler
+     * @return un plateau de jeu identique au récepteur, mais avec l'ensemble des animaux passé en argument ajoutés à
+     *          l'ensemble des animaux annulés
+     */
     public Board withMoreCancelledAnimals(Set<Animal> newlyCancelledAnimals) {
         Set<Animal> allAnimalsToCancel = new HashSet<>(cancelledAnimals);
         allAnimalsToCancel.addAll(newlyCancelledAnimals);
+
         return new Board(placedTiles, placedTileIndices, boardPartitions, allAnimalsToCancel);
     }
 
@@ -511,25 +501,19 @@ public final class Board {
     public int hashCode() {
         final int firstDigit = Arrays.hashCode(placedTiles);
         final int secondDigit = Arrays.hashCode(placedTileIndices);
-        return Objects.hash(firstDigit, secondDigit, boardPartitions, cancelledAnimals());
+        return Objects.hash(firstDigit, secondDigit, boardPartitions, cancelledAnimals);
     }
 
     /**
      * Emplacement d'une tuile à une position donnée dans le tableau des tuiles du plateau
      *
      * @param tile
-     *          tuile placée
+     *         tuile placée
      * @return l'indice de la tuile donnée dans placedTiles
      */
     private int getIndexOfTile(PlacedTile tile) {
         final Pos tilePos = tile.pos().translated(REACH, REACH);
 
         return tilePos.x() + 25 * tilePos.y();
-    }
-
-    private Pos indexToPos(int index) {
-        int x = (index % 25) - REACH;
-        int y = (index / 25) - REACH;
-        return new Pos(x , y);
     }
 }

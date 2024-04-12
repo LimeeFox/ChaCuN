@@ -1,15 +1,17 @@
 package ch.epfl.chacun;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Contenu du tableau d'affichage
  *
- * @author Cyriac Philippe (360553)
  * @param textMaker
- *          permet d'obtenir le texte des différents messages
+ *         permet d'obtenir le texte des différents messages
  * @param messages
- *          liste des messages affichés sur le tableau, du plus ancien au plus récent
+ *         liste des messages affichés sur le tableau, du plus ancien au plus récent
+ * @author Cyriac Philippe (360553)
+ * @author Vladislav Yarkovoy (362242)
  */
 public record MessageBoard(TextMaker textMaker, List<Message> messages) {
 
@@ -17,11 +19,12 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
     public MessageBoard {
         messages = List.copyOf(messages);
     }
+
     /**
      * Table associant à chaque joueur ayant obtenu des points, le nombre de points obtenus
      *
      * @return pointsMap
-     *          table associant les joueurs à leur nombre de points obtenus
+     * table associant les joueurs à leur nombre de points obtenus
      */
     public Map<PlayerColor, Integer> points() {
         Map<PlayerColor, Integer> playerPointsMap = new HashMap<>();
@@ -40,9 +43,9 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * Mise à jour du tableau suite à la fermeture d'une forêt
      *
      * @param forest
-     *          forêt fermée par un joueur
+     *         forêt fermée par un joueur
      * @return un tableau de message contenant un nouveau message pour les joueurs ayant remporté des points ou
-     *          un tableau identique au récepteur si la forêt est inoccupée
+     * un tableau identique au récepteur si la forêt est inoccupée
      */
     public MessageBoard withScoredForest(Area<Zone.Forest> forest) {
         if (forest.isOccupied()) {
@@ -66,37 +69,37 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * Mise à jour du tableau suite à la fermeture d'une forêt contenant un menhir
      *
      * @param player
-     *          joueur ayant fermé la forêt contenant un menhir
+     *         joueur ayant fermé la forêt contenant un menhir
      * @param forest
-     *          aire de type forêt qui a été fermée
+     *         aire de type forêt qui a été fermée
      * @return un tableau d'affichage avec un nouveau message indiquant au joueur qu'il peut jouer un second tour
      */
     public MessageBoard withClosedForestWithMenhir(PlayerColor player, Area<Zone.Forest> forest) {
         List<Message> menhirMessages = new ArrayList<>(List.copyOf(messages));
         menhirMessages.add(new Message(textMaker.playerClosedForestWithMenhir(player),
-                0, forest.majorityOccupants(), forest.tileIds() ));
+                0, forest.majorityOccupants(), forest.tileIds()));
         return new MessageBoard(this.textMaker, menhirMessages);
-
     }
 
     /**
      * Mise à jour du tableau suite à la fermeture d'une rivière
      *
      * @param river
-     *          rivière fermée par un joueur
+     *         rivière fermée par un joueur
      * @return un tableau de message contenant un nouveau message pour les joueurs ayant remporté des points ou
-     *          un tableau identique au récepteur si la rivière est inoccupée
+     * un tableau identique au récepteur si la rivière est inoccupée
      */
     public MessageBoard withScoredRiver(Area<Zone.River> river) {
         if (river.isOccupied()) {
             final int fishCount = Area.riverFishCount(river);
             final int tileCount = river.tileIds().size();
             final Set<PlayerColor> majorityOccupants = river.majorityOccupants();
+            final int pointsForClosedRiver = Points.forClosedRiver(tileCount, fishCount);
 
             List<Message> riverMessages = new ArrayList<>(List.copyOf(messages));
             riverMessages.add(new Message(textMaker.playersScoredRiver(majorityOccupants,
-                    Points.forClosedRiver(tileCount, fishCount), fishCount, tileCount),
-                            Points.forClosedRiver(tileCount, fishCount), majorityOccupants,                     river.tileIds()));
+                    pointsForClosedRiver, fishCount, tileCount),
+                    pointsForClosedRiver, majorityOccupants, river.tileIds()));
             return new MessageBoard(this.textMaker, riverMessages);
         }
         return this;
@@ -106,35 +109,35 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * Mise à jour du tableau d'affichage quand un joueur pose une fosse à pieux
      *
      * @param scorer
-     *          joueur qui a posé la fosse à pieux et, en principe, remporte des points
+     *         joueur qui a posé la fosse à pieux et, en principe, remporte des points
      * @param adjacentMeadow
-     *          ensemble des prés adjacents à la fosse à pieux
+     *         ensemble des prés adjacents à la fosse à pieux
      * @return un tableau d'affichage identique au récepteur, à moins que le joueur remporte des points en posant
-     *          sa fosse
+     * sa fosse
      */
     public MessageBoard withScoredHuntingTrap(PlayerColor scorer, Area<Zone.Meadow> adjacentMeadow) {
         Set<Animal> animals = new HashSet<>();
         for (Zone.Meadow meadowZone : adjacentMeadow.zones()) {
             animals.addAll(meadowZone.animals());
         }
-        
-        int tigerCount = (int) animals.stream()
+
+        final int tigerCount = (int) animals.stream()
                 .filter(animal -> animal.kind().equals(Animal.Kind.TIGER))
                 .count();
 
-        int mammothCount = (int) animals.stream()
+        final int mammothCount = (int) animals.stream()
                 .filter(animal -> animal.kind().equals(Animal.Kind.MAMMOTH))
                 .count();
 
-        int aurochsCount = (int) animals.stream()
+        final int aurochsCount = (int) animals.stream()
                 .filter(animal -> animal.kind().equals(Animal.Kind.AUROCHS))
                 .count();
 
-        int deerCount = (int) animals.stream()
+        final int deerCount = (int) animals.stream()
                 .filter(animal -> animal.kind().equals(Animal.Kind.DEER))
                 .count();
 
-        int scoredPoints = Points.forMeadow(mammothCount, aurochsCount, deerCount);
+        final int scoredPoints = Points.forMeadow(mammothCount, aurochsCount, deerCount);
 
         if (scoredPoints > 0) {
             Map<Animal.Kind, Integer> animalIntegerMap = new HashMap<>();
@@ -156,19 +159,20 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * Mise à jour du tableau d'affichage quand un joueur pose la pirogue dans le réseau hydrographique donnée
      *
      * @param scorer
-     *          joueur qui a posé la pirogue et qui remporte donc des points
+     *         joueur qui a posé la pirogue et qui remporte donc des points
      * @param riverSystem
-     *          réseau hydrographique où la pirogue a été posée
+     *         réseau hydrographique où la pirogue a été posée
      * @return un tableau d'affichage identique au récepteur, mais avec un nouveau message signalant au joueur donné
-     *          qu'il a remporté les points correspondants
+     * qu'il a remporté les points correspondants
      */
     public MessageBoard withScoredLogboat(PlayerColor scorer, Area<Zone.Water> riverSystem) {
         final int lakeCount = Area.lakeCount(riverSystem);
+        final int pointsForLogboat = Points.forLogboat(lakeCount);
 
         List<Message> messageList = new ArrayList<>(List.copyOf(messages));
         messageList.add(new Message(textMaker.playerScoredLogboat(scorer,
-                Points.forLogboat(lakeCount), lakeCount),
-                Points.forLogboat(lakeCount), Set.of(scorer), riverSystem.tileIds()));
+                pointsForLogboat, lakeCount),
+                pointsForLogboat, Set.of(scorer), riverSystem.tileIds()));
 
         return new MessageBoard(this.textMaker, messageList);
     }
@@ -177,28 +181,28 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * Mise à jour du tableau pour un pré fermé
      *
      * @param meadow
-     *          zones de type pré qui ont été fermées et qui rapportent ainsi des points
+     *         zones de type pré qui ont été fermées et qui rapportent ainsi des points
      * @param cancelledAnimals
-     *          animaux qui ont déjà été comptabilisés dans le calcul des points et qui ne seront donc pas pris en
-     *          compte pour ce pré
+     *         animaux qui ont déjà été comptabilisés dans le calcul des points et qui ne seront donc pas pris en
+     *         compte pour ce pré
      * @return un tableau d'affichage identique au récepteur avec un nouveau message indiquant les nombre de points
-     *          remportés aux joueurs concernés, à moins que le pré soit inoccupé ou qu'il ne rapporte pas de points
+     * remportés aux joueurs concernés, à moins que le pré soit inoccupé ou qu'il ne rapporte pas de points
      */
     public MessageBoard withScoredMeadow(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
         if (meadow.isOccupied()) {
-
             Map<Animal.Kind, Integer> animalIntegerMap = animalMap(meadow, cancelledAnimals);
 
-            int scoredPoints = Points.forMeadow(animalIntegerMap.getOrDefault(Animal.Kind.MAMMOTH, 0),
+            int scoredPoints = Points.forMeadow(
+                    animalIntegerMap.getOrDefault(Animal.Kind.MAMMOTH, 0),
                     animalIntegerMap.getOrDefault(Animal.Kind.AUROCHS, 0),
                     animalIntegerMap.getOrDefault(Animal.Kind.DEER, 0));
 
             if (scoredPoints > 0) {
-
+                final Set<PlayerColor> majorityOccupants = meadow.majorityOccupants();
                 List<Message> messageList = new ArrayList<>(List.copyOf(this.messages));
-                messageList.add(new Message(textMaker.playersScoredMeadow(meadow.majorityOccupants(),
+                messageList.add(new Message(textMaker.playersScoredMeadow(majorityOccupants,
                         scoredPoints, animalIntegerMap),
-                        scoredPoints, meadow.majorityOccupants(), meadow.tileIds()));
+                        scoredPoints, majorityOccupants, meadow.tileIds()));
 
                 return new MessageBoard(this.textMaker, messageList);
             }
@@ -206,19 +210,23 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         return this;
     }
 
+    /**
+     * Méthode d'aide qui sert à compter les animaux par leur type
+     *
+     * @param meadow
+     *         le pré dans lequel on compte les animaux
+     * @param cancelledAnimals
+     *         les animaux annulés, si il y en a
+     * @return une Map où chaque type d'animal a un nombre d'occurence qui lui est attribué
+     */
     private Map<Animal.Kind, Integer> animalMap(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
         Set<Animal> validAnimals = Area.animals(meadow, cancelledAnimals);
 
         Map<Animal.Kind, Integer> animalIntegerMap = new HashMap<>();
-        for (Animal.Kind kind : Animal.Kind.values()) {
-            int animalKindCount = (int) (validAnimals.stream()
-                            .filter(animal -> animal.kind().equals(kind))
-                            .count());
-            if (animalKindCount > 0) {
-                animalIntegerMap.put(kind, animalIntegerMap.getOrDefault(kind, 0)
-                        + animalKindCount);
-            }
-        }
+        Map<Animal.Kind, Long> kindCount = validAnimals.stream()
+                .collect(Collectors.groupingBy(Animal::kind, Collectors.counting()));
+
+        kindCount.forEach((kind, count) -> animalIntegerMap.merge(kind, count.intValue(), Integer::sum));
         return animalIntegerMap;
     }
 
@@ -226,16 +234,17 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * Mise à jour du tableau pour un système hydrographique qui apporte des points
      *
      * @param riverSystem
-     *          réseau hydrographique donnée, en occurrence, qui rapporte des points
+     *         réseau hydrographique donnée, en occurrence, qui rapporte des points
      * @return un tableau d'affichage qui contient un nouveau message indiquant les points remportés aux joueurs
-     *          concernés, à moins que le système hydrographique donné soit inoccupée ou ne rapporte pas de points
+     * concernés, à moins que le système hydrographique donné soit inoccupée ou ne rapporte pas de points
      */
     public MessageBoard withScoredRiverSystem(Area<Zone.Water> riverSystem) {
         if (riverSystem.isOccupied()) {
-            int scoredPoints = Points.forRiverSystem(Area.riverSystemFishCount(riverSystem));
+            final int fishCount = Area.riverSystemFishCount(riverSystem);
+            int scoredPoints = Points.forRiverSystem(fishCount);
+
             if (scoredPoints > 0) {
                 final Set<PlayerColor> majorityOccupants = riverSystem.majorityOccupants();
-                final int fishCount = Area.riverSystemFishCount(riverSystem);
 
                 List<Message> messageList = new ArrayList<>(List.copyOf(this.messages));
                 messageList.add(new Message(textMaker.playersScoredRiverSystem(majorityOccupants,
@@ -252,25 +261,28 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * Mise à jour du tableau d'affichage pour une grande fosse à pieux
      *
      * @param adjacentMeadow
-     *          aire de prés adjacents à la grande fosse à pieux
+     *         aire de prés adjacents à la grande fosse à pieux
      * @param cancelledAnimals
-     *          animaux à ne pas prendre en compte pour le calcul des points (déjà comptés)
+     *         animaux à ne pas prendre en compte pour le calcul des points (déjà comptés)
      * @return un tableau d'affichage identique au récepteur contentant un nouveau message indiquant les joueurs
-     *          ayant rapporté des points
+     * ayant rapporté des points
      */
     public MessageBoard withScoredPitTrap(Area<Zone.Meadow> adjacentMeadow, Set<Animal> cancelledAnimals) {
         if (adjacentMeadow.isOccupied()) {
             Map<Animal.Kind, Integer> animalIntegerMap = animalMap(adjacentMeadow, cancelledAnimals);
 
-            int scoredPoints = Points.forMeadow(animalIntegerMap.getOrDefault(Animal.Kind.MAMMOTH, 0),
+            final int scoredPoints = Points.forMeadow(
+                    animalIntegerMap.getOrDefault(Animal.Kind.MAMMOTH, 0),
                     animalIntegerMap.getOrDefault(Animal.Kind.AUROCHS, 0),
                     animalIntegerMap.getOrDefault(Animal.Kind.DEER, 0));
 
             if (scoredPoints > 0) {
+                final Set<PlayerColor> majorityOccupants = adjacentMeadow.majorityOccupants();
+
                 List<Message> messageList = new ArrayList<>(List.copyOf(this.messages));
-                messageList.add(new Message(textMaker.playersScoredPitTrap(adjacentMeadow.majorityOccupants(),
+                messageList.add(new Message(textMaker.playersScoredPitTrap(majorityOccupants,
                         scoredPoints, animalIntegerMap),
-                        scoredPoints, adjacentMeadow.majorityOccupants(), adjacentMeadow.tileIds()));
+                        scoredPoints, majorityOccupants, adjacentMeadow.tileIds()));
 
                 return new MessageBoard(this.textMaker, messageList);
             }
@@ -280,24 +292,24 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
 
     /**
      * Mise à jour du tableau d'affichage pour un radeau
-     * 
+     *
      * @param riverSystem
-     *          réseau hydrographique do
+     *         réseau hydrographique do
      * @return un tableau d'affichage identique au récepteur avec un nouveau message signalant aux joueurs avec occupants
-     *          majoritaires le nombre de points remportés, à moins que le réseau hydrographique soit vide
+     * majoritaires le nombre de points remportés, à moins que le réseau hydrographique soit vide
      */
     public MessageBoard withScoredRaft(Area<Zone.Water> riverSystem) {
         if (riverSystem.isOccupied()) {
             final int lakeCount = Area.lakeCount(riverSystem);
             final Set<PlayerColor> majorityOccupants = new HashSet<>(riverSystem.majorityOccupants());
 
-            int scoredPoints = Points.forRaft(Area.lakeCount(riverSystem));
-            
+            final int scoredPoints = Points.forRaft(Area.lakeCount(riverSystem));
+
             List<Message> messageList = new ArrayList<>(List.copyOf(this.messages));
             messageList.add(new Message(textMaker.playersScoredRaft(majorityOccupants,
                     scoredPoints, lakeCount),
                     scoredPoints, majorityOccupants, riverSystem.tileIds()));
-            
+
             return new MessageBoard(this.textMaker, messageList);
         }
         return this;
@@ -307,11 +319,11 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * Message de fin de partie pour signaler les gagnants
      *
      * @param winners
-     *          ensemble des joueurs qui ont gagné la partie
+     *         ensemble des joueurs qui ont gagné la partie
      * @param points
-     *          nombre de points remportés par les gagnants
+     *         nombre de points remportés par les gagnants
      * @return un tableau d'affichage identique au récepteur avec un nouveau message signalant leur victoire aux
-     *          joueurs qui ont remporté la partie et leur nombre de points remportés
+     * joueurs qui ont remporté la partie et leur nombre de points remportés
      */
     public MessageBoard withWinners(Set<PlayerColor> winners, int points) {
         List<Message> messageList = new ArrayList<>(List.copyOf(this.messages));
@@ -325,13 +337,13 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * Message affiché sur le tableau d'affichage
      *
      * @param text
-     *          texte du message à afficher
+     *         texte du message à afficher
      * @param points
-     *          nombre de points associés au message (possiblement 0)
+     *         nombre de points associés au message (possiblement 0)
      * @param scorers
-     *          ensemble de joueurs qui remporte des points (possiblement vide)
+     *         ensemble de joueurs qui remporte des points (possiblement vide)
      * @param tileIds
-     *          identifiants des tuiles concernées par le message (possiblement vide)
+     *         identifiants des tuiles concernées par le message (possiblement vide)
      */
     public record Message(String text, int points, Set<PlayerColor> scorers, Set<Integer> tileIds) {
 

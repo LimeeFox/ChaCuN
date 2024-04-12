@@ -6,14 +6,14 @@ import java.util.function.Predicate;
 /**
  * Aire formée par un ensemble de zones du même type connéctés
  *
- * @author Vladislav Yarkovoy (362242)
- *
  * @param zones
  * @param occupants
  * @param openConnections
  * @param <Z>
+ * @author Vladislav Yarkovoy (362242)
+ * @author Cyriac Philippe (360553)
  */
-public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, int openConnections) {
+public record Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, int openConnections) {
 
     public Area {
         Preconditions.checkArgument(openConnections >= 0);
@@ -28,11 +28,10 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * Détermine si une aire de forêts possède au moins un menhir
      *
      * @param forest
-     *          aire de forêts dans laquelle nous cherchons un menhir
-     * @return true si la forêt possède un menhir et false sinon.
-     * @param <Z>
+     *         aire de forêts dans laquelle nous cherchons un menhir
+     * @return TRUE si la forêt possède un menhir et FALSE sinon.
      */
-    public static <Z extends Zone> boolean hasMenhir(Area<Zone.Forest> forest) {
+    public static boolean hasMenhir(Area<Zone.Forest> forest) {
         for (Zone.Forest zone : forest.zones()) {
             if (zone.kind().equals(Zone.Forest.Kind.WITH_MENHIR)) return true;
         }
@@ -44,7 +43,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * Détermine la quantité de groupes de champignons dans une aire de forêt
      *
      * @param forest
-     *          aire de forêts dans laquelle nous cherchons les groupes de champignons
+     *         aire de forêts dans laquelle nous cherchons les groupes de champignons
      * @return le nombre de groupes de champignons trouvés dans la forêt
      */
     public static int mushroomGroupCount(Area<Zone.Forest> forest) {
@@ -62,11 +61,12 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * Recherche de tous les animaux d'une aire de pré, avec possibilité de les filtrer
      *
      * @param meadow
-     *          aire de prés dans laquelle on recherche tous les animaux
+     *         aire de prés dans laquelle on recherche tous les animaux
      * @param cancelledAnimals
-     *          les animaux qu'on aimerait ignorer et ne pas ajouter dans l'ensemble
-     * @return l'ensemble des animaux se trouvant dans le pré donné mais qui ne font pas partie de l'ensemble des animaux annulés donné,
-     *         les animaux annulés pouvant p. ex. être des cerfs dévorés par des smilodons
+     *         les animaux qu'on aimerait ignorer et ne pas ajouter dans l'ensemble
+     * @return l'ensemble des animaux se trouvant dans le pré donné mais qui ne font pas partie de l'ensemble
+     * des animaux annulés donné,
+     * les animaux annulés pouvant p. ex. être des cerfs dévorés par des smilodons
      */
     public static Set<Animal> animals(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
         Set<Animal> animals = new HashSet<>();
@@ -84,10 +84,13 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
 
     /**
      * Déterminer la quantité de poissons dans une aire de rivière (avec lacs)
-     * les poissons d'un lac donné ne devant être comptés qu'une seule fois même dans le cas où un unique lac termine la rivière aux deux bouts
+     * les poissons d'un lac donné ne devant être comptés qu'une seule fois même dans le cas où un unique lac termine
+     * la rivière aux deux bouts
      *
      * @param river
-     * @return le nombre de poissons nageant dans la rivière donnée ou dans l'un des éventuels lacs se trouvant à ses extrémités
+     *         aire de rivière dans laquelle on aimerait compter les poissons
+     * @return le nombre de poissons nageant dans la rivière donnée ou dans l'un des éventuels lacs
+     * se trouvant à ses extrémités
      */
     public static int riverFishCount(Area<Zone.River> river) {
         Set<Zone.Lake> lakes = new HashSet<>();
@@ -112,7 +115,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * Déterminer la quantité de poissons dans un réseau de rivières
      *
      * @param riverSystem
-     *          aire de rivières
+     *         aire de rivières
      * @return le nombre de poissons nageant dans un système hydrographique donné
      */
     public static int riverSystemFishCount(Area<Zone.Water> riverSystem) {
@@ -129,7 +132,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * Déterminer la quantité de lacs dans un système hydrographique
      *
      * @param riverSystem
-     *          aire de rivières qui possèdent un ou plusieurs lacs
+     *         aire de systèmes hydrographiques qui possèdent un ou plusieurs lacs
      * @return le nombre de lacs dans l'air donnée
      */
     public static int lakeCount(Area<Zone.Water> riverSystem) {
@@ -202,7 +205,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * Méthode qui permet de connecter une aire à une autre
      *
      * @param that
-     *          la tuile à laquelle on aimerait connecter le récepteur (this)
+     *         la tuile à laquelle on aimerait connecter le récepteur (this)
      * @return l'aire résultant de la connexion du récepteur (this) à l'aire donnée (that)
      */
     public Area<Z> connectTo(Area<Z> that) {
@@ -225,8 +228,10 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * Méthode qui permet d'obtenir une aire identique à this, mais avec un occupant initial donné
      *
      * @param occupant
-     *          la couleur du joueur qu'on aimerait ajouter en tant qu'occupent à l'aire
+     *         la couleur du joueur qu'on aimerait ajouter en tant qu'occupent à l'aire
      * @return une aire identique au récepteur, si ce n'est qu'elle est occupée par l'occupant donné
+     * @throws IllegalArgumentException
+     *         si le récepteur est déjà occupé
      */
     public Area<Z> withInitialOccupant(PlayerColor occupant) {
         Preconditions.checkArgument(occupants.isEmpty());
@@ -238,8 +243,10 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * Méthode qui permet d'obtenir une aire identique à this, mais sans l'occupant donné
      *
      * @param occupant
-     *          la couleur du joueur dont on aimerait se débarasser dans l'aire donnée
+     *         la couleur du joueur dont on aimerait se débarasser dans l'aire donnée
      * @return une aire identique au récepteur, mais qui comporte un occupant de la couleur donnée en moins
+     * @throws IllegalArgumentException
+     *         si le récepteur ne contient aucun occupant de la couleur donnée
      */
     public Area<Z> withoutOccupant(PlayerColor occupant) {
         Preconditions.checkArgument(occupants.contains(occupant));
@@ -247,7 +254,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
         List<PlayerColor> updatedOccupants = new ArrayList<>(occupants);
         updatedOccupants.remove(occupant);
 
-        return new Area<Z>(zones, updatedOccupants, openConnections);
+        return new Area<>(zones, updatedOccupants, openConnections);
     }
 
     /**
@@ -256,7 +263,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * @return une aire identique au récepteur, mais totalement dénuée d'occupants
      */
     public Area<Z> withoutOccupants() {
-        return new Area<Z>(zones, List.of(), openConnections);
+        return new Area<>(zones, List.of(), openConnections);
     }
 
     /**
@@ -277,7 +284,7 @@ public record  Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, i
      * Recherche de la zone qui contient un pouvoir spécial donné
      *
      * @param specialPower
-     *          le pouvoir spécial dont on recherche la zone
+     *         le pouvoir spécial dont on recherche la zone
      * @return la zone de l'aire qui possède le pouvoir spécial donné, ou null s'il n'en existe aucune.
      */
     public Zone zoneWithSpecialPower(Zone.SpecialPower specialPower) {

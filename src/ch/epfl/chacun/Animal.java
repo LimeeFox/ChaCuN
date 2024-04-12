@@ -3,13 +3,12 @@ package ch.epfl.chacun;
 /**
  * Animal avec un identifié sur le plateau
  *
- * @author Cyriac Philippe (360553)
- *
  * @param id
- *          identifiant général de l'animal
+ *         identifiant général de l'animal
  * @param kind
- *          type de l'animal : mammouth, auroch,
- *          cerf, smilodon
+ *         type de l'animal : mammouth, auroch, cerf, smilodon
+ * @author Vladislav Yarkovoy (362242)
+ * @author Cyriac Philippe (360553)
  */
 public record Animal(int id, Kind kind) {
     public enum Kind {
@@ -22,8 +21,7 @@ public record Animal(int id, Kind kind) {
     /**
      * Identifiant de la case de l'animal
      *
-     * @return animalTileId
-     *          identifiant de la case sur laquelle se trouve l'animal
+     * @return identifiant de la case sur laquelle se trouve l'animal
      */
     public int tileId() {
         int animalTileId = Math.floorDiv(id, 100);

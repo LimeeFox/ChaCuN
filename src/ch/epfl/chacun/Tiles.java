@@ -1,11 +1,5 @@
 package ch.epfl.chacun;
 
-import ch.epfl.chacun.Animal;
-import ch.epfl.chacun.Direction;
-import ch.epfl.chacun.Tile;
-import ch.epfl.chacun.TileSide;
-import ch.epfl.chacun.Zone;
-
 import java.util.*;
 
 public final class Tiles {
