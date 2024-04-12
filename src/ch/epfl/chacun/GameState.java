@@ -130,12 +130,12 @@ public record GameState(
      *
      * @return l'ensemble des occupants potentiels de la dernière tuile posée que le joueur courant pourrait
      *         effectivement placer
-     * @throws IllegalArgumentException
-     *         si le plateau est vide, autrement dit, si aucune tuile n'a était posée
+     * @throws IllegalArgumentException si le plateau est vide, autrement dit, si aucune tuile n'a était posée
      */
     public Set<Occupant> lastTilePotentialOccupants() {
         Preconditions.checkArgument(!board.equals(Board.EMPTY));
         PlacedTile tile = board.lastPlacedTile();
+        Preconditions.checkArgument(tile != null);
         Set<Occupant> filteredPotentialOccupants = new HashSet<>();
 
         /*
@@ -171,9 +171,7 @@ public record GameState(
      *
      * @return le nouvel état du jeu, mis à jour, avec comme action de placer une tuile pour le joueur qui commence la
      *         partie
-     *
-     * @throws IllegalArgumentException
-     *         si la prochaine action n'est pas START_GAME
+     * @throws IllegalArgumentException si la prochaine action n'est pas START_GAME
      */
     public GameState withStartingTilePlaced() {
         Preconditions.checkArgument(nextAction == Action.START_GAME);
@@ -325,10 +323,9 @@ public record GameState(
                 Le joueur courant aura la possibilité de rejouer si :
                     l'aire forêt fermée par le joueur courant contient un menhir
                     la dernière tuile placée (par le joueur courant) n'est pas de type menhir (ce qui assure qu'il ne
-                        rejoue pas plus d'une fois)
+                    rejoue pas plus d'une fois)
                 On vérifie aussi que la dernière tuile placée n'est pas null, pour éviter des erreurs, et qu'on ait pas
                 déjà confirmé que le joueur puisse rejouer (par soucis d'optimisation)
-
                 */
                 if (lastPlacedTile != null
                         && Area.hasMenhir(closedForest)
@@ -364,9 +361,7 @@ public record GameState(
 
         // On retire les tuiles du tas donné (dépendant de playerGetMenhir) qui ne peuvent être placées sur le plateau
         updatedTileDecks = updatedTileDecks.withTopTileDrawnUntil(tileKind, board::couldPlaceTile);
-        // La tuile à placée est la première tuile du tas donnée qui peut être placée
         updatedTileToPlace = updatedTileDecks.topTile(tileKind);
-        // On retire cette tuile du tas, également
         updatedTileDecks = updatedTileDecks.withTopTileDrawn(tileKind);
 
         return new GameState(updatedPlayers, updatedTileDecks, updatedTileToPlace, updatedBoard, Action.PLACE_TILE,
@@ -506,8 +501,8 @@ public record GameState(
      *         si l'occupant donné n'est ni null, ni un pion
      */
     public GameState withOccupantRemoved(Occupant occupant) {
-        Preconditions.checkArgument(nextAction == Action.RETAKE_PAWN &&
-                (occupant == null || occupant.kind() == Occupant.Kind.PAWN));
+        Preconditions.checkArgument(nextAction == Action.RETAKE_PAWN
+                && (occupant == null || occupant.kind() == Occupant.Kind.PAWN));
 
         Board updatedBoard = board;
 
@@ -538,14 +533,12 @@ public record GameState(
     public GameState withNewOccupant(Occupant occupant) {
         Preconditions.checkArgument(nextAction == Action.OCCUPY_TILE);
 
-        // La plateau du jeu de l'état du jeu sera potentiellement différent de celui de l'instance
         Board updatedBoard = board;
 
         // Si le joueur souhaite placer un occupant, on l'ajoute au plateau de jeu
         if (occupant != null) {
             updatedBoard = board.withOccupant(occupant);
         }
-
 
         // Màj de l'état du jeu avec une possible modification du plateau de jeu
         GameState updatedGameState = new GameState(players, tileDecks, tileToPlace, updatedBoard, nextAction,
@@ -567,12 +560,10 @@ public record GameState(
         // Liste des joueurs dans le même ordre que l'instance
         List<PlayerColor> playerList = new ArrayList<>(players);
 
-        // On retire le premier joueur de la liste, pour le placer à la fin
+        // On retire le premier joueur de la liste, pour le mettre à la fin de la nouvelle liste
         PlayerColor lastPlayer = playerList.getFirst();
         playerList.removeFirst();
-        // On crée une nouvelle liste à partir des joueurs restants, en gardant le même ordre
         List<PlayerColor> newList = new ArrayList<>(playerList);
-        // On ajoute l'ancien premier joueur, qui est maintenant le dernier
         newList.add(lastPlayer);
 
         return newList;
