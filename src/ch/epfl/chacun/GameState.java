@@ -5,7 +5,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Classe qui définit les différents états de la partie en cours
+ * Classe qui définit les différents états de jeu de la partie en cours
  *
  * @param players
  *         la liste de tous les joueurs de la partie, dans l'ordre dans lequel ils doivent jouer
@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
  *         la prochaine action à effectuer
  * @param messageBoard
  *         le tableau d'affichage contenant les messages générés jusqu'à présent dans la partie
+ *
  * @author Cyriac Philippe (360553)
  * @author Vladislav Yarkovoy (362242)
  */
@@ -378,10 +379,11 @@ public record GameState(
     private GameState withFinalPointsCounted() {
         Preconditions.checkArgument(nextAction.equals(Action.END_GAME));
 
+        // Paramètres potentiellement modifiés par rapport à ceux de l'instance
         Board updatedBoard = board;
         MessageBoard updatedMessageBoard = messageBoard;
 
-        // Gérer les animaux annulés
+        // Gestion des animaux annulés
         for (Area<Zone.Meadow> meadowArea : updatedBoard.meadowAreas()) {
             Set<Animal> animals = Area.animals(meadowArea, updatedBoard.cancelledAnimals());
             Set<Animal> cancelledAnimals = new HashSet<>(updatedBoard.cancelledAnimals());

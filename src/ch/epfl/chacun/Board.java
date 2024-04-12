@@ -479,9 +479,18 @@ public final class Board {
                 cancelledAnimals());
     }
 
+    /**
+     * Annulation de l'ensemble des animaux donnée
+     *
+     * @param newlyCancelledAnimals
+     *          animaux à annuler
+     * @return un plateau de jeu identique au récepteur, mais avec l'ensemble des animaux passé en argument ajoutés à
+     *          l'ensemble des animaux annulés
+     */
     public Board withMoreCancelledAnimals(Set<Animal> newlyCancelledAnimals) {
         Set<Animal> allAnimalsToCancel = new HashSet<>(cancelledAnimals);
         allAnimalsToCancel.addAll(newlyCancelledAnimals);
+
         return new Board(placedTiles, placedTileIndices, boardPartitions, allAnimalsToCancel);
     }
 
