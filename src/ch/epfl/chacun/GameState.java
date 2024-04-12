@@ -373,9 +373,11 @@ public record GameState(
                 updatedMessageBoard);
     }
 
-    //todo optimise cuz this is a very adrien-optimal code (manière "rudimentaire")
-    //todo also it's still litterally a copy paste of his work so this is dangerous. Have to do things our way
-    //todo CYRIAC CETTE METHODE J'EN PEUX PLUS A L'AIDE STP <33333333
+    /**
+     * Méthode d'aire qui gére la fin de la partie, avec le comptage des points pour la fin de partie
+     *
+     * @return un nouvel état de jeu indiquant le fin de la partie
+     */
     private GameState withFinalPointsCounted() {
         Preconditions.checkArgument(nextAction.equals(Action.END_GAME));
 
@@ -398,14 +400,14 @@ public record GameState(
                 }
             }
 
-            // Si la zone contient du feu, alors les tigres dans l'aire doivent être annulés
-            Zone.Meadow fire = (Zone.Meadow) meadowArea.zoneWithSpecialPower(Zone.SpecialPower.WILD_FIRE);
-            if (fire != null) {
+            // Si la zone possède le pouvoir spécial du feu, alors les tigres dans l'aire doivent être annulés
+            Zone.Meadow wildFire = (Zone.Meadow) meadowArea.zoneWithSpecialPower(Zone.SpecialPower.WILD_FIRE);
+            if (wildFire != null) {
                 updatedBoard = updatedBoard.withMoreCancelledAnimals(tigers);
                 cancelledAnimals.addAll(tigers);
             }
 
-            // Récuperer les cerfs dans les zones adjacentes à
+            // Récupération des cerfs des zones adjacentes
             Zone.Meadow trapZone = (Zone.Meadow) meadowArea.zoneWithSpecialPower(Zone.SpecialPower.PIT_TRAP);
             Area<Zone.Meadow> adjacentArea = new Area<>(Set.of(), List.of(), 0);
             if (trapZone != null) {
@@ -424,8 +426,8 @@ public record GameState(
                 if (animal.kind() == Animal.Kind.DEER && !adjacentAnimals.contains(animal)) nonAdjacentDeer.add(animal);
             });
 
-            // Annuler les animaux qui ne sont pas dans les zones pré adjacentes
-            if (fire == null) {
+            // Annulation des animaux qui ne sont pas dans les zones pré adjacentes
+            if (wildFire == null) {
                 if (tigers.size() < deer.size()) {
                     Set<Animal> toCancel = new HashSet<>();
                     for (Animal tiger : tigers) {
@@ -442,20 +444,20 @@ public record GameState(
                 }
             }
 
-            // Calcul des points
+            // Màj du plateau de jeu pour l'obtention de points
             if (trapZone != null)
                 updatedMessageBoard = updatedMessageBoard.withScoredPitTrap(adjacentArea, updatedBoard.cancelledAnimals());
             updatedMessageBoard = updatedMessageBoard.withScoredMeadow(meadowArea, updatedBoard.cancelledAnimals());
         }
 
-        // Les systèmes hydrographiques
+        // Points pour les systèmes hydrographiques
         for (Area<Zone.Water> riverSystem : updatedBoard.riverSystemAreas()) {
             if (riverSystem.zoneWithSpecialPower(Zone.SpecialPower.RAFT) != null)
                 updatedMessageBoard = updatedMessageBoard.withScoredRaft(riverSystem);
             updatedMessageBoard = updatedMessageBoard.withScoredRiverSystem(riverSystem);
         }
 
-        // Message final
+        // Màj du tableau de message avec le message final de la partie
         Map<PlayerColor, Integer> pts = updatedMessageBoard.points();
 
         int maxPts = pts.values().stream()
