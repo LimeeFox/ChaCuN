@@ -7,18 +7,17 @@ import java.util.Set;
 /**
  * Tuile placée
  *
- * @author Vladislav Yarkovoy (362242)
- *
  * @param tile
- *          la tuile qui a été placée
+ *         la tuile qui a été placée
  * @param placer
- *          le placeur de la tuile, ou null pour la tuile de départ
+ *         le placeur de la tuile, ou null pour la tuile de départ
  * @param rotation
- *          la rotation appliquée à la tuile lors de son placement
+ *         la rotation appliquée à la tuile lors de son placement
  * @param pos
- *          la position à laquelle la tuile a été placée
+ *         la position à laquelle la tuile a été placée
  * @param occupant
- *          l'occupant de la tuile, ou null si elle n'est pas occupée
+ *         l'occupant de la tuile, ou null si elle n'est pas occupée
+ * @author Vladislav Yarkovoy (362242)
  */
 public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos pos, Occupant occupant) {
 
@@ -55,6 +54,7 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
      * Récupérer le bord de tuile selon une direction spécifiée, en tenant compte de la rotation actuelle de la tuile
      *
      * @param direction
+     *         la diréction dans laquelle se trouve le bord recherché
      * @return le bord de tuile selon la direction spécifiée, en tenant compte de la rotation actuelle de la tuile
      */
     public TileSide side(Direction direction) {
@@ -66,9 +66,10 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
      * Trouve la zone d'une tuile à partir d'un identifient de zone
      *
      * @param id
-     *          l'identifiant de zone qu'on recherche
+     *         l'identifiant de zone qu'on recherche
      * @return la zone de la tuile qui a le même ID spécifié, ou null si aucune zone avec cette ID existe dans la tuile.
      * @throws IllegalArgumentException
+     *         si la tuile ne possède pas de zone avec cet identifiant
      */
     public Zone zoneWithId(int id) throws IllegalArgumentException {
         for (Zone zone : tile.zones()) {
@@ -151,17 +152,17 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
     public Set<Occupant> potentialOccupants() {
         final Set<Occupant> occupants = new HashSet<>();
 
-        // On récupère les occupents qu'on peut placer dans la forêt
+        // On récupère les occupants qu'on peut placer dans la forêt
         for (Zone.Forest zone : forestZones()) {
             occupants.add(new Occupant(Occupant.Kind.PAWN, zone.id()));
         }
 
-        // On récupère les occupents qu'on peut placer dans un pré
+        // On récupère les occupants qu'on peut placer dans un pré
         for (Zone.Meadow zone : meadowZones()) {
             occupants.add(new Occupant(Occupant.Kind.PAWN, zone.id()));
         }
 
-        // On récupère les occupents qu'on peut placer dans la rivière
+        // On récupère les occupants qu'on peut placer dans la rivière
         for (Zone.River zone : riverZones()) {
             final int id = zone.id();
             // Les rivières connectées à des lacs ne peuvent pas avoir de huttes
@@ -182,7 +183,10 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
      * Obtention d'une copie de la tuile placée sans occupant au préalable, avec un nouveau occupant
      *
      * @param occupant
-     * @return une copie de la tuile placée, mais avec le nouveau occupant passé en paramètre. Erreur si la tuile a déjà un occupant
+     *         l'ccupant à ajouter à la tuile
+     * @return une copie de la tuile placée, mais avec le nouveau occupant passé en paramètre.
+     * @throws IllegalArgumentException
+     *         si le récepteur est déjà occupé
      */
     public PlacedTile withOccupant(Occupant occupant) {
         Preconditions.checkArgument(this.occupant == null);
@@ -202,6 +206,7 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
      * Recherche de l'identification de la zone où un occupent se situe
      *
      * @param occupantKind
+     *         le type d'occupent dont on recherche la zone occupée
      * @return l'identification de la zone où un occupent se situe
      */
     public int idOfZoneOccupiedBy(Occupant.Kind occupantKind) {

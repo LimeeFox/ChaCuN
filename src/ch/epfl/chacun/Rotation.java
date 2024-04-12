@@ -18,38 +18,32 @@ public enum Rotation {
     //List des rotations énumérées ci-dessus.
     public static final List<Rotation> ALL = List.of(Rotation.values());
     // Nombre total de rotation possible. Soit la size de ALL.
-    public  static final int COUNT = ALL.size();
+    public static final int COUNT = ALL.size();
 
     /**
      * Ajout d'un rotation that à la rotation this
      *
      * @param that
-     *          rotation ajoutée au récepteur
-     * @return All.get(addTurnCW)
-     *          la rotation une fois que this et that sont additionnés
+     *         rotation ajoutée au récepteur
+     * @return la rotation une fois que this et that sont additionnés
      */
     public Rotation add(Rotation that) {
-        int addTurnCW = (this.quarterTurnsCW() + that.quarterTurnsCW())%4;
-        return ALL.get(addTurnCW);
+        return ALL.get((this.quarterTurnsCW() + that.quarterTurnsCW()) % 4);
     }
 
     /**
      * Negation de la rotation
      *
-     * @return negationRotation
-     *          rotation négative par rapport à la rotation initiale
+     * @return rotation négative par rapport à la rotation initiale
      */
     public Rotation negated() {
-        int negationIndex = (4 - ordinal()) % COUNT;
-        Rotation negationRotation = ALL.get(negationIndex);
-        return negationRotation;
+        return ALL.get((4 - ordinal()) % COUNT);
     }
 
     /**
      * Nombre de quarts de tour dans le sens horaire
      *
-     * @return ordinal()
-     *          indice de la rotation selon l'ordre d'énumération
+     * @return indice de la rotation selon l'ordre d'énumération
      */
     public int quarterTurnsCW() {
         return ordinal();
@@ -58,11 +52,9 @@ public enum Rotation {
     /**
      * Nombre de degrés dans le sens horaire
      *
-     * @return quarterTurnsCW()*90
-     *      le nombre de quarts de tour multiplié par
-     *      le nombre de degrés dans un quart
+     * @return le nombre de quarts de tour multiplié par le nombre de degrés dans un quart
      */
     public int degreesCW() {
-        return quarterTurnsCW()*90;
+        return quarterTurnsCW() * 90;
     }
 }

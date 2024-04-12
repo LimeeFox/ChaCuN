@@ -191,6 +191,7 @@ class GameStateTest {
                 6,
                 Set.of(PlayerColor.RED),
                 Set.of(56, 1));
+        //assertEquals(null, state.board().lastPlacedTile().occupant());
         assertEquals(expectedRiverMessage, state.messageBoard().messages().getLast());
         assertEquals(5, state.freeOccupantsCount(PlayerColor.RED, Occupant.Kind.PAWN));
 
@@ -276,6 +277,9 @@ class GameStateTest {
         state = state
                 .withPlacedTile(placedTile37)
                 .withNewOccupant(null);
+
+        assertEquals(List.of(PlayerColor.BLUE, PlayerColor.GREEN, PlayerColor.YELLOW,
+                PlayerColor.PURPLE, PlayerColor.RED), state.players());
 
         assertEquals(41, state.tileToPlace().id());
         var placedTile41 = new PlacedTile(state.tileToPlace(), PlayerColor.BLUE, Rotation.NONE, new Pos(1, 0));
@@ -488,9 +492,9 @@ class GameStateTest {
         var occupants = Map.of(
                 55, new Occupant(Occupant.Kind.PAWN, 55_0), // gatherer (BLUE)
                 18, new Occupant(Occupant.Kind.PAWN, 18_2), // hunter (BLUE)
-                1, new Occupant(Occupant.Kind.PAWN, 1_3), // gatherer (BLUE)
+                1, new Occupant(Occupant.Kind.PAWN, 1_3), // fisherman (BLUE)
                 67, new Occupant(Occupant.Kind.PAWN, 67_0), // gatherer (BLUE)
-                3, new Occupant(Occupant.Kind.PAWN, 3_0) // hunter (BLUE)
+                3, new Occupant(Occupant.Kind.PAWN, 3_0) // fisherman (BLUE)
         );
 
         var normalTilesIds = List.of(61, 55, 51, 18, 62, 1, 34, 67, 31, 3, 49, 48);
@@ -556,6 +560,7 @@ class GameStateTest {
         // Place all tiles
         for (int i = 0; i < positions.size(); i += 1) {
             var placedTile = nextPlacedTile.apply(state);
+            Occupant occupant = occupants.get(placedTile.id());
             state = state
                     .withPlacedTile(placedTile)
                     .withNewOccupant(occupants.get(placedTile.id()));
@@ -736,9 +741,13 @@ class GameStateTest {
 
         // Place all tiles
         for (int i = 0; i < positions.size(); i += 1) {
+            List<Tile> test = state.tileDecks().normalTiles();
             var placedTile = nextPlacedTile.apply(state);
+            test = state.tileDecks().normalTiles();
             state = state.withPlacedTile(placedTile)
                     .withNewOccupant(occupants.get(placedTile.id()));
+            test = state.tileDecks().normalTiles();
+            boolean confirmation = test.size() == (9 - i);
         }
 
         var expectedPoints = Map.of(PlayerColor.RED, 6);

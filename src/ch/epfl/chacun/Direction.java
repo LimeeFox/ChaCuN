@@ -24,8 +24,7 @@ public enum Direction {
     /**
      * Direction après une rotation
      *
-     * @return rotatedDirection
-     *          nouvelle direction obtenue par rotation
+     * @return nouvelle direction obtenue par rotation
      */
     public Direction rotated(Rotation rotation) {
         Direction rotatedDirection;
@@ -36,11 +35,10 @@ public enum Direction {
 
     /**
      * Inverse de la direction
-     * @return ALL.get((ordinal()+COUNT/2)%COUNT)
-     *          direction inverse de this
+     *
+     * @return direction inverse à this
      */
     public Direction opposite() {
-        Direction oppositeDirection = ALL.get((ordinal() + COUNT / 2) % COUNT);
-        return oppositeDirection;
+        return ALL.get((ordinal() + COUNT / 2) % COUNT);
     }
 }

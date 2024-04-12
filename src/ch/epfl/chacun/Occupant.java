@@ -5,12 +5,11 @@ import java.util.Objects;
 /**
  * Occupant d'une tuile identifiée
  *
- * @author Cyriac Philippe (360553)
- *
  * @param kind
- *          type d'occupant : pion, hutte
+ *         type d'occupant : pion, hutte
  * @param zoneId
- *          identifiant de la zone
+ *         identifiant de la zone
+ * @author Cyriac Philippe (360553)
  */
 public record Occupant(Kind kind, int zoneId) {
 
@@ -31,18 +30,10 @@ public record Occupant(Kind kind, int zoneId) {
      * un joueur, par défaut
      *
      * @param kind
-     *          type d'occupants
-     * @return occupantsOfKind
-     *          nombre total d'occupants du même type que possède
-     *          un joueur
+     *         type d'occupants à compter
+     * @return nombre total d'occupants du même type que possède un joueur
      */
     public static int occupantsCount(Kind kind) {
-        int occupantsOfKind = 0;
-        if (kind.equals(Kind.PAWN)) {
-            occupantsOfKind = 5;
-        } else {
-            occupantsOfKind = 3;
-        }
-        return occupantsOfKind;
+        return kind.equals(Kind.PAWN) ? 5 : 3;
     }
 }
