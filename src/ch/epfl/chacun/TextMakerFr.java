@@ -95,14 +95,52 @@ public final class TextMakerFr implements TextMaker{
                 + fishMessage;
     }
 
+    /**
+     * Affichage du nombre de points obtenus lors de la posse de la fosse à pieux par un joueur donné
+     *
+     * @param scorer
+     *         le joueur ayant posé la fosse à pieux
+     * @param points
+     *         les points remportés pour la pose de la fosse à pieux
+     * @param animals
+     *         les animaux présents dans le même pré que la fosse à pieux et sur les 8 tuiles voisines
+     * @return une chaîne de charactèrs indiquant le joueur ayant remporté des points,
+     *         le nombre de points remportés par le joueur,
+     *         le nombre d'animaux de châque type dans l'ordre mammouths, aurochs, cerfs
+     */
     @Override
     public String playerScoredHuntingTrap(PlayerColor scorer, int points, Map<Animal.Kind, Integer> animals) {
-        return null;
+        // On construit une chaîne de charactèrs qui s'adapte aux nombres d'animaux
+        StringBuilder animalMessage = new StringBuilder();
+
+        // On vérifie si les prés adjacents contiennent bien des animaux
+        boolean hasAnimals = false;
+
+        for (Animal.Kind kind : animals.keySet()) {
+            // Si les prés adjacents contiennent au moins un animal d'au moins un type, on commence à les énumérés
+            if (animals.get(kind) > 0 && !hasAnimals) {
+                hasAnimals = true;
+                animalMessage.append(" de ");
+            } else if (animals.get(kind) > 0) {
+                animalMessage.append(STR."\{animals.get(kind)} ").append(STR."\{kind}")
+                        .append(plurality(animals.get(kind)));
+            }
+        }
+
+        // Si les prés adjacents sont vides d'animaux, on l'indique
+        if (!hasAnimals) {
+            animalMessage.delete(0, animalMessage.capacity())
+                    .append("d'aucun animal.");
+        }
+
+        return STR."\{scorer} a remporté \{points} en plaçant la fosse à pieux dans un pré dans lequel elle est "
+                + " entourée" + animalMessage;
     }
 
     @Override
     public String playerScoredLogboat(PlayerColor scorer, int points, int lakeCount) {
-        return null;
+        return STR."\{scorer} a remporté \{points} en plaçant la pirogue dans un réseau hydrographique contenant "
+                + STR."\{lakeCount} lac" + plurality(lakeCount);
     }
 
     @Override
