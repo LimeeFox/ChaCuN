@@ -34,22 +34,61 @@ public final class TextMakerFr implements TextMaker{
         return Integer.toString(points);
     }
 
-    //todo verify how we want to format this code to keep it within defined limits
     @Override
     public String playerClosedForestWithMenhir(PlayerColor player) {
-        return STR."\{playerNamesAndColors.get(player)} a fermé une forêt contenant un menhir et peut donc placer une tuile menhir.";
+        return STR."\{playerNamesAndColors.get(player)} a fermé une forêt contenant un menhir et peut donc placer une"
+        + "tuile menhir.";
     }
 
+    /**
+     * Affichage du nombre de points obtenus pour la fermeture d'une forêt par les joueurs donnée
+     *
+     * @param scorers
+     *         les occupants majoritaires de la forêt
+     * @param points
+     *         les points remportés pour la fermeture de la forêt
+     * @param mushroomGroupCount
+     *         le nombre de groupes de champignons que la forêt contient
+     * @param tileCount
+     *         le nombre de tuiles qui constitue la forêt
+     * @return une chaîne de charactèrs indiquant les joueurs ayant remporté des points,
+     *         le nombre de points remportés,
+     *         les raisons pour lesquels les joueurs ont remporté des points
+     */
     @Override
     public String playersScoredForest(Set<PlayerColor> scorers, int points, int mushroomGroupCount, int tileCount) {
-        Set<PlayerColor> orderedScorers = new TreeSet<>();
+        String mushroomMessage = ".";
 
-        return null;
+        // On vérifie si la forêt concernée par le message contient des groupes de champignons
+        if (mushroomGroupCount > 0) {
+            mushroomMessage = STR." et de \{mushroomMessage} groupe" + plurality(mushroomGroupCount)
+                    + " de champignons.";
+        }
+
+        return STR."\{organisePlayersAsString(scorers)} ont remporté \{points} en tant qu'occupant·e"
+                + plurality(scorers.size()) + STR."majoritaires d'une forêt composée de \{tileCount}" + mushroomMessage;
     }
 
+    /**
+     *
+     * @param scorers
+     *         les occupants majoritaires de la rivière
+     * @param points
+     *         les points remportés
+     * @param fishCount
+     *         le nombre de poissons nageant dans la rivière ou les lacs adjacents
+     * @param tileCount
+     *         le nombre de tuiles qui constitue la rivière
+     * @return
+     */
     @Override
     public String playersScoredRiver(Set<PlayerColor> scorers, int points, int fishCount, int tileCount) {
-        return null;
+        String fishMessage = ".";
+
+        if (fishCount > 0) {
+            fishMessage = STR." et contenant \{fishCount} poisson" + plurality(fishCount);
+        }
+        return STR."\{organisePlayersAsString(scorers)} "
     }
 
     @Override
@@ -132,5 +171,18 @@ public final class TextMakerFr implements TextMaker{
             joiner.add(playerNames.get(i));
         }
         return STR."\{joiner} et \{playerNames.getLast()}";
+    }
+
+    /** Méthode d'aide qui vérifie si une partie d'un message doit être écrite au pluriel
+     *
+     * @param count
+     *          nombre de l'objet qu'on souhaite compter
+     * @return la possibilité de mettre un mot au pluriel dans un message
+     */
+    private String plurality(int count) {
+        if (count > 1) {
+            return "·s";
+        }
+        return "";
     }
 }
