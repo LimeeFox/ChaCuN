@@ -65,21 +65,23 @@ public final class TextMakerFr implements TextMaker{
                     + " de champignons.";
         }
 
-        return STR."\{organisePlayersAsString(scorers)} ont remporté \{points} en tant qu'occupant·e"
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points} en tant qu'occupant·e"
                 + plurality(scorers.size()) + STR."majoritaires d'une forêt composée de \{tileCount}" + mushroomMessage;
     }
 
     /**
-     *
+     * Affichage du nombre de points obtenus pour des joueurs donnés pour la fermeture d'un rivière
      * @param scorers
      *         les occupants majoritaires de la rivière
      * @param points
-     *         les points remportés
+     *         les points remportés pour fermeture da la rivière
      * @param fishCount
      *         le nombre de poissons nageant dans la rivière ou les lacs adjacents
      * @param tileCount
      *         le nombre de tuiles qui constitue la rivière
-     * @return
+     * @return une chaîne de charactèr indiquant les joueurs ayant remporté des points,
+     *         le nombre de points remportés,
+     *         les raisons pour lesquels les joueurs ont remporté des points
      */
     @Override
     public String playersScoredRiver(Set<PlayerColor> scorers, int points, int fishCount, int tileCount) {
@@ -88,7 +90,9 @@ public final class TextMakerFr implements TextMaker{
         if (fishCount > 0) {
             fishMessage = STR." et contenant \{fishCount} poisson" + plurality(fishCount);
         }
-        return STR."\{organisePlayersAsString(scorers)} "
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points} en tant qu'occupant·e"
+                + plurality(scorers.size()) + STR."composée de \{tileCount} tuiles"
+                + fishMessage;
     }
 
     @Override
@@ -170,7 +174,7 @@ public final class TextMakerFr implements TextMaker{
         for (int i = 0; i < playerNames.size() - 1; i++) {
             joiner.add(playerNames.get(i));
         }
-        return STR."\{joiner} et \{playerNames.getLast()}";
+        return STR."\{joiner} et \{playerNames.getLast()} ont";
     }
 
     /** Méthode d'aide qui vérifie si une partie d'un message doit être écrite au pluriel
@@ -181,7 +185,7 @@ public final class TextMakerFr implements TextMaker{
      */
     private String plurality(int count) {
         if (count > 1) {
-            return "·s";
+            return "·s ";
         }
         return "";
     }
