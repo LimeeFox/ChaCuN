@@ -2,22 +2,19 @@ package ch.epfl.chacun;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.lang.StringTemplate.STR;
 
 /**
  *
  * @author Cyriac Philippe (360553)
  */
 public final class TextMakerFr implements TextMaker{
-    private SortedMap<PlayerColor, String> playerNamesAndColors;
+    private final Map<PlayerColor, String> playerNamesAndColors;
 
     public TextMakerFr(Map<PlayerColor, String> playerNamesAndColors) {
-        this.playerNamesAndColors = Arrays.stream(PlayerColor.values())
-                .collect(Collectors.toMap(
-                        color -> color,
-                        playerNamesAndColors::get,
-                        (oldValue, newValue) -> oldValue,
-                        TreeMap::new
-                ));
+        this.playerNamesAndColors = playerNamesAndColors;
     }
 
     /**
@@ -37,10 +34,10 @@ public final class TextMakerFr implements TextMaker{
         return Integer.toString(points);
     }
 
+    //todo verify how we want to format this code to keep it within defined limits
     @Override
     public String playerClosedForestWithMenhir(PlayerColor player) {
-        return playerName(player)
-                + " a fermé une forêt un menhir et peut donc placer une tuile menhir.";
+        return STR."\{playerNamesAndColors.get(player)} a fermé une forêt contenant un menhir et peut donc placer une tuile menhir.";
     }
 
     @Override
@@ -98,5 +95,42 @@ public final class TextMakerFr implements TextMaker{
     @Override
     public String clickToUnoccupy() {
         return null;
+    }
+
+    /**
+     * Méthode d'aide qui permet de créer une chaîne de charactèrs contenant les joueurs concernées dans l'ordre RBGYP
+     * et reliant les deux derniers joueurs d'un "et".
+     *
+     * @param players
+     *          les joueurs concernés par la création de la chaîne de charactèrs, sans ordre précis (ne peut pas être
+     *          vide)
+     * @return une chaîne de charactèrs contenant l'énumération des joueurs dans un ordre précis et reliant les deux
+     * derniers de la liste par "et".
+     */
+    private String organisePlayersAsString(Set<PlayerColor> players) {
+        Preconditions.checkArgument(!players.isEmpty());
+
+        // On organise les "players" selon l'ordre prédéfini RBGYP
+        Stream<PlayerColor> sortedColors = Arrays.stream(PlayerColor.values())
+                .filter(players::contains);
+
+        // On associe chaque couleur à son joueur correspondant
+        List<String> playerNames = sortedColors.map(this::playerName)
+                .toList();
+
+        // S'il y a moins de deux joueurs, on ne retourne que le nom de l'unique joueur concerné
+        if (playerNames.size() == 1) {
+            return playerNames.getFirst();
+        }
+
+        /*
+        Sinon, on construit la chaîne de characters de nom en faisant bien attention à lier les deux dernier noms
+        d'un "et".
+        */
+        StringJoiner joiner = new StringJoiner(", ");
+        for (int i = 0; i < playerNames.size() - 1; i++) {
+            joiner.add(playerNames.get(i));
+        }
+        return STR."\{joiner} et \{playerNames.getLast()}";
     }
 }
