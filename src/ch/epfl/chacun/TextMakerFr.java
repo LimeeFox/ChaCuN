@@ -60,12 +60,12 @@ public final class TextMakerFr implements TextMaker{
 
         // On vérifie si la forêt concernée par le message contient des groupes de champignons
         if (mushroomGroupCount > 0) {
-            mushroomMessage = STR." et de \{mushroomMessage} groupe" + plurality(mushroomGroupCount)
-                    + " de champignons.";
+            mushroomMessage = STR." et de \{mushroomMessage} groupe \{plurality(mushroomGroupCount)} de champignons.";
         }
 
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points} points" + plurality(points) + "en tant qu'occupant·e"
-                + plurality(scorers.size()) + STR."majoritaires d'une forêt composée de \{tileCount}" + mushroomMessage;
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points} points\{plurality(points)} en tant "
+                + STR."qu'occupant·e\{plurality(scorers.size())} majoritaires d'une forêt composée de \{tileCount} "
+                + STR."tuile\{plurality(tileCount)} \{mushroomMessage}";
     }
 
     /**
@@ -108,8 +108,22 @@ public final class TextMakerFr implements TextMaker{
      */
     @Override
     public String playerScoredHuntingTrap(PlayerColor scorer, int points, Map<Animal.Kind, Integer> animals) {
-        return STR."\{scorer} a remporté \{points} points" + plurality(points) + "en plaçant la fosse à pieux dans un "
-        + "pré dans lequel elle est " + " entourée" + organiseAnimalsAsString(animals);
+        StringBuilder animalMessage = new StringBuilder();
+        boolean animalPresence = false;
+        for (Animal.Kind kind : animals.keySet()) {
+            if (animals.getOrDefault(kind, 0) > 0 && !animalPresence) {
+                animalPresence = true;
+            }
+        }
+
+        if (animalPresence) {
+            animalMessage.append(organiseAnimalsAsString(animals));
+        } else {
+            animalMessage.append("d'");
+        }
+
+        return STR."\{scorer} a remporté \{points} point\{plurality(points)} en plaçant la fosse à pieux dans un "
+        + STR."pré dans lequel elle est entourée de \{animalMessage.toString()}.";
     }
 
     /**
@@ -127,8 +141,8 @@ public final class TextMakerFr implements TextMaker{
      */
     @Override
     public String playerScoredLogboat(PlayerColor scorer, int points, int lakeCount) {
-        return STR."\{scorer} a remporté \{points} points" + plurality(points) + " en plaçant la pirogue dans un réseau hydrographique contenant "
-                + STR."\{lakeCount} lac" + plurality(lakeCount);
+        return STR."\{scorer} a remporté \{points} point\{plurality(points)} en plaçant la pirogue dans un réseau "
+        + STR."hydrographique contenant \{lakeCount} lac\{plurality(lakeCount)}";
     }
 
     /**
@@ -145,9 +159,8 @@ public final class TextMakerFr implements TextMaker{
      */
     @Override
     public String playersScoredMeadow(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points} point" + plurality(points)
-                + "en tant que qu'occupant·e" + plurality(scorers.size()) + "d'un pré contenant"
-                + organiseAnimalsAsString(animals);
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points} point\{plurality(points)} en tant que "
+         + STR."qu'occupant·e \{plurality(scorers.size())} d'un pré contenant \{organiseAnimalsAsString(animals)}";
     }
 
     /**
@@ -162,6 +175,7 @@ public final class TextMakerFr implements TextMaker{
      */
     @Override
     public String playersScoredRiverSystem(Set<PlayerColor> scorers, int points, int fishCount) {
+        //return organisePlayersAsString(scorers) + ;
         return null;
     }
 
@@ -241,7 +255,7 @@ public final class TextMakerFr implements TextMaker{
     //todo to filter tigers
     private String organiseAnimalsAsString(Map<Animal.Kind, Integer> animals) {
         // On trie les animaux dans l'ordre et on enlève les types qui n'ont aucune présence dans la table associative
-        // ainsi que les tigres (en principe, il ne sont pas compté)
+        // ainsi que les tigres (en principe, ils ne sont pas compté)
         Map<Animal.Kind, Integer> filteredAnimals = new TreeMap<>();
         Arrays.stream(Animal.Kind.values()).forEach(animal -> {
             if (animals.getOrDefault(animal, 0) > 0 && animal != Animal.Kind.TIGER) {
@@ -251,7 +265,7 @@ public final class TextMakerFr implements TextMaker{
 
         // Si aucun animal n'est présent, on envoie le message suivant
         if (filteredAnimals.isEmpty()) {
-            return "d'aucun animal.";
+            return "aucun animal.";
         }
 
         // On associe chaque type d'animal à son écriture en français
