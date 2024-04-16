@@ -219,18 +219,22 @@ public final class TextMakerFr implements TextMaker{
      *         l'ensemble des joueurs ayant remporté la partie
      * @param points
      *         les points des vainqueurs
-     * @return les joueurs gagnants de la partie,
-     *         les points totaux remporté par les gagnants
+     * @return une chaîne de charactèrs indiquant les joueurs gagnants de la partie,
+     *         les points totaux remportés par les gagnants
      */
     @Override
     public String playersWon(Set<PlayerColor> winners, int points) {
         return STR."\{organisePlayersAsString(winners)} remporté la partie avec \{points(points)}!";
     }
 
+    /**
+     * Affichage du message pour indiquer au joueur courant qu'il peut placer un occupant
+     *
+     * @return une chaîne de charactèrs indiquant la possibilité de placer un pion ou une hutte
+     */
     @Override
     public String clickToOccupy() {
-
-        return null;
+        return "Cliquez sur le pion ou la hutte que vous désirez placer, ou ici pour ne pas en placer.";
     }
 
     @Override
