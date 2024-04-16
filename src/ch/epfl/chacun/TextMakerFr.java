@@ -237,9 +237,14 @@ public final class TextMakerFr implements TextMaker{
         return "Cliquez sur le pion ou la hutte que vous désirez placer, ou ici pour ne pas en placer.";
     }
 
+    /**
+     * Affichage d'un message pour indiquer au joueur courant qu'il peut retirer un occupant
+     *
+     * @return une chaîne de charactèrs indiquant la possibilité de retirer un pion
+     */
     @Override
     public String clickToUnoccupy() {
-        return null;
+        return "Cliquez sur le pion que vous désirez reprendre, ou ici pour ne pas en reprendre.";
     }
 
     /**
