@@ -111,22 +111,9 @@ public final class TextMakerFr implements TextMaker{
      */
     @Override
     public String playerScoredHuntingTrap(PlayerColor scorer, int points, Map<Animal.Kind, Integer> animals) {
-        StringBuilder animalMessage = new StringBuilder();
-        boolean animalPresence = false;
-        for (Animal.Kind kind : animals.keySet()) {
-            if (animals.getOrDefault(kind, 0) > 0 && !animalPresence) {
-                animalPresence = true;
-            }
-        }
-
-        if (animalPresence) {
-            animalMessage.append(organiseAnimalsAsString(animals));
-        } else {
-            animalMessage.append("d'");
-        }
 
         return STR."\{scorer} a remporté \{points(points)}en plaçant la fosse à pieux dans un "
-        + STR."pré dans lequel elle est entourée \{animalMessage.toString()}.";
+        + STR."pré dans lequel elle est entourée \{animalMessage(animals)}.";
     }
 
     /**
@@ -204,7 +191,7 @@ public final class TextMakerFr implements TextMaker{
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
                     + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
                     + STR."majoritaire\{plurality(scorers.size(), false)} d'un pré contenant la grande fosse "
-                    + STR."à pieux entourée ";
+                    + STR."à pieux entourée \{animalMessage(animals)}.";
     }
 
     /**
@@ -219,9 +206,10 @@ public final class TextMakerFr implements TextMaker{
      */
     @Override
     public String playersScoredRaft(Set<PlayerColor> scorers, int points, int lakeCount) {
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)}
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)}"
                 + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
-                + STR."majoritaire\{plurality(scorers.size(), false)}";";
+                + STR."majoritaire\{plurality(scorers.size(), false)} contenant le radeau et "
+                + STR."\{lakeCount} lac\{plurality(lakeCount, false)}";
     }
 
     @Override
