@@ -212,13 +212,24 @@ public final class TextMakerFr implements TextMaker{
                 + STR."\{lakeCount} lac\{plurality(lakeCount, false)}";
     }
 
+    /**
+     * Affichage des gagnants de la partie
+     *
+     * @param winners
+     *         l'ensemble des joueurs ayant remporté la partie
+     * @param points
+     *         les points des vainqueurs
+     * @return les joueurs gagnants de la partie,
+     *         les points totaux remporté par les gagnants
+     */
     @Override
     public String playersWon(Set<PlayerColor> winners, int points) {
-        return null;
+        return STR."\{organisePlayersAsString(winners)} remporté la partie avec \{points(points)}!";
     }
 
     @Override
     public String clickToOccupy() {
+
         return null;
     }
 
