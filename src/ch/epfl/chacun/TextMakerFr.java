@@ -126,7 +126,7 @@ public final class TextMakerFr implements TextMaker{
         }
 
         return STR."\{scorer} a remporté \{points(points)}en plaçant la fosse à pieux dans un "
-        + STR."pré dans lequel elle est entourée de \{animalMessage.toString()}.";
+        + STR."pré dans lequel elle est entourée \{animalMessage.toString()}.";
     }
 
     /**
@@ -201,14 +201,27 @@ public final class TextMakerFr implements TextMaker{
      */
     @Override
     public String playersScoredPitTrap(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points} en tant "
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
                     + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
-                    + STR."majoritaire\{plurality(scorers.size(), false)}";
+                    + STR."majoritaire\{plurality(scorers.size(), false)} d'un pré contenant la grande fosse "
+                    + STR."à pieux entourée ";
     }
 
+    /**
+     *
+     * @param scorers
+     *         les occupants majoritaires du réseau hydrographique comportant le radeau
+     * @param points
+     *         les points remportés
+     * @param lakeCount
+     *         le nombre de lacs contenus dans le réseau hydrographique
+     * @return
+     */
     @Override
     public String playersScoredRaft(Set<PlayerColor> scorers, int points, int lakeCount) {
-        return null;
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)}
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
+                + STR."majoritaire\{plurality(scorers.size(), false)}";";
     }
 
     @Override
@@ -334,6 +347,23 @@ public final class TextMakerFr implements TextMaker{
             }
         }
 
+        return animalMessage.toString();
+    }
+
+    private String animalMessage(Map<Animal.Kind, Integer> animals) {
+        StringBuilder animalMessage = new StringBuilder();
+        boolean animalPresence = false;
+        for (Animal.Kind kind : animals.keySet()) {
+            if (animals.getOrDefault(kind, 0) > 0 && !animalPresence) {
+                animalPresence = true;
+            }
+        }
+
+        if (animalPresence) {
+            animalMessage.append(organiseAnimalsAsString(animals));
+        } else {
+            animalMessage.append("d'");
+        }
         return animalMessage.toString();
     }
 
