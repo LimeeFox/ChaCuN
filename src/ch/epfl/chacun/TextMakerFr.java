@@ -95,7 +95,7 @@ public final class TextMakerFr implements TextMaker{
     }
 
     /**
-     * Affichage du nombre de points obtenus lors de la posse de la fosse à pieux par un joueur donné
+     * Affichage du nombre de points obtenus lors de la pose de la fosse à pieux par un joueur donné
      *
      * @param scorer
      *         le joueur ayant posé la fosse à pieux
@@ -113,6 +113,19 @@ public final class TextMakerFr implements TextMaker{
                 + " entourée" + organiseAnimalsAsString(animals);
     }
 
+    /**
+     * Affichage du nombre de points obtenus lors de la pose de la pirogue par un joueur donné
+     *
+     * @param scorer
+     *         le joueur ayant déposé la pirogue
+     * @param points
+     *         les points remportés pour la pose de la pirogue
+     * @param lakeCount
+     *         le nombre de lacs accessibles à la pirogue
+     * @return une chaîne de charactèrs indiquant le joueur ayant remporté des points,
+     *         le nombre de points remportés par le joueur,
+     *         le nombre de lacs ayant rapporté des points
+     */
     @Override
     public String playerScoredLogboat(PlayerColor scorer, int points, int lakeCount) {
         return STR."\{scorer} a remporté \{points} en plaçant la pirogue dans un réseau hydrographique contenant "
