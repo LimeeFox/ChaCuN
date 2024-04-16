@@ -64,7 +64,7 @@ public final class TextMakerFr implements TextMaker{
                     + " de champignons.";
         }
 
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points} en tant qu'occupant·e"
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points} points" + plurality(points) + "en tant qu'occupant·e"
                 + plurality(scorers.size()) + STR."majoritaires d'une forêt composée de \{tileCount}" + mushroomMessage;
     }
 
@@ -89,9 +89,8 @@ public final class TextMakerFr implements TextMaker{
         if (fishCount > 0) {
             fishMessage = STR." et contenant \{fishCount} poisson" + plurality(fishCount);
         }
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points} en tant qu'occupant·e"
-                + plurality(scorers.size()) + STR."composée de \{tileCount} tuiles"
-                + fishMessage;
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points} points" + plurality(points) + "en tant "
+                + "qu'occupant·e" + plurality(scorers.size()) + STR."composée de \{tileCount} tuiles" + fishMessage;
     }
 
     /**
@@ -109,8 +108,8 @@ public final class TextMakerFr implements TextMaker{
      */
     @Override
     public String playerScoredHuntingTrap(PlayerColor scorer, int points, Map<Animal.Kind, Integer> animals) {
-        return STR."\{scorer} a remporté \{points} en plaçant la fosse à pieux dans un pré dans lequel elle est "
-                + " entourée" + organiseAnimalsAsString(animals);
+        return STR."\{scorer} a remporté \{points} points" + plurality(points) + "en plaçant la fosse à pieux dans un "
+        + "pré dans lequel elle est " + " entourée" + organiseAnimalsAsString(animals);
     }
 
     /**
@@ -128,15 +127,39 @@ public final class TextMakerFr implements TextMaker{
      */
     @Override
     public String playerScoredLogboat(PlayerColor scorer, int points, int lakeCount) {
-        return STR."\{scorer} a remporté \{points} en plaçant la pirogue dans un réseau hydrographique contenant "
+        return STR."\{scorer} a remporté \{points} points" + plurality(points) + " en plaçant la pirogue dans un réseau hydrographique contenant "
                 + STR."\{lakeCount} lac" + plurality(lakeCount);
     }
 
+    /**
+     * Affichage du nombre de points obtenus pour les occupants majoritaires d'un pré
+     * @param scorers
+     *         les occupants majoritaires du pré
+     * @param points
+     *         les points remportés
+     * @param animals
+     *         les animaux présents dans le pré (sans ceux ayant été précédemment annulés)
+     * @return une châine de charactèrs indiquant le joueur ayant remporté des points,
+     *         le nombre de points remportés,
+     *         le nombre d'animaux ayant rapporté des points
+     */
     @Override
     public String playersScoredMeadow(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
-        return STR."\{organisePlayersAsString(scorers)} ";
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points} point" + plurality(points)
+                + "en tant que qu'occupant·e" + plurality(scorers.size()) + "d'un pré contenant"
+                + organiseAnimalsAsString(animals);
     }
 
+    /**
+     *
+     * @param scorers
+     *         les occupants majoritaires du réseau hydrographique
+     * @param points
+     *         les points remportés
+     * @param fishCount
+     *         le nombre de poissons nageant dans le réseau hydrographique
+     * @return
+     */
     @Override
     public String playersScoredRiverSystem(Set<PlayerColor> scorers, int points, int fishCount) {
         return null;
@@ -191,7 +214,7 @@ public final class TextMakerFr implements TextMaker{
 
         // S'il y a moins de deux joueurs, on ne retourne que le nom de l'unique joueur concerné
         if (playerNames.size() == 1) {
-            return STR."\{playerNames.getFirst()}a ";
+            return STR."\{playerNames.getFirst()} a";
         }
 
         /*
@@ -287,6 +310,6 @@ public final class TextMakerFr implements TextMaker{
         if (count > 1) {
             return "·s ";
         }
-        return "";
+        return " ";
     }
 }
