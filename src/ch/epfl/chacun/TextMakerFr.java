@@ -187,6 +187,7 @@ public final class TextMakerFr implements TextMaker{
     }
 
     /**
+     * Affichage du nombre de points obtenus par les occupants majoritaires d'un pré contenant la grande fosse à pieux
      *
      * @param scorers
      *         les occupants majoritaires du pré contenant la fosse à pieux
@@ -194,7 +195,9 @@ public final class TextMakerFr implements TextMaker{
      *         les points remportés
      * @param animals
      *         les animaux présents sur les tuiles voisines de la fosse (sans ceux ayant été précédemment annulés)
-     * @return
+     * @return une chaîne de charactèrs indiquant les joueurs ayant remportés de points,
+     *         le nombre de points remportés,
+     *         les animaux ayant rapporté des points
      */
     @Override
     public String playersScoredPitTrap(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
@@ -234,6 +237,7 @@ public final class TextMakerFr implements TextMaker{
      * derniers de la liste par "et".
      */
     //todo much like the other private methods, check coherence with the public methods
+    //todo possible rework because of use of joiner
     private String organisePlayersAsString(Set<PlayerColor> players) {
         Preconditions.checkArgument(!players.isEmpty());
 
@@ -351,7 +355,8 @@ public final class TextMakerFr implements TextMaker{
 
         return builder.toString();
     }
-    
+
+    //todo annotate
     private String tiles(int tileCount) {
         return STR."\{tiles(tileCount)}}";
     }
