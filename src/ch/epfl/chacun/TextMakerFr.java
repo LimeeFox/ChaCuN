@@ -8,7 +8,6 @@ import static java.lang.StringTemplate.STR;
 
 /**
  *
- * @author Cyriac Philippe (360553)
  */
 public final class TextMakerFr implements TextMaker{
     private final Map<PlayerColor, String> playerNamesAndColors;
@@ -145,7 +144,7 @@ public final class TextMakerFr implements TextMaker{
 
     @Override
     public String playersScoredMeadow(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
-        return null;
+        return STR."\{organisePlayersAsString(scorers)} ";
     }
 
     @Override
@@ -213,6 +212,78 @@ public final class TextMakerFr implements TextMaker{
             joiner.add(playerNames.get(i));
         }
         return STR."\{joiner} et \{playerNames.getLast()} ont";
+    }
+
+    /**
+     * Méthode d'aide qui permet de créer une chaîne de charactèrs indiquant le nombre d'animaux d'une table d'animaux
+     * donnée, selon l'ordre prédéfini : mammouths, aurochs, cerfs
+     *
+     * @param animals
+     *          tableau associant des types d'animaux à leur quantité
+     * @return une chaîne de charactèrs indiquant la présence d'animaux et leur quantité
+     */
+    //todo "what if the map contains tigers"? probably needs to be addressed
+    //todo maybe some messages mention tigers, i would then add a boolean parameter withTigers which would then choose
+    //todo to filter tigers
+    private String organiseAnimalsAsString(Map<Animal.Kind, Integer> animals) {
+        // On trie les animaux dans l'ordre et on enlève les types qui n'ont aucune présence dans la table associative
+        // ainsi que les tigres (en principe, il ne sont pas compté)
+        Map<Animal.Kind, Integer> filteredAnimals = new TreeMap<>();
+        Arrays.stream(Animal.Kind.values()).forEach(animal -> {
+            if (animals.getOrDefault(animal, 0) > 0 && animal != Animal.Kind.TIGER) {
+                filteredAnimals.put(animal, animals.get(animal));
+            }
+        });
+
+        // Si aucun animal n'est présent, on envoie le message suivant
+        if (filteredAnimals.isEmpty()) {
+            return "d'aucun animal.";
+        }
+
+        // On associe chaque type d'animal à son écriture en français
+        Map<Animal.Kind, String> animalsAsString = Map.of(Animal.Kind.MAMMOTH, "mammouth",
+                Animal.Kind.AUROCHS, "aurochs",
+                Animal.Kind.DEER, "cerf");
+
+        // Si notre table associative triée ne contient qu'un seul type d'animal, on envoie un message particulier
+        if (animals.size() == 1) {
+            Animal.Kind animalKind = (Animal.Kind) animals.keySet().toArray()[0];
+            int animalCount = animals.get(animalKind);
+
+            String plurality = "";
+            if (animalKind != Animal.Kind.AUROCHS) plurality = "s";
+
+            return STR."\{animalCount} \{animalsAsString.get(animalKind)}"
+                    + plurality(animalCount);
+        }
+
+        // On construit une chaîne de charactèrs qui s'adapte aux nombres d'animaux
+        StringBuilder animalMessage = new StringBuilder();
+
+        // On construit notre chaîne de charactèrs à partir de notre table associative triée
+        for (int i = 0; i < filteredAnimals.size(); i++) {
+            Animal.Kind animalKind = Animal.Kind.values()[i];
+            int animalCount = filteredAnimals.get(animalKind);
+
+            // On vérifie le pluriel du type d'animal
+            String plurality = "";
+            // Le mot "aurochs" est invariable en français donc on ne lui ajoute pas de "s"
+            if (animalKind != Animal.Kind.AUROCHS) {
+                plurality = plurality(filteredAnimals.get(animalKind));
+            }
+            // On ajoute à notre bâtisseur les animaux qui présent dans la table associative triée
+            animalMessage.append(STR."\{animalCount} \{animalsAsString.get(animalKind)}")
+                    .append(plurality);
+            // En principe, on sépare l'énumération des animaux par une virgule, sauf si l'animal en question est
+            // l'avant-dernier de notre table associative triée, dans ce cas, on utilise un "et".
+            if (i < filteredAnimals.size() - 2) {
+                animalMessage.append(", ");
+            } else {
+                animalMessage.append("et ");
+            }
+        }
+
+        return animalMessage.toString();
     }
 
     /** Méthode d'aide qui vérifie si une partie d'un message doit être écrite au pluriel
