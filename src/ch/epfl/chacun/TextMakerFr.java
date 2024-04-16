@@ -28,9 +28,11 @@ public final class TextMakerFr implements TextMaker{
         return playerNamesAndColors.get(playerColor);
     }
 
+    //todo not sure whether this is actually to be sued publicaly but in doubt, i've decided adapt it directly to be
+    // used within the class
     @Override
     public String points(int points) {
-        return Integer.toString(points);
+        return STR."\{points} point\{plurality(points)}";
     }
 
     @Override
@@ -63,9 +65,9 @@ public final class TextMakerFr implements TextMaker{
             mushroomMessage = STR." et de \{mushroomMessage} groupe \{plurality(mushroomGroupCount)} de champignons.";
         }
 
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points} points\{plurality(points)} en tant "
-                + STR."qu'occupant·e\{plurality(scorers.size())} majoritaires d'une forêt composée de \{tileCount} "
-                + STR."tuile\{plurality(tileCount)} \{mushroomMessage}";
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
+                + STR."qu'occupant·e\{plurality(scorers.size())} majoritaires d'une forêt composée de "
+                + STR."\{tiles(tileCount)} \{mushroomMessage}";
     }
 
     /**
@@ -89,8 +91,9 @@ public final class TextMakerFr implements TextMaker{
         if (fishCount > 0) {
             fishMessage = STR." et contenant \{fishCount} poisson" + plurality(fishCount);
         }
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points} points" + plurality(points) + "en tant "
-                + "qu'occupant·e" + plurality(scorers.size()) + STR."composée de \{tileCount} tuiles" + fishMessage;
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
+                + STR."qu'occupant·e \{plurality(scorers.size())} composée de \{tiles(tileCount)}} "
+                + fishMessage;
     }
 
     /**
@@ -122,7 +125,7 @@ public final class TextMakerFr implements TextMaker{
             animalMessage.append("d'");
         }
 
-        return STR."\{scorer} a remporté \{points} point\{plurality(points)} en plaçant la fosse à pieux dans un "
+        return STR."\{scorer} a remporté \{points(points)}en plaçant la fosse à pieux dans un "
         + STR."pré dans lequel elle est entourée de \{animalMessage.toString()}.";
     }
 
@@ -141,7 +144,7 @@ public final class TextMakerFr implements TextMaker{
      */
     @Override
     public String playerScoredLogboat(PlayerColor scorer, int points, int lakeCount) {
-        return STR."\{scorer} a remporté \{points} point\{plurality(points)} en plaçant la pirogue dans un réseau "
+        return STR."\{scorer} a remporté \{points(points)}en plaçant la pirogue dans un réseau "
         + STR."hydrographique contenant \{lakeCount} lac\{plurality(lakeCount)}";
     }
 
@@ -159,7 +162,7 @@ public final class TextMakerFr implements TextMaker{
      */
     @Override
     public String playersScoredMeadow(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points} point\{plurality(points)} en tant que "
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)}en tant que "
          + STR."qu'occupant·e \{plurality(scorers.size())} d'un pré contenant \{organiseAnimalsAsString(animals)}";
     }
 
@@ -175,8 +178,7 @@ public final class TextMakerFr implements TextMaker{
      */
     @Override
     public String playersScoredRiverSystem(Set<PlayerColor> scorers, int points, int fishCount) {
-        //return organisePlayersAsString(scorers) + ;
-        return null;
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)}";
     }
 
     @Override
@@ -325,5 +327,9 @@ public final class TextMakerFr implements TextMaker{
             return "·s ";
         }
         return " ";
+    }
+    
+    private String tiles(int tileCount) {
+        return STR."\{tiles(tileCount)}}";
     }
 }
