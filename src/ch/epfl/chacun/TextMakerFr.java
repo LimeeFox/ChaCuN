@@ -32,7 +32,7 @@ public final class TextMakerFr implements TextMaker{
     // used within the class
     @Override
     public String points(int points) {
-        return STR."\{points} point\{plurality(points)}";
+        return STR."\{points} point\{plurality(points, false)}";
     }
 
     @Override
@@ -62,11 +62,11 @@ public final class TextMakerFr implements TextMaker{
 
         // On vérifie si la forêt concernée par le message contient des groupes de champignons
         if (mushroomGroupCount > 0) {
-            mushroomMessage = STR." et de \{mushroomMessage} groupe \{plurality(mushroomGroupCount)} de champignons.";
+            mushroomMessage = STR." et de \{mushroomMessage} groupe \{plurality(mushroomGroupCount, false)} de champignons.";
         }
 
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
-                + STR."qu'occupant·e\{plurality(scorers.size())} majoritaires d'une forêt composée de "
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} majoritaires d'une forêt composée de "
                 + STR."\{tiles(tileCount)} \{mushroomMessage}";
     }
 
@@ -89,10 +89,10 @@ public final class TextMakerFr implements TextMaker{
         String fishMessage = ".";
 
         if (fishCount > 0) {
-            fishMessage = STR." et contenant \{fishCount} poisson" + plurality(fishCount);
+            fishMessage = STR." et contenant \{fishCount} poisson\{plurality(fishCount, false)}";
         }
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
-                + STR."qu'occupant·e \{plurality(scorers.size())} composée de \{tiles(tileCount)}} "
+                + STR."qu'occupant·e \{plurality(scorers.size(), true)} composée de \{tiles(tileCount)}} "
                 + fishMessage;
     }
 
@@ -145,7 +145,7 @@ public final class TextMakerFr implements TextMaker{
     @Override
     public String playerScoredLogboat(PlayerColor scorer, int points, int lakeCount) {
         return STR."\{scorer} a remporté \{points(points)}en plaçant la pirogue dans un réseau "
-        + STR."hydrographique contenant \{lakeCount} lac\{plurality(lakeCount)}";
+        + STR."hydrographique contenant \{lakeCount} lac\{plurality(lakeCount, false)}";
     }
 
     /**
@@ -163,7 +163,7 @@ public final class TextMakerFr implements TextMaker{
     @Override
     public String playersScoredMeadow(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)}en tant que "
-         + STR."qu'occupant·e \{plurality(scorers.size())} d'un pré contenant \{organiseAnimalsAsString(animals)}";
+         + STR."qu'occupant·e \{plurality(scorers.size(), true)} d'un pré contenant \{organiseAnimalsAsString(animals)}";
     }
 
     /**
@@ -182,13 +182,25 @@ public final class TextMakerFr implements TextMaker{
     @Override
     public String playersScoredRiverSystem(Set<PlayerColor> scorers, int points, int fishCount) {
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
-                + STR."qu'occupant·e\{plurality(scorers.size())} d'un réseau hydrographique contenant "
-                + STR."\{fishCount} poisson\{plurality(fishCount)}.";
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} d'un réseau hydrographique contenant "
+                + STR."\{fishCount} poisson\{plurality(fishCount, false)}.";
     }
 
+    /**
+     *
+     * @param scorers
+     *         les occupants majoritaires du pré contenant la fosse à pieux
+     * @param points
+     *         les points remportés
+     * @param animals
+     *         les animaux présents sur les tuiles voisines de la fosse (sans ceux ayant été précédemment annulés)
+     * @return
+     */
     @Override
     public String playersScoredPitTrap(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
-        return null;
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points} en tant "
+                    + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
+                    + STR."majoritaire\{plurality(scorers.size(), false)}";
     }
 
     @Override
@@ -289,7 +301,7 @@ public final class TextMakerFr implements TextMaker{
             if (animalKind != Animal.Kind.AUROCHS) plurality = "s";
 
             return STR."\{animalCount} \{animalsAsString.get(animalKind)}"
-                    + plurality(animalCount);
+                    + plurality(animalCount, false);
         }
 
         // On construit une chaîne de charactèrs qui s'adapte aux nombres d'animaux
@@ -304,7 +316,7 @@ public final class TextMakerFr implements TextMaker{
             String plurality = "";
             // Le mot "aurochs" est invariable en français donc on ne lui ajoute pas de "s"
             if (animalKind != Animal.Kind.AUROCHS) {
-                plurality = plurality(filteredAnimals.get(animalKind));
+                plurality = plurality(filteredAnimals.get(animalKind), false);
             }
             // On ajoute à notre bâtisseur les animaux qui présent dans la table associative triée
             animalMessage.append(STR."\{animalCount} \{animalsAsString.get(animalKind)}")
@@ -325,13 +337,19 @@ public final class TextMakerFr implements TextMaker{
      *
      * @param count
      *          nombre de l'objet qu'on souhaite compter
-     * @return la possibilité de mettre un mot au pluriel dans un message
+     * @param isGendered
+     *          indique si le la pluralité doit prendre en compte le format d'écriture inclusive
+     * @return une chaîne de charactèrs ajoutant la lettre s si count est pluriel
      */
-    private String plurality(int count) {
+    private String plurality(int count, boolean isGendered) {
+        StringBuilder builder = new StringBuilder();
+
         if (count > 1) {
-            return "·s ";
+            if (isGendered) builder.append("·");
+            builder.append("s");
         }
-        return " ";
+
+        return builder.toString();
     }
     
     private String tiles(int tileCount) {
