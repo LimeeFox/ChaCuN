@@ -109,31 +109,8 @@ public final class TextMakerFr implements TextMaker{
      */
     @Override
     public String playerScoredHuntingTrap(PlayerColor scorer, int points, Map<Animal.Kind, Integer> animals) {
-        // On construit une chaîne de charactèrs qui s'adapte aux nombres d'animaux
-        StringBuilder animalMessage = new StringBuilder();
-
-        // On vérifie si les prés adjacents contiennent bien des animaux
-        boolean hasAnimals = false;
-
-        for (Animal.Kind kind : animals.keySet()) {
-            // Si les prés adjacents contiennent au moins un animal d'au moins un type, on commence à les énumérés
-            if (animals.get(kind) > 0 && !hasAnimals) {
-                hasAnimals = true;
-                animalMessage.append(" de ");
-            } else if (animals.get(kind) > 0) {
-                animalMessage.append(STR."\{animals.get(kind)} ").append(STR."\{kind}")
-                        .append(plurality(animals.get(kind)));
-            }
-        }
-
-        // Si les prés adjacents sont vides d'animaux, on l'indique
-        if (!hasAnimals) {
-            animalMessage.delete(0, animalMessage.capacity())
-                    .append("d'aucun animal.");
-        }
-
         return STR."\{scorer} a remporté \{points} en plaçant la fosse à pieux dans un pré dans lequel elle est "
-                + " entourée" + animalMessage;
+                + " entourée" + organiseAnimalsAsString(animals);
     }
 
     @Override
@@ -187,6 +164,7 @@ public final class TextMakerFr implements TextMaker{
      * @return une chaîne de charactèrs contenant l'énumération des joueurs dans un ordre précis et reliant les deux
      * derniers de la liste par "et".
      */
+    //todo much like the other private methods, check coherence with the public methods
     private String organisePlayersAsString(Set<PlayerColor> players) {
         Preconditions.checkArgument(!players.isEmpty());
 
@@ -200,7 +178,7 @@ public final class TextMakerFr implements TextMaker{
 
         // S'il y a moins de deux joueurs, on ne retourne que le nom de l'unique joueur concerné
         if (playerNames.size() == 1) {
-            return playerNames.getFirst();
+            return STR."\{playerNames.getFirst()}a ";
         }
 
         /*
