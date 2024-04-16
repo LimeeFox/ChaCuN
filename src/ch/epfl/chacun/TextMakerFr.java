@@ -149,7 +149,7 @@ public final class TextMakerFr implements TextMaker{
     }
 
     /**
-     * Affichage du nombre de points obtenus pour les occupants majoritaires d'un pré
+     * Affichage du nombre de points obtenus par les occupants majoritaires d'un pré
      * @param scorers
      *         les occupants majoritaires du pré
      * @param points
@@ -167,6 +167,7 @@ public final class TextMakerFr implements TextMaker{
     }
 
     /**
+     * Affichage du nombre de points obtenus par les occupants majoritaires d'un réseau hydrographique
      *
      * @param scorers
      *         les occupants majoritaires du réseau hydrographique
@@ -174,11 +175,15 @@ public final class TextMakerFr implements TextMaker{
      *         les points remportés
      * @param fishCount
      *         le nombre de poissons nageant dans le réseau hydrographique
-     * @return
+     * @return une chaîne de charactèrs indiquant les joueurs ayant remportés de points,
+     *         le nombre de points remportés,
+     *         le nombre de poissons ayant rapporté des points
      */
     @Override
     public String playersScoredRiverSystem(Set<PlayerColor> scorers, int points, int fishCount) {
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)}";
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
+                + STR."qu'occupant·e\{plurality(scorers.size())} d'un réseau hydrographique contenant "
+                + STR."\{fishCount} poisson\{plurality(fishCount)}.";
     }
 
     @Override
