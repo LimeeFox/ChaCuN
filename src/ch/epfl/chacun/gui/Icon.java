@@ -18,7 +18,7 @@ public abstract class Icon {
      *         le type de l'occupant
      * @return une icone de couleur et contour correspondante au joueur
      */
-    public Node newFor(PlayerColor playerColor, Occupant.Kind kind) {
+    public static Node newFor(PlayerColor playerColor, Occupant.Kind kind) {
         SVGPath svg = new SVGPath();
 
         switch (kind) {
