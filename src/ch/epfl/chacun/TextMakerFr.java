@@ -52,7 +52,7 @@ public final class TextMakerFr implements TextMaker{
      *         le nombre de groupes de champignons que la forêt contient
      * @param tileCount
      *         le nombre de tuiles qui constitue la forêt
-     * @return une chaîne de charactèrs indiquant les joueurs ayant remporté des points,
+     * @return une chaîne de caractères indiquant les joueurs ayant remporté des points,
      *         le nombre de points remportés,
      *         les raisons pour lesquels les joueurs ont remporté des points
      */
@@ -62,7 +62,7 @@ public final class TextMakerFr implements TextMaker{
 
         // On vérifie si la forêt concernée par le message contient des groupes de champignons
         if (mushroomGroupCount > 0) {
-            mushroomMessage = STR." et de \{mushroomMessage} groupe \{plurality(mushroomGroupCount, false)} de champignons.";
+            mushroomMessage = STR." et de \{mushroomGroupCount} groupe \{plurality(mushroomGroupCount, false)} de champignons.";
         }
 
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
@@ -80,20 +80,20 @@ public final class TextMakerFr implements TextMaker{
      *         le nombre de poissons nageant dans la rivière ou les lacs adjacents
      * @param tileCount
      *         le nombre de tuiles qui constitue la rivière
-     * @return une chaîne de charactèr indiquant les joueurs ayant remporté des points,
+     * @return une chaîne de caractère indiquant les joueurs ayant remporté des points,
      *         le nombre de points remportés,
      *         les raisons pour lesquels les joueurs ont remporté des points
      */
     @Override
     public String playersScoredRiver(Set<PlayerColor> scorers, int points, int fishCount, int tileCount) {
-        String fishMessage = ".";
+        String fishMessage = "";
 
         if (fishCount > 0) {
-            fishMessage = STR." et contenant \{fishCount} poisson\{plurality(fishCount, false)}";
+            fishMessage = STR." et contenant \{fishCount} poisson\{plurality(fishCount, false)}.";
         }
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
-                + STR."qu'occupant·e \{plurality(scorers.size(), true)} composée de \{tiles(tileCount)}} "
-                + fishMessage;
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} composée de \{tiles(tileCount)}} "
+                + STR."\{fishMessage}";
     }
 
     /**
@@ -105,14 +105,14 @@ public final class TextMakerFr implements TextMaker{
      *         les points remportés pour la pose de la fosse à pieux
      * @param animals
      *         les animaux présents dans le même pré que la fosse à pieux et sur les 8 tuiles voisines
-     * @return une chaîne de charactèrs indiquant le joueur ayant remporté des points,
+     * @return une chaîne de caractères indiquant le joueur ayant remporté des points,
      *         le nombre de points remportés par le joueur,
      *         le nombre d'animaux de châque type dans l'ordre mammouths, aurochs, cerfs
      */
     @Override
     public String playerScoredHuntingTrap(PlayerColor scorer, int points, Map<Animal.Kind, Integer> animals) {
 
-        return STR."\{scorer} a remporté \{points(points)}en plaçant la fosse à pieux dans un "
+        return STR."\{scorer} a remporté \{points(points)} en plaçant la fosse à pieux dans un "
         + STR."pré dans lequel elle est entourée \{animalMessage(animals)}.";
     }
 
@@ -125,14 +125,14 @@ public final class TextMakerFr implements TextMaker{
      *         les points remportés pour la pose de la pirogue
      * @param lakeCount
      *         le nombre de lacs accessibles à la pirogue
-     * @return une chaîne de charactèrs indiquant le joueur ayant remporté des points,
+     * @return une chaîne de caractères indiquant le joueur ayant remporté des points,
      *         le nombre de points remportés par le joueur,
      *         le nombre de lacs ayant rapporté des points
      */
     @Override
     public String playerScoredLogboat(PlayerColor scorer, int points, int lakeCount) {
-        return STR."\{scorer} a remporté \{points(points)}en plaçant la pirogue dans un réseau "
-        + STR."hydrographique contenant \{lakeCount} lac\{plurality(lakeCount, false)}";
+        return STR."\{scorer} a remporté \{points(points)} en plaçant la pirogue dans un réseau "
+        + STR."hydrographique contenant \{lakeCount} lac\{plurality(lakeCount, false)}.";
     }
 
     /**
@@ -143,14 +143,15 @@ public final class TextMakerFr implements TextMaker{
      *         les points remportés
      * @param animals
      *         les animaux présents dans le pré (sans ceux ayant été précédemment annulés)
-     * @return une châine de charactèrs indiquant le joueur ayant remporté des points,
+     * @return une châine de caractères indiquant le joueur ayant remporté des points,
      *         le nombre de points remportés,
      *         le nombre d'animaux ayant rapporté des points
      */
     @Override
     public String playersScoredMeadow(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)}en tant que "
-         + STR."qu'occupant·e \{plurality(scorers.size(), true)} d'un pré contenant \{organiseAnimalsAsString(animals)}";
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant que "
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} d'un pré contenant"
+                + STR."\{organiseAnimalsAsString(animals)}.";
     }
 
     /**
@@ -162,7 +163,7 @@ public final class TextMakerFr implements TextMaker{
      *         les points remportés
      * @param fishCount
      *         le nombre de poissons nageant dans le réseau hydrographique
-     * @return une chaîne de charactèrs indiquant les joueurs ayant remportés de points,
+     * @return une chaîne de caractères indiquant les joueurs ayant remportés de points,
      *         le nombre de points remportés,
      *         le nombre de poissons ayant rapporté des points
      */
@@ -182,7 +183,7 @@ public final class TextMakerFr implements TextMaker{
      *         les points remportés
      * @param animals
      *         les animaux présents sur les tuiles voisines de la fosse (sans ceux ayant été précédemment annulés)
-     * @return une chaîne de charactèrs indiquant les joueurs ayant remportés de points,
+     * @return une chaîne de caractères indiquant les joueurs ayant remportés de points,
      *         le nombre de points remportés,
      *         les animaux ayant rapporté des points
      */
@@ -219,7 +220,7 @@ public final class TextMakerFr implements TextMaker{
      *         l'ensemble des joueurs ayant remporté la partie
      * @param points
      *         les points des vainqueurs
-     * @return une chaîne de charactèrs indiquant les joueurs gagnants de la partie,
+     * @return une chaîne de caractères indiquant les joueurs gagnants de la partie,
      *         les points totaux remportés par les gagnants
      */
     @Override
@@ -230,7 +231,7 @@ public final class TextMakerFr implements TextMaker{
     /**
      * Affichage du message pour indiquer au joueur courant qu'il peut placer un occupant
      *
-     * @return une chaîne de charactèrs indiquant la possibilité de placer un pion ou une hutte
+     * @return une chaîne de caractères indiquant la possibilité de placer un pion ou une hutte
      */
     @Override
     public String clickToOccupy() {
@@ -240,7 +241,7 @@ public final class TextMakerFr implements TextMaker{
     /**
      * Affichage d'un message pour indiquer au joueur courant qu'il peut retirer un occupant
      *
-     * @return une chaîne de charactèrs indiquant la possibilité de retirer un pion
+     * @return une chaîne de caractères indiquant la possibilité de retirer un pion
      */
     @Override
     public String clickToUnoccupy() {
@@ -248,13 +249,13 @@ public final class TextMakerFr implements TextMaker{
     }
 
     /**
-     * Méthode d'aide qui permet de créer une chaîne de charactèrs contenant les joueurs concernées dans l'ordre RBGYP
+     * Méthode d'aide qui permet de créer une chaîne de caractères contenant les joueurs concernées dans l'ordre RBGYP
      * et reliant les deux derniers joueurs d'un "et".
      *
      * @param players
-     *          les joueurs concernés par la création de la chaîne de charactèrs, sans ordre précis (ne peut pas être
+     *          les joueurs concernés par la création de la chaîne de caractères, sans ordre précis (ne peut pas être
      *          vide)
-     * @return une chaîne de charactèrs contenant l'énumération des joueurs dans un ordre précis et reliant les deux
+     * @return une chaîne de caractères contenant l'énumération des joueurs dans un ordre précis et reliant les deux
      * derniers de la liste par "et".
      */
     //todo much like the other private methods, check coherence with the public methods
@@ -263,8 +264,7 @@ public final class TextMakerFr implements TextMaker{
         Preconditions.checkArgument(!players.isEmpty());
 
         // On organise les "players" selon l'ordre prédéfini RBGYP
-        Stream<PlayerColor> sortedColors = Arrays.stream(PlayerColor.values())
-                .filter(players::contains);
+        Stream<PlayerColor> sortedColors = new TreeSet<>(players).stream();
 
         // On associe chaque couleur à son joueur correspondant
         List<String> playerNames = sortedColors.map(this::playerName)
@@ -276,7 +276,7 @@ public final class TextMakerFr implements TextMaker{
         }
 
         /*
-        Sinon, on construit la chaîne de characters de nom en faisant bien attention à lier les deux dernier noms
+        Sinon, on construit la chaîne de caractères de nom en faisant bien attention à lier les deux dernier noms
         d'un "et".
         */
         StringJoiner joiner = new StringJoiner(", ");
@@ -287,16 +287,13 @@ public final class TextMakerFr implements TextMaker{
     }
 
     /**
-     * Méthode d'aide qui permet de créer une chaîne de charactèrs indiquant le nombre d'animaux d'une table d'animaux
+     * Méthode d'aide qui permet de créer une chaîne de caractères indiquant le nombre d'animaux d'une table d'animaux
      * donnée, selon l'ordre prédéfini : mammouths, aurochs, cerfs
      *
      * @param animals
      *          tableau associant des types d'animaux à leur quantité
-     * @return une chaîne de charactèrs indiquant la présence d'animaux et leur quantité
+     * @return une chaîne de caractères indiquant la présence d'animaux et leur quantité
      */
-    //todo "what if the map contains tigers"? probably needs to be addressed
-    //todo maybe some messages mention tigers, i would then add a boolean parameter withTigers which would then choose
-    //todo to filter tigers
     private String organiseAnimalsAsString(Map<Animal.Kind, Integer> animals) {
         // On trie les animaux dans l'ordre et on enlève les types qui n'ont aucune présence dans la table associative
         // ainsi que les tigres (en principe, ils ne sont pas compté)
@@ -325,14 +322,13 @@ public final class TextMakerFr implements TextMaker{
             String plurality = "";
             if (animalKind != Animal.Kind.AUROCHS) plurality = "s";
 
-            return STR."\{animalCount} \{animalsAsString.get(animalKind)}"
-                    + plurality(animalCount, false);
+            return STR."\{animalCount} \{animalsAsString.get(animalKind)} \{plurality}";
         }
 
-        // On construit une chaîne de charactèrs qui s'adapte aux nombres d'animaux
+        // On construit une chaîne de caractères qui s'adapte aux nombres d'animaux
         StringBuilder animalMessage = new StringBuilder();
 
-        // On construit notre chaîne de charactèrs à partir de notre table associative triée
+        // On construit notre chaîne de caractères à partir de notre table associative triée
         for (int i = 0; i < filteredAnimals.size(); i++) {
             Animal.Kind animalKind = Animal.Kind.values()[i];
             int animalCount = filteredAnimals.get(animalKind);
@@ -368,11 +364,11 @@ public final class TextMakerFr implements TextMaker{
         }
 
         if (animalPresence) {
-            animalMessage.append(organiseAnimalsAsString(animals));
+            animalMessage.append("de ");
         } else {
             animalMessage.append("d'");
         }
-        return animalMessage.toString();
+        return animalMessage.append(organiseAnimalsAsString(animals)).toString();
     }
 
     /** Méthode d'aide qui vérifie si une partie d'un message doit être écrite au pluriel
@@ -381,7 +377,7 @@ public final class TextMakerFr implements TextMaker{
      *          nombre de l'objet qu'on souhaite compter
      * @param isGendered
      *          indique si le la pluralité doit prendre en compte le format d'écriture inclusive
-     * @return une chaîne de charactèrs ajoutant la lettre s si count est pluriel
+     * @return une chaîne de caractères ajoutant la lettre s si count est pluriel
      */
     private String plurality(int count, boolean isGendered) {
         StringBuilder builder = new StringBuilder();
@@ -394,8 +390,14 @@ public final class TextMakerFr implements TextMaker{
         return builder.toString();
     }
 
-    //todo annotate
+    /**
+     * Méthode d'aide qui affiche le nombre de tuiles pour un nombre donnée
+     * 
+     * @param tileCount
+     *          nombre de tuiles à afficher
+     * @return une chaîne de caractères indiquant le nombre de tuiles
+     */
     private String tiles(int tileCount) {
-        return STR."\{tiles(tileCount)}}";
+        return STR."\{tiles(tileCount)} tuiles}";
     }
 }
