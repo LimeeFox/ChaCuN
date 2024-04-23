@@ -354,6 +354,16 @@ public final class TextMakerFr implements TextMaker{
         return animalMessage.toString();
     }
 
+    /**
+     * Méthode d'aide qui permet de créer une chaîne de caractères indiquant le nombre d'animaux si cette chaîne est
+     * précédé du mot "entourée"
+     *
+     * @param animals
+     *          table associative associant les types d'animaux à leur nombre
+     * @return une chaîne de caractères indiquant le nombre d'animaux
+     *         précédée de "de" s'il y a au moins 1 animal,
+     *          où précédée de "d'" s'il y en a "aucun"
+     */
     private String animalMessage(Map<Animal.Kind, Integer> animals) {
         StringBuilder animalMessage = new StringBuilder();
         boolean animalPresence = false;
@@ -362,10 +372,11 @@ public final class TextMakerFr implements TextMaker{
                 animalPresence = true;
             }
         }
-
+        // S'il y a des animaux on affiche "de [nombres d'animaux pour chaque type]"
         if (animalPresence) {
             animalMessage.append("de ");
         } else {
+            // Sinon on affiche "d'aucun animal"
             animalMessage.append("d'");
         }
         return animalMessage.append(organiseAnimalsAsString(animals)).toString();
