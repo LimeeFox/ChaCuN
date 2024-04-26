@@ -16,22 +16,19 @@ import java.util.stream.Collectors;
 import static java.lang.StringTemplate.STR;
 
 /**
+ * Classe qui gère l'interface graphique du joueur
  *
+ * @author Cyriac Philippe (360553)
+ * @author Vladislav Yarkovoy (362242)
  */
 public abstract class PlayersUI {
-
-    /*
-    for occupants, we know exactly the number of occupants to display, and we can use this knowledge to
-    determine which of them are pawns and huts and make them transparent in consequence, need to skip the first X occupants
-    cuz we need to make the rightmost one transparent
-     */
-
     /**
      * Créé une Node selon le graphe suivant: <a href="https://cs108.epfl.ch/p/i/players-sg;32.png">...</a>
      *
      * @param currentGameState
      *         l'état actuel du jeu
      * @param textMaker
+     *         l'outil qui servira à afficher les messages sur le tableau de messages
      * @return la @Node de l'interface graphique qui contient les joueurs
      */
     public static Node create(ObservableValue<GameState> currentGameState, TextMaker textMaker) {
@@ -53,7 +50,7 @@ public abstract class PlayersUI {
             // du joueur de couleur `p` (p.ex. "Dalia : 5 points")
             ObservableValue<String> pointsTextO = points0.map(pointsMap ->
                     STR."\{textMaker.playerName(playerColor)} : "
-                    + STR."\{pointsMap.getOrDefault(playerColor, 0)} points \n");
+                            + STR."\{pointsMap.getOrDefault(playerColor, 0)} points \n");
 
             // Nœud JavaFX affichant le nom et les points du joueur
             // de couleur `p` (mis à jour automatiquement !)
@@ -65,7 +62,7 @@ public abstract class PlayersUI {
             player.getStyleClass().add("player");
 
             // On a besoin de ses huttes
-            for (int i = 0 ; i < Occupant.occupantsCount(Occupant.Kind.HUT) ; i++) {
+            for (int i = 0; i < Occupant.occupantsCount(Occupant.Kind.HUT); i++) {
                 player.getChildren().add(Icon.newFor(playerColor, Occupant.Kind.HUT));
             }
 
@@ -73,7 +70,7 @@ public abstract class PlayersUI {
             player.getChildren().add(new Text("   "));
 
             // On a besoin de ses pions
-            for (int i = 0 ; i < Occupant.occupantsCount(Occupant.Kind.PAWN) ; i++) {
+            for (int i = 0; i < Occupant.occupantsCount(Occupant.Kind.PAWN); i++) {
                 player.getChildren().add(Icon.newFor(playerColor, Occupant.Kind.PAWN));
             }
             playerNodes.put(playerColor, player);
