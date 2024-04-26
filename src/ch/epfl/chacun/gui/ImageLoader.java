@@ -4,6 +4,9 @@ import javafx.scene.image.Image;
 
 /**
  * Classe qui offre des méthodes permettantes de charger des images des tuiles
+ *
+ * @author Vladislav Yarkovoy (362242)
+ * @author Cyriac Philippe (360553)
  */
 public abstract class ImageLoader {
 
@@ -14,21 +17,21 @@ public abstract class ImageLoader {
     public static final int MARKER_PIXEL_SIZE = 96; //Taille du marqueur
     public static final int MARKER_FIT_SIZE = 48; //Taille d'affichage du marqueur
 
-    /** @todo check si l'utilisation de cette methode gere elle-meme le cas ou tileId serait invalide
+    /**
+     * @param tileId
+     *         l'identifiant de la tuile
+     * @return une image de la tuile qui corréspond à @tileId @todo check si l'utilisation de cette methode gere elle-meme le cas ou tileId serait invalide
      * Obtenir une tuile selon son @tileId de taille 256px
-     *
-     * @param tileId l'identifiant de la tuile
-     * @return une image de la tuile qui corréspond à @tileId
      */
     public static Image normalImageForTile(int tileId) {
         return new Image("/256/tiles/" + tileId + ".jpg");
     }
 
-    /** @todo check si l'utilisation de cette methode gere elle-meme le cas ou tileId serait invalide
+    /**
+     * @param tileId
+     *         l'identifiant de la tuile
+     * @return une image de la tuile qui corréspond à @tileId @todo check si l'utilisation de cette methode gere elle-meme le cas ou tileId serait invalide
      * Obtenir une tuile selon son @tileId de taille 512px
-     *
-     * @param tileId l'identifiant de la tuile
-     * @return une image de la tuile qui corréspond à @tileId
      */
     public static Image largeImageForTile(int tileId) {
         return new Image("/512/tiles/" + tileId + ".jpg");
