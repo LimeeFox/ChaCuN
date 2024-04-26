@@ -79,6 +79,8 @@ public abstract class PlayersUI {
             playerNodes.put(playerColor, player);
         }
 
+        //
+
         VBox playersBox = new VBox();
         playersBox.setId("players");
         playersBox.setStyle("/resources/players.css");
@@ -109,11 +111,11 @@ public abstract class PlayersUI {
             // On saute les n premiers occupants non placés afin de rendre ceux aux extrêmes droites opaques
             occupants.stream()
                     .skip(freeHuts.getValue())
-                    .limit(0)
+                    .limit(3 - freeHuts.getValue())
                     .forEach(svg -> svg.opacityProperty().bind(Bindings.createDoubleBinding(() -> 0.1)));
 
             // Pareil mais pour les pions
-            occupants.stream().skip(freePawns.getValue() + freePawns.getValue()).forEach(svg -> {
+            occupants.stream().skip(freeHuts.getValue() + freePawns.getValue()).forEach(svg -> {
                 svg.opacityProperty().bind(Bindings.createDoubleBinding(() -> 0.1));
             });
         }
