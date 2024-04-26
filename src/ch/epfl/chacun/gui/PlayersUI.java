@@ -1,9 +1,7 @@
 package ch.epfl.chacun.gui;
 
-import ch.epfl.chacun.GameState;
-import ch.epfl.chacun.Occupant;
-import ch.epfl.chacun.PlayerColor;
-import ch.epfl.chacun.TextMaker;
+import ch.epfl.chacun.*;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.layout.VBox;
@@ -12,8 +10,8 @@ import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.lang.StringTemplate.STR;
 
@@ -21,6 +19,12 @@ import static java.lang.StringTemplate.STR;
  *
  */
 public abstract class PlayersUI {
+
+    /*
+    for occupants, we know exactly the number of occupants to display, and we can use this knowledge to
+    determine which of them are pawns and huts and make them transparent in consequence, need to skip the first X occupants
+    cuz we need to make the rightmost one transparent
+     */
 
     /**
      * Créé une Node selon le graphe suivant: <a href="https://cs108.epfl.ch/p/i/players-sg;32.png">...</a>
@@ -31,50 +35,87 @@ public abstract class PlayersUI {
      * @return la @Node de l'interface graphique qui contient les joueurs
      */
     public static Node create(ObservableValue<GameState> currentGameState, TextMaker textMaker) {
+        // Creation de nodes pour chaque joueur
+        Map<PlayerColor, TextFlow> playerNodes = new TreeMap<>();
+        GameState gameState = currentGameState.getValue();
 
-        // Creation de nodes pour chaque joueurs
-        Set<TextFlow> playerNodes = new HashSet<>();
-
-        TextFlow currentPlayer = new TextFlow();
-        currentPlayer.getStyleClass().add("player");
-        currentPlayer.getStyleClass().add("current");
-        playerNodes.add(currentPlayer);
-
-        for (PlayerColor playerColor : currentGameState.getValue().players()) {
-            // On a besoin d'un cercle
+        for (PlayerColor playerColor : gameState.players()) {
+            // On a besoin d'un cercle pour indiquer la couleur du joueur aux utilisateurs
             Circle circle = new Circle();
             circle.setRadius(5);
             circle.setFill(ColorMap.fillColor(playerColor));
 
             // On a besoin du nom du joueur et ses points
-            Text playerInfo = new Text(STR." \{textMaker.playerName(playerColor)} : todo:pts \n}"); //todo points
+            ObservableValue<Map<PlayerColor, Integer>> points0 = currentGameState
+                    .map(GameState::messageBoard)
+                    .map(MessageBoard::points);
+            // Valeur observable contenant le texte des points
+            // du joueur de couleur `p` (p.ex. "Dalia : 5 points")
+            ObservableValue<String> pointsTextO = points0.map(pointsMap ->
+                    STR."\{textMaker.playerName(playerColor)} : "
+                    + STR."\{pointsMap.getOrDefault(playerColor, 0)} points \n");
 
-            // On a besoin de ses occupants
-            SVGPath svgHut1 = (SVGPath) Icon.newFor(playerColor, Occupant.Kind.HUT);
-            SVGPath svgHut2 = (SVGPath) Icon.newFor(playerColor, Occupant.Kind.HUT);
-            SVGPath svgHut3 = (SVGPath) Icon.newFor(playerColor, Occupant.Kind.HUT);
+            // Nœud JavaFX affichant le nom et les points du joueur
+            // de couleur `p` (mis à jour automatiquement !)
+            Text pointsText = new Text();
+            pointsText.textProperty().bind(pointsTextO);
 
-            Text occupantSpaces = new Text("   ");
-
-            SVGPath svgPawn1 = (SVGPath) Icon.newFor(playerColor, Occupant.Kind.PAWN);
-            SVGPath svgPawn2 = (SVGPath) Icon.newFor(playerColor, Occupant.Kind.PAWN);
-            SVGPath svgPawn3 = (SVGPath) Icon.newFor(playerColor, Occupant.Kind.PAWN);
-            SVGPath svgPawn4 = (SVGPath) Icon.newFor(playerColor, Occupant.Kind.PAWN);
-            SVGPath svgPawn5 = (SVGPath) Icon.newFor(playerColor, Occupant.Kind.PAWN);
-
-            // On ajoute tout
-            TextFlow player = new TextFlow(circle, playerInfo, svgHut1, svgHut2, svgHut3, occupantSpaces, svgPawn1,
-                    svgPawn2, svgPawn3, svgPawn4, svgPawn5);
+            // Le TextFlow final du joueur
+            TextFlow player = new TextFlow(circle, pointsText);
             player.getStyleClass().add("player");
-            playerNodes.add(player);
+
+            // On a besoin de ses huttes
+            for (int i = 0 ; i < Occupant.occupantsCount(Occupant.Kind.HUT) ; i++) {
+                player.getChildren().add(Icon.newFor(playerColor, Occupant.Kind.HUT));
+            }
+
+            // Espace pour la séparation visuelle
+            player.getChildren().add(new Text("   "));
+
+            // On a besoin de ses pions
+            for (int i = 0 ; i < Occupant.occupantsCount(Occupant.Kind.PAWN) ; i++) {
+                player.getChildren().add(Icon.newFor(playerColor, Occupant.Kind.PAWN));
+            }
+            playerNodes.put(playerColor, player);
         }
 
         VBox playersBox = new VBox();
         playersBox.setId("players");
         playersBox.setStyle("/resources/players.css");
+        playersBox.getChildren().addAll(playerNodes.values());
 
-        for (Node node : playerNodes) {
-            playersBox.getChildren().add(node);
+        // Listener pour mettre à jour le joueur courant lors des changements d'état du jeu
+        ObservableValue<PlayerColor> currentPlayer0 = currentGameState.map(GameState::currentPlayer);
+        currentPlayer0.addListener((observable, oldPlayer, newPlayer) -> {
+            // Enlever le highlight du joueur précedant pour le mettre sur le joueur courant
+            playerNodes.get(oldPlayer).getStyleClass().remove("current");
+            playerNodes.get(newPlayer).getStyleClass().add("current");
+        });
+
+        // Listener pour mettre à jour les pions des joueurs lors des changements d'état du jeu
+        ObservableValue<Integer> freeHuts = currentGameState
+                .map(gs -> gs.freeOccupantsCount(gs.currentPlayer(), Occupant.Kind.HUT));
+        ObservableValue<Integer> freePawns = currentGameState
+                .map(gs -> gs.freeOccupantsCount(gs.currentPlayer(), Occupant.Kind.PAWN));
+
+        // On itère sur tous les joueurs pour obtenir leur liste de nodes "occupants"
+        for (PlayerColor playerColor : gameState.players()) {
+            TextFlow player = playerNodes.get(playerColor);
+            Set<SVGPath> occupants = player.getChildren().stream()
+                    .filter(child -> child instanceof SVGPath)
+                    .map(child -> (SVGPath) child)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+
+            // On saute les n premiers occupants non placés afin de rendre ceux aux extrêmes droites opaques
+            occupants.stream()
+                    .skip(freeHuts.getValue())
+                    .limit(0)
+                    .forEach(svg -> svg.opacityProperty().bind(Bindings.createDoubleBinding(() -> 0.1)));
+
+            // Pareil mais pour les pions
+            occupants.stream().skip(freePawns.getValue() + freePawns.getValue()).forEach(svg -> {
+                svg.opacityProperty().bind(Bindings.createDoubleBinding(() -> 0.1));
+            });
         }
 
         return playersBox;
