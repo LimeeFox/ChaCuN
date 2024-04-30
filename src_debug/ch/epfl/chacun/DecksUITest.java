@@ -27,7 +27,7 @@ public class DecksUITest extends Application {
 
 
 
-        Node testDeckUI = DecksUI.create(observableTile,remainingNormalTiles,remainingMenhirTiles,textToDisplay,
+        Node testDeckUI = DecksUI.create(observableTile, remainingNormalTiles, remainingMenhirTiles, textToDisplay,
                 occupant -> {
                     System.out.println("Text was clicked. Occupant: " + dummyOccupant.kind().toString());
                 });
@@ -36,7 +36,7 @@ public class DecksUITest extends Application {
         textToDisplay.set("test");
         observableTile.set(Tiles.TILES.get(19));
         textToDisplay.set("");
-        //textToDisplay.set("");
+        //textToDisplay.set("test");
         observableTile.set(Tiles.TILES.get(35));
 
         StackPane test = new StackPane(testDeckUI);

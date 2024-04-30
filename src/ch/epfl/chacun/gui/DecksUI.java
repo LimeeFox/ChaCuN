@@ -89,10 +89,15 @@ public abstract class DecksUI {
         tileToPlaceImageView.imageProperty().bind(tileToPlaceImage);
 
         occupantInfoText.setWrappingWidth(tileToPlaceImageView.getImage().getWidth() * 0.8);
-        ObservableValue<Boolean> messageIsNull = message.map(Objects::isNull);
-        occupantInfoText.visibleProperty().bind(messageIsNull);
-        tileToPlacePane.setOnMouseClicked(e -> {
-            occupantConsumer.accept(null);
+        occupantInfoText.textProperty().bind(message);
+
+        ObservableValue<Boolean> messageIsNull = message.map(String::isEmpty);
+        tileToPlaceImageView.visibleProperty().bind(messageIsNull);
+
+        occupantInfoText.setOnMouseClicked(e -> {
+            if (!occupantInfoText.getText().isEmpty()) {
+                occupantConsumer.accept(null);
+            }
         });
 
         tileToPlacePane.getChildren().add(tileToPlaceImageView);
