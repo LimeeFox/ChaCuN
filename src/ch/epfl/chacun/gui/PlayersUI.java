@@ -49,11 +49,10 @@ public abstract class PlayersUI {
             // Valeur observable contenant le texte des points
             // du joueur de couleur `p` (p.ex. "Dalia : 5 points")
             ObservableValue<String> pointsTextO = points0.map(pointsMap ->
-                    STR."\{textMaker.playerName(playerColor)} : "
+                    STR." \{textMaker.playerName(playerColor)} : "
                             + STR."\{pointsMap.getOrDefault(playerColor, 0)} points \n");
 
-            // Nœud JavaFX affichant le nom et les points du joueur
-            // de couleur `p` (mis à jour automatiquement !)
+            // Nom et les points du joueur de couleur `p` (mis à jour automatiquement plus loin dans le code!)
             Text pointsText = new Text();
             pointsText.textProperty().bind(pointsTextO);
 
@@ -76,11 +75,9 @@ public abstract class PlayersUI {
             playerNodes.put(playerColor, player);
         }
 
-        //
-
         VBox playersBox = new VBox();
         playersBox.setId("players");
-        playersBox.setStyle("/resources/players.css");
+        playersBox.getStylesheets().add("players.css");
         playersBox.getChildren().addAll(playerNodes.values());
 
         // Listener pour mettre à jour le joueur courant lors des changements d'état du jeu
@@ -97,7 +94,7 @@ public abstract class PlayersUI {
         ObservableValue<Integer> freePawns = currentGameState
                 .map(gs -> gs.freeOccupantsCount(gs.currentPlayer(), Occupant.Kind.PAWN));
 
-        // On itère sur tous les joueurs pour obtenir leur liste de nodes "occupants"
+        // On itère sur tous les joueurs pour obtenir leur liste de nodes "occupants" //todo potentially optimize this, similarly to adrien (I told him how to do it btw)
         for (PlayerColor playerColor : gameState.players()) {
             TextFlow player = playerNodes.get(playerColor);
             Set<SVGPath> occupants = player.getChildren().stream()
