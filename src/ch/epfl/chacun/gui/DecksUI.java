@@ -91,12 +91,12 @@ public abstract class DecksUI {
         occupantInfoText.setWrappingWidth(tileToPlaceImageView.getImage().getWidth() * 0.8);
         ObservableValue<Boolean> messageIsNull = message.map(Objects::isNull);
         occupantInfoText.visibleProperty().bind(messageIsNull);
-        occupantInfoText.setOnMouseClicked(e -> {
+        tileToPlacePane.setOnMouseClicked(e -> {
             occupantConsumer.accept(null);
         });
 
-        tileToPlacePane.getChildren().add(occupantInfoText);
         tileToPlacePane.getChildren().add(tileToPlaceImageView);
+        tileToPlacePane.getChildren().add(occupantInfoText);
 
         //
         // Global Decks display
