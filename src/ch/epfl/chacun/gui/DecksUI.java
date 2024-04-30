@@ -2,6 +2,8 @@ package ch.epfl.chacun.gui;
 
 import ch.epfl.chacun.*;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.Node;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -18,7 +20,7 @@ import java.util.function.Consumer;
  *  @author Vladislav Yarkovoy (362242)
  */
 public abstract class DecksUI {
-    public static void create(
+    public static Node create(
             ObservableValue<Tile> tileToPlace,
             ObservableValue<Integer> normalTilesLeft,
             ObservableValue<Integer> menhirTilesLeft,
@@ -37,9 +39,13 @@ public abstract class DecksUI {
 
         ImageView normalTilesImageView = new ImageView();
         normalTilesImageView.setId("NORMAL");
+        Image normalImage = new Image(STR."256/NORMAL.jpg");
+        normalTilesImageView.setImage(normalImage);
+        normalTilesImageView.setFitHeight(normalImage.getHeight() * 0.5);
+        normalTilesImageView.setFitWidth(normalImage.getWidth() * 0.5);
 
-        normalTilesPane.getChildren().add(normalTilesText);
         normalTilesPane.getChildren().add(normalTilesImageView);
+        normalTilesPane.getChildren().add(normalTilesText);
 
         //
         // Menhir tiles display
@@ -53,14 +59,19 @@ public abstract class DecksUI {
 
         ImageView menhirTilesImageView = new ImageView();
         menhirTilesImageView.setId("MENHIR");
+        Image menhirImage = new Image(STR."256/MENHIR.jpg");
+        menhirTilesImageView.setImage(menhirImage);
+        menhirTilesImageView.setFitHeight(menhirImage.getHeight() * 0.5);
+        menhirTilesImageView.setFitWidth(menhirImage.getWidth() * 0.5);
 
-        menhirTilesPane.getChildren().add(menhirTilesText);
         menhirTilesPane.getChildren().add(menhirTilesImageView);
+        menhirTilesPane.getChildren().add(menhirTilesText);
 
         //
         // Display of both tile types
         //
         HBox tileCountBox = new HBox();
+        tileCountBox.setId("decks");
         tileCountBox.getChildren().add(normalTilesPane);
         tileCountBox.getChildren().add(menhirTilesPane);
 
@@ -70,22 +81,31 @@ public abstract class DecksUI {
         StackPane tileToPlacePane = new StackPane();
         tileToPlacePane.setId("next-tile");
 
-        Text tileToPlaceText = new Text();
-        tileToPlaceText.setWrappingWidth(0.8);
-        ObservableValue<Boolean> messageIsNull = message.map(Objects::isNull);
-        tileToPlaceText.visibleProperty().bind(messageIsNull);
+        Text occupantInfoText = new Text();
 
+        // On modifie l'image en fonction de la tuile à placer
         ImageView tileToPlaceImageView = new ImageView();
+        ObservableValue<Image> tileToPlaceImage = tileToPlace.map(Tile::id).map(ImageLoader::normalImageForTile);
+        tileToPlaceImageView.imageProperty().bind(tileToPlaceImage);
 
-        tileToPlacePane.getChildren().add(tileToPlaceText);
+        occupantInfoText.setWrappingWidth(tileToPlaceImageView.getImage().getWidth() * 0.8);
+        ObservableValue<Boolean> messageIsNull = message.map(Objects::isNull);
+        occupantInfoText.visibleProperty().bind(messageIsNull);
+        occupantInfoText.setOnMouseClicked(e -> {
+            occupantConsumer.accept(null);
+        });
+
+        tileToPlacePane.getChildren().add(occupantInfoText);
         tileToPlacePane.getChildren().add(tileToPlaceImageView);
 
         //
         // Global Decks display
         //
         VBox decksBox = new VBox();
-        decksBox.getStyleClass().add("decks.css");
+        decksBox.getStylesheets().add("decks.css");
         decksBox.getChildren().add(tileCountBox);
         decksBox.getChildren().add(tileToPlacePane);
+
+        return decksBox;
     }
 }

@@ -89,9 +89,9 @@ public abstract class PlayersUI {
         });
 
         // Listener pour mettre à jour les pions des joueurs lors des changements d'état du jeu
-        ObservableValue<Integer> freeHuts = currentGameState
+        ObservableValue<Integer> freeHutsCount = currentGameState
                 .map(gs -> gs.freeOccupantsCount(gs.currentPlayer(), Occupant.Kind.HUT));
-        ObservableValue<Integer> freePawns = currentGameState
+        ObservableValue<Integer> freePawnsCount = currentGameState
                 .map(gs -> gs.freeOccupantsCount(gs.currentPlayer(), Occupant.Kind.PAWN));
 
         // On itère sur tous les joueurs pour obtenir leur liste de nodes "occupants" //todo potentially optimize this, similarly to adrien (I told him how to do it btw)
@@ -104,12 +104,12 @@ public abstract class PlayersUI {
 
             // On saute les n premiers occupants non placés afin de rendre ceux aux extrêmes droites opaques
             occupants.stream()
-                    .skip(freeHuts.getValue())
-                    .limit(3 - freeHuts.getValue())
+                    .skip(freeHutsCount.getValue())
+                    .limit(3 - freeHutsCount.getValue())
                     .forEach(svg -> svg.opacityProperty().bind(Bindings.createDoubleBinding(() -> 0.1)));
 
             // Pareil mais pour les pions
-            occupants.stream().skip(freeHuts.getValue() + freePawns.getValue()).forEach(svg -> {
+            occupants.stream().skip(freeHutsCount.getValue() + freePawnsCount.getValue()).forEach(svg -> {
                 svg.opacityProperty().bind(Bindings.createDoubleBinding(() -> 0.1));
             });
         }
