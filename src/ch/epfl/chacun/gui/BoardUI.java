@@ -73,14 +73,15 @@ public class BoardUI {
     }
 
     /**
+     * Méthode d'aide qui permet de générer les images de toutes les tuiles du jeu
      *
-     * @return
+     * @return une cache d'images contenant les images de chaque tuile du jeu
      */
+    //todo make sure we do show the images of tiles ar the right size
     private static Map<Integer, Image> getCache() {
         Map<Integer, Image> cache = new HashMap<>();
         for (int i = 0; i < 95; i++) {
             // Chemin vers l'image de tuile
-            //todo check if we need to get the images for board tile from 256 or 512
             String imagePath = "C:\\Users\\cyria\\OneDrive\\Documents\\GITHUB\\POOP\\ChaCuN\\resources\\256\\" +
                     STR."\{i}.jpg";
 
