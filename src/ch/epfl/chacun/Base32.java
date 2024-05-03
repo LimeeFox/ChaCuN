@@ -1,6 +1,12 @@
 package ch.epfl.chacun;
 
+/**
+ * Classe contenant des méthodes permettant d'encoder et de décoder des valeurs binaires en base 32
+ *
+ * @author Cyriac Philippe (360553)
+ */
 public class Base32 {
+    // Alphabet complet de la base 32
     public static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
     /**
