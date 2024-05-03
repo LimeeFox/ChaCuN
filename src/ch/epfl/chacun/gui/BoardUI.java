@@ -2,6 +2,7 @@ package ch.epfl.chacun.gui;
 
 import ch.epfl.chacun.*;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableSet;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -36,10 +37,10 @@ public class BoardUI {
      * @param occupantConsumer
      * @return
      */
-    public static Node create(int scope, GameState currentGameState, Rotation tileRotation,
-                              Set<Occupant> visibleOccupants, Set<Integer> tiles,
-                              ObservableValue<Rotation> tileRotates, ObservableValue<Pos> tileMoves,
-                              ObservableValue<Occupant> occupantConsumer) {
+    public static Node create(int scope, ObservableValue<GameState> currentGameState,
+                              ObservableValue<Rotation> tileRotation, ObservableValue<Set<Occupant>> visibleOccupants,
+                              ObservableValue<Set<Integer>> tiles, Consumer<Rotation> tileRotates, Consumer<Pos> tileMoves,
+                              Consumer<Occupant> observableOccupant) {
         // La portée doit toujours être strictement positive
         Preconditions.checkArgument(scope > 0);
 
@@ -47,7 +48,7 @@ public class BoardUI {
         // Les images de chaque tuile sont ainsi toutes chargées
         Map<Integer, Image> cache = getCache();
 
-        Board currentBoard = currentGameState.board();
+        Board currentBoard = currentGameState.getValue().board();
 
         WritableImage emptyTileImage = new WritableImage(1, 1);
         emptyTileImage
@@ -61,7 +62,7 @@ public class BoardUI {
 
                 PlacedTile placedTile = currentBoard.tileAt(position);
 
-                // Si la position x,y que l'on observe contient une tuile, on l'affiche
+                // Si la position x, y que l'on observe contient une tuile, alors on l'affiche
                 if (placedTile != null) {
                     boardGridPane.add(new ImageView(cache.get(placedTile.id())),
                             x + scope, y+ scope);
@@ -73,7 +74,7 @@ public class BoardUI {
             }
         }
 
-        if (currentGameState.nextAction() == GameState.Action.PLACE_TILE) {
+        if (currentGameState.getValue().nextAction() == GameState.Action.PLACE_TILE) {
             Set<Integer> frange = new HashSet<>();
             currentBoard.insertionPositions().forEach(pos -> {
                 PlacedTile placedTile = currentBoard.tileAt(pos);
@@ -100,8 +101,7 @@ public class BoardUI {
         Map<Integer, Image> cache = new HashMap<>();
         for (int i = 0; i < 95; i++) {
             // Chemin vers l'image de tuile
-            String imagePath = "ChaCuN\\resources\\256\\" +
-                    STR."\{i}.jpg";
+            String imagePath = STR."ChaCuN\\resources\\256\\\{i}.jpg";
 
             // Chargement de l'image
             File imageFile = new File(imagePath);
