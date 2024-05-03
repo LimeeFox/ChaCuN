@@ -38,4 +38,21 @@ public class Base32 {
         return encodeBits5(n1) + encodeBits5(n2);
     }
 
+    /**
+     * Decode un chiffre en base 32 passé en chaîne de charactèrs
+     *
+     * @param encoded
+     *          chaîne de charactèrs du chiffre en base 32 à décoder
+     * @return  l'entier correspondant à la chaîne de charactèrs en base 32 donnée
+     */
+    public int decode(String encoded) {
+        int codeLength = encoded.length();
+        Preconditions.checkArgument(codeLength == 1 || codeLength == 2);
+
+        if (codeLength == 1) {
+            return ALPHABET.indexOf(encoded);
+        } else {
+            return (ALPHABET.indexOf(encoded.charAt(0)) << 5) + ALPHABET.indexOf(encoded.charAt(1));
+        }
+    }
 }
