@@ -16,7 +16,7 @@ public class Base32 {
      *      chaîne de charactèrs à vérifier
      * @return true si la chaîne de charactèrs donnée ne contient que des charactèrs de l'ALPHABET
      */
-    public boolean isValid(String s) {
+    public static boolean isValid(String s) {
         return s.chars().allMatch(c -> ALPHABET.indexOf((char) c) != -1);
     }
 
@@ -27,7 +27,7 @@ public class Base32 {
      *      entier à encoder
      * @return une chaîne de charactèrs de longueur 1 contenant la valeur en base 32 de l'entier donné
      */
-    public String encodeBits5(int n) {
+    public static String encodeBits5(int n) {
         return String.valueOf(ALPHABET.charAt(n));
     }
 
@@ -38,7 +38,7 @@ public class Base32 {
      *      entier à encoder
      * @return  uen chaîné de charactèrs de longueur 2 contenant la valeur en base 32 de l'entier donné
      */
-    public String encodeBits10(int n) {
+    public static String encodeBits10(int n) {
         int n1 = n >>> 5;
         int n2 = n & 0b1111;
         return encodeBits5(n1) + encodeBits5(n2);
@@ -51,7 +51,9 @@ public class Base32 {
      *          chaîne de charactèrs du chiffre en base 32 à décoder
      * @return  l'entier correspondant à la chaîne de charactèrs en base 32 donnée
      */
-    public int decode(String encoded) {
+    public static int decode(String encoded) {
+        Preconditions.checkArgument(isValid(encoded));
+
         int codeLength = encoded.length();
         Preconditions.checkArgument(codeLength == 1 || codeLength == 2);
 
