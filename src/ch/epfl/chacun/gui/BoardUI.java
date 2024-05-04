@@ -75,7 +75,6 @@ public class BoardUI {
         for (int x = -scope; x <= scope; x++) {
             for (int y = -scope; y <= scope; y++) {
                 final Pos pos = new Pos(x, y);
-                //ObservableValue<PlacedTile> currentTile = board.map(b -> b.tileAt(pos)); // todo @deprecated
 
                 Group group = new Group();
                 ImageView tileFace = new ImageView();
@@ -86,7 +85,7 @@ public class BoardUI {
                 // Gérer tous les changements pour chaque case du tableau
                 currentGameState.addListener((o, oldGameState, newGameState) -> {
                     GameState.Action nextAction = newGameState.nextAction();
-                    PlacedTile tile = board.getValue().tileAt(pos); //fixme i changed it, it used to be newGameState.board(), maybe any bug that arises in the future can be fixed here
+                    PlacedTile tile = board.getValue().tileAt(pos);
                     PlayerColor placer = newGameState.currentPlayer();
 
                     // L'image de la tuile (soit "vide", soit celle de la tuile)
@@ -96,29 +95,49 @@ public class BoardUI {
                             ColorMap.fillColor(placer) : Color.TRANSPARENT);
 
                     // Gérer les occupants
-                    /*
-                    if (tile != null) {
+                    if (tile != null && tile.kind() != Tile.Kind.START) {
                         for (Occupant occupant : tile.potentialOccupants()) {
                             // On a besoin de créer un occupant pour CHAQUE joueur, qu'on va en premier temps, cacher,
                             // et en deuxième temps, le refaire apparaître au cas oû la tuile se fait occuper
+                            SVGPath occupantIcon = (SVGPath) Icon.newFor(newGameState.board().lastPlacedTile().placer(), occupant.kind());
+                            occupantIcon.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
+
+                            occupantIcon.visibleProperty().bind(visibleOccupants
+                                    .map(occupants -> occupants.contains(occupant)));
+
+                            // Gérer la rotation de l'occupant. La rotation doit être inversée pour les occupants
+                            occupantIcon.setRotate(-group.getRotate());
+
+                            occupantIcon.setOnMouseClicked(event -> {
+                                if (event.getButton() == MouseButton.PRIMARY) {
+                                    //&& visibleOccupants.getValue().contains(occupant)) {
+                                    occupantConsumer.accept(occupant);
+                                }
+                            });
+
+                            group.getChildren().add(occupantIcon);
+                            /* fixme deprecated
                             for (PlayerColor playerColor : newGameState.players()) {
-                                System.out.println(STR."occupant: \{occupant.kind()}");
                                 SVGPath occupantIcon = (SVGPath) Icon.newFor(playerColor, occupant.kind());
                                 occupantIcon.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
-                                occupantIcon.setVisible(false);
+
+                                occupantIcon.visibleProperty().bind(visibleOccupants
+                                        .map(occupants -> occupants.contains(occupant)));
 
                                 // Gérer la rotation de l'occupant. La rotation doit être inversée pour les occupants
-                                occupantIcon.rotateProperty().bind(rotation.map(r -> - r));
+                                occupantIcon.setRotate(-group.getRotate());
 
                                 occupantIcon.setOnMouseClicked(event -> {
                                     if (event.getButton() == MouseButton.PRIMARY) {
+                                            //&& visibleOccupants.getValue().contains(occupant)) {
                                         occupantConsumer.accept(occupant);
-                                        occupantIcon.setVisible(true);
                                     }
                                 });
 
                                 group.getChildren().add(occupantIcon);
                             }
+
+                             */
                         }
 
                         // Gérer les jetons d'annulation
@@ -135,27 +154,43 @@ public class BoardUI {
                             group.getChildren().add(cancellationToken);
                         }));
                     }
-                    */
-
-                    /* fixme deprecated
-                    // Mise en évidence de la case si elle fait partie de la frange
-                    // Si la case fait partie de la frange mais quelle n'est pas survolée par le curseur de la souris,
-                    // alors elle est recouverte d'un voile de la couleur du joueur courant
-                    if (nextAction != GameState.Action.PLACE_TILE && placer != null
-                            && board.getValue().insertionPositions().contains(pos)) {
-                        tileFace.setImage(emptyTileImage);
-                        veil(group, ColorMap.fillColor(placer));
-                    }
-
-                     */
 
                     // Gérer l'affichage de la tuile si elle est prête à être posée
                     // C-à-d, la souris survole une case de frange
+                    /* todo experimental feature that uses one listener for hovering instead of two
+                        (even though in the source code implementation, they use the other two to define this one lol)
+                    tileFace.hoverProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean isHovering) -> {
+                        Tile tileToPlace = newGameState.tileToPlace();
+                        if (board.getValue().insertionPositions().contains(pos) && nextAction == GameState.Action.PLACE_TILE) {
+                            if (isHovering) {
+                                // Si la case contient une tuile, et que certaines tuiles sont mises en évidence
+                                // mais pas celle de la case, alors elle est recouverte d'un voile noir qui l'assombrit
+                                if (board.getValue().canAddTile(new PlacedTile(tileToPlace, placer, tileRotation.getValue(), pos))) {
+                                    veil(group, Color.TRANSPARENT);
+                                } else {
+                                    // Si la case fait partie de la frange, que le curseur de la souris la survole
+                                    // et que la tuile courante, avec sa rotation actuelle, ne peut pas y être placée,
+                                    // alors elle est recouverte d'un voile blanc
+                                    veil(group, Color.WHITE);
+                                }
+                                tileFace.setImage(cache.get(tileToPlace.id()));
+                                group.rotateProperty().set(tileRotation.getValue().degreesCW());
+                            } else {
+                                // This is equivalent to setOnMouseExited
+                                if (placer != null) {
+                                    tileFace.setImage(emptyTileImage);
+                                    veil(group, ColorMap.fillColor(placer));
+                                }
+                            }
+                        }
+                    });
+
+                     */
+
                     tileFace.setOnMouseEntered(event -> {
                         if (board.getValue().insertionPositions().contains(pos) && nextAction == GameState.Action.PLACE_TILE) {
                             Tile tileToPlace = newGameState.tileToPlace();
-                            // Si la case contient une tuile, et que certaines tuiles sont mises en évidence
-                            // mais pas celle de la case, alors elle est recouverte d'un voile noir qui l'assombrit
+                            // Si le joueur parcours la case avec sa souris, on fait un preview de la tuile à cette case
                             if (board.getValue()
                                     .canAddTile(new PlacedTile(tileToPlace, placer, tileRotation.getValue(), pos))) {
                                 veil(group, Color.TRANSPARENT);
@@ -165,35 +200,54 @@ public class BoardUI {
                                 // alors elle est recouverte d'un voile blanc
                                 veil(group, Color.WHITE);
                             }
-                            tileFace.setImage(cache.get(tileToPlace.id())); // fixme aaa help
+                            tileFace.setImage(cache.get(tileToPlace.id()));
                             group.rotateProperty().set(rotation.getValue());
                         }
-                        System.out.println(STR."enter");
                     });
 
                     tileFace.setOnMouseExited(event -> {
-                        if (board.getValue().insertionPositions().contains(pos) && placer != null && nextAction == GameState.Action.PLACE_TILE) {
-                            //tileFace.setImage(emptyTileImage);
+                        if (board.getValue().insertionPositions().contains(pos) && placer != null
+                                && nextAction == GameState.Action.PLACE_TILE) {
+                            tileFace.setImage(emptyTileImage);
                             veil(group, ColorMap.fillColor(placer));
-                            System.out.println(STR."exit");
+                        }
+                    });
+
+                    // Gérer la rotation de la tuile
+                    group.setOnMouseClicked(event -> {
+                        if (board.getValue().insertionPositions().contains(pos)
+                                && nextAction == GameState.Action.PLACE_TILE) {
+                            // Si c'est un click droit, alors tourner la tuile dans le sens anti-horaire
+                            // Ou dans le sens horaire si le bouton ALT (Option sur MacOS) est appuyée
+                            if (event.getButton() == MouseButton.SECONDARY) {
+                                tileRotates.accept(event.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
+
+                                group.setRotate(tileRotation.getValue().degreesCW());
+                            // Si c'est un click gauche, alors poser la tuile si cela est permis
+                            } else if (event.getButton() == MouseButton.PRIMARY) {
+                                final PlacedTile tileToPlace =
+                                        new PlacedTile(newGameState.tileToPlace(), placer, tileRotation.getValue(), pos);
+                                if (board.getValue().canAddTile(tileToPlace)) {
+                                    tileMoves.accept(pos);
+                                    tileFace.setImage(cache.get(tileToPlace.id()));
+                                }
+                            }
                         }
                     });
 
 
-
-                    //System.out.println(STR."tile: \{tile}");
-                    //System.out.println(STR."tile to place: \{newGameState.tileToPlace()}");
                 });
 
+                //
                 highlightedTiles.addListener((o, oldValue, newValue) -> {
                     if (newValue.isEmpty() || !oldValue.contains(board.getValue().tileAt(pos).id()))
                         veil(group, Color.TRANSPARENT);
+                    // Si la case contient une tuile, et que certaines tuiles sont mises en évidence
+                    // mais pas celle de la case, alors elle est recouverte d'un voile noir qui l'assombrit
                     else if (! newValue.contains(board.getValue().tileAt(pos).id()))
                         veil(group, Color.BLACK);
                 });
 
-                // Gérer la rotation de la tuile
-                // group.rotateProperty().bind(rotation); todo deprecated (cuz every cell will be roated at the same time in that case lmao)
                 group.getChildren().add(tileFace);
                 boardGridPane.add(group, x + scope, y + scope);
             }
@@ -208,23 +262,14 @@ public class BoardUI {
     }
 
     /**
-     * Méthode d'aide qui permet de générer les images de toutes les tuiles du jeu //todo demander a cyriac ou il l'a volé, je refuse de croire que c'est lui qui l'a ecrit lol
+     * Méthode d'aide qui permet de générer les images de toutes les tuiles du jeu
      *
      * @return une cache d'images contenant les images de chaque tuile du jeu
      */
-    //todo make sure we do show the images of tiles ar the right size
     private static Map<Integer, Image> getCache() {
         Map<Integer, Image> cache = new HashMap<>();
         for (int i = 0; i < TILES.size(); i++) {
-            // Chemin vers l'image de tuile
-            String imagePath = STR."resources/256/\{i}.jpg";
-
-            // Chargement de l'image
-            File imageFile = new File(imagePath);
-            Image image = new Image(imageFile.toURI().toString());
-
-            // Ajout de l'image à la "cache"
-            cache.put(i, image);
+            cache.put(i, ImageLoader.normalImageForTile(i));
         }
         return cache;
     }

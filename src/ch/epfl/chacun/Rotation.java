@@ -28,7 +28,7 @@ public enum Rotation {
      * @return la rotation une fois que this et that sont additionnés
      */
     public Rotation add(Rotation that) {
-        return ALL.get((this.quarterTurnsCW() + that.quarterTurnsCW()) % 4);
+        return ALL.get((this.ordinal() + that.quarterTurnsCW()) % COUNT);
     }
 
     /**
