@@ -2,6 +2,7 @@ package ch.epfl.chacun;
 
 import javafx.util.Pair;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -25,15 +26,8 @@ public class ActionEncoder {
         GameState currentGameState = initialGameState.withPlacedTile(tileToPlace);
 
         // Encodage de la pose d'une tuile
-        List<Pos> sortedPositions = initialGameState.board().insertionPositions().stream()
-                .sorted(Comparator.comparing(Pos::x).thenComparing(Pos::y)).toList();
-
-        Map<Pos, Integer> indexedFrange = IntStream.range(0, sortedPositions.size())
-                .boxed()
-                .collect(Collectors.toMap(sortedPositions::get, i -> i));
-
         // Index de position sur la frange de la tuile à placer
-        int p = indexedFrange.get(tileToPlace.pos());
+        int p = getIndexedFrange(initialGameState).get(tileToPlace.pos());
         // Entier correspondant à la rotation de la tuile à placer
         int r = tileToPlace.rotation().ordinal();
         // Concatenation des deux morceaux d'information sous la forme "ppppp ppprr"
@@ -69,17 +63,59 @@ public class ActionEncoder {
         // Encodage de la reprise d'un pion
         int o = 0b11111;
         if (removedOccupant != null) {
-            List<Occupant> sortedPawns = initialGameState.board().occupants().stream()
-                    .sorted(Comparator.comparing(Occupant::zoneId)).toList();
 
-            Map<Occupant, Integer> indexedOccupants = IntStream.range(0, sortedPawns.size())
-                    .boxed()
-                    .collect(Collectors.toMap(sortedPawns::get, i -> i));
-
-            o = indexedOccupants.get(removedOccupant);
+            o = getIndexedOccupants(initialGameState).get(removedOccupant);
         }
         String code = Base32.encodeBits5(o);
 
         return new Pair<>(currentGameState, code);
+    }
+
+    //todo i don't understand what the fuck the "Conseils de programmation" is saying for this
+    public static Pair<GameState, String> decodeAndApply(GameState initialGameSate, String initialCode) {
+        if (Base32.isValid(initialCode)) {
+            GameState.Action nextAction = initialGameSate.nextAction();
+
+            GameState updatedGameState = initialGameSate;
+            String updatedCode = initialCode;
+
+            switch (nextAction) {
+                case PLACE_TILE -> {
+                    int decoded = Base32.decode(initialCode);
+                    int p = decoded >>> 2;
+                    int r = decoded & 0b11;
+
+                    //todo make sure the list is in fact ordered the right way so as to get the proper indexed position
+                    Pos tilePos = getIndexedFrange(initialGameSate).keySet().stream().toList().get(p);
+
+                    updatedGameState = initialGameSate
+                            .withPlacedTile(new PlacedTile(initialGameSate.tileToPlace(),
+                                    initialGameSate.currentPlayer(),
+                                    Arrays.stream(Rotation.values()).toList().get(r),
+                                    tilePos));
+
+                }
+            }
+            return new Pair<>(updatedGameState, updatedCode);
+        }
+        return null;
+    }
+
+    private static Map<Pos, Integer> getIndexedFrange(GameState gameState) {
+        List<Pos> sortedPositions = gameState.board().insertionPositions().stream()
+                .sorted(Comparator.comparing(Pos::x).thenComparing(Pos::y)).toList();
+
+        return IntStream.range(0, sortedPositions.size())
+                .boxed()
+                .collect(Collectors.toMap(sortedPositions::get, i -> i));
+    }
+
+    private static Map<Occupant, Integer> getIndexedOccupants(GameState gameState) {
+        List<Occupant> sortedPawns = gameState.board().occupants().stream()
+                .sorted(Comparator.comparing(Occupant::zoneId)).toList();
+
+        return IntStream.range(0, sortedPawns.size())
+                .boxed()
+                .collect(Collectors.toMap(sortedPawns::get, i -> i));
     }
 }
