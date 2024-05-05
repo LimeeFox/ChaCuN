@@ -51,11 +51,9 @@ public class ActionEncoder {
         // Type d'occupant
         int k = occupant.kind().ordinal();
         // Identifiant de la zone occupé
-        int z = 0;
+        int z = 0b11111;
         if (occupant != null) {
             z = occupant.zoneId();
-        } else {
-            z = 0b11111;
         }
         // Concatenation sous forme "kzzzz"
         int n = (k << 4) + z;
@@ -65,4 +63,23 @@ public class ActionEncoder {
         return new Pair<>(currentGameState, code);
     }
 
+    public static Pair<GameState, String> withOccupantRemoved(GameState initialGameState, Occupant removedOccupant) {
+        GameState currentGameState = initialGameState.withOccupantRemoved(removedOccupant);
+
+        // Encodage de la reprise d'un pion
+        int o = 0b11111;
+        if (removedOccupant != null) {
+            List<Occupant> sortedPawns = initialGameState.board().occupants().stream()
+                    .sorted(Comparator.comparing(Occupant::zoneId)).toList();
+
+            Map<Occupant, Integer> indexedOccupants = IntStream.range(0, sortedPawns.size())
+                    .boxed()
+                    .collect(Collectors.toMap(sortedPawns::get, i -> i));
+
+            o = indexedOccupants.get(removedOccupant);
+        }
+        String code = Base32.encodeBits5(o);
+
+        return new Pair<>(currentGameState, code);
+    }
 }
