@@ -43,4 +43,26 @@ public class ActionEncoder {
 
         return new Pair<>(currentGameState, code);
     }
+
+    public static Pair<GameState, String> withNewOccupant(GameState initialCameState, Occupant occupant) {
+        GameState currentGameState = initialCameState.withNewOccupant(occupant);
+
+        // Encodage de l'ajout d'un occupant
+        // Type d'occupant
+        int k = occupant.kind().ordinal();
+        // Identifiant de la zone occupé
+        int z = 0;
+        if (occupant != null) {
+            z = occupant.zoneId();
+        } else {
+            z = 0b11111;
+        }
+        // Concatenation sous forme "kzzzz"
+        int n = (k << 4) + z;
+
+        String code = Base32.encodeBits5(n);
+
+        return new Pair<>(currentGameState, code);
+    }
+
 }
