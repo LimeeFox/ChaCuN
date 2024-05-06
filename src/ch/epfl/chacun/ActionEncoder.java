@@ -127,7 +127,7 @@ public class ActionEncoder {
                                 Arrays.stream(Rotation.values()).toList().get(r),
                                 tilePos));
             }
-            //todo check if zone can be occupied (in general find possible error case and check for it
+            //todo check if zone can be occupied (in general find possible error case and check for it)
             case OCCUPY_TILE ->  {
                 Occupant occupantToPlace = null;
                 if (decoded != 0b11111) {
@@ -139,7 +139,11 @@ public class ActionEncoder {
             }
             //todo check if pawn can be retaken
             case RETAKE_PAWN -> {
-
+                Occupant occupantToRemove = null;
+                if (decoded != 0b11111) {
+                    occupantToRemove = getIndexedOccupants(initialGameState).keySet().stream().toList().get(decoded);
+                }
+                updatedGameState = initialGameState.withOccupantRemoved(occupantToRemove);
             }
         }
         return new Pair<>(updatedGameState, code);
