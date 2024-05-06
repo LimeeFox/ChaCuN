@@ -897,7 +897,7 @@ class GameStateTest {
         return List.copyOf(reorderedTiles);
     }
 
-    private static class BasicTextMaker implements TextMaker {
+    static class BasicTextMaker implements TextMaker {
         private static String scorers(Set<PlayerColor> scorers) {
             return scorers.stream()
                     .sorted()

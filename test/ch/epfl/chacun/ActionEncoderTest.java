@@ -1249,20 +1249,27 @@ class ActionEncoderTest {
     void withOccupantRemoved() {
         List<PlayerColor> players = List.of(PlayerColor.RED, PlayerColor.BLUE);
 
-        GameState initialGameState = initialGameState(players,List.of(36, 31, 67), List.of());
+        GameState initialGameState = initialGameState(players,List.of(31, 36, 67), List.of());
 
-        PlacedTile pt1 = new PlacedTile(allTiles().get(36), PlayerColor.RED, Rotation.NONE, new Pos(0, -1));
-        PlacedTile pt2 = new PlacedTile(allTiles().get(31), PlayerColor.BLUE, Rotation.NONE, new Pos(0, -2));
+        PlacedTile pt1 = new PlacedTile(allTiles().get(31), PlayerColor.RED, Rotation.NONE, new Pos(0, -1));
+        PlacedTile pt2 = new PlacedTile(allTiles().get(36), PlayerColor.BLUE, Rotation.NONE, new Pos(0, -2));
         PlacedTile pt3 = new PlacedTile(allTiles().get(67), PlayerColor.RED, Rotation.NONE, new Pos(-1, -1));
+        PlacedTile pt4 = new PlacedTile(allTiles().get(55), PlayerColor.RED, Rotation.NONE, new Pos(0, 1));
+        PlacedTile pt5 = new PlacedTile(allTiles().get(49), PlayerColor.BLUE, Rotation.NONE, new Pos(-1, 1));
+        PlacedTile st = new PlacedTile(allTiles().get(88), PlayerColor.RED, Rotation.RIGHT, new Pos(1, 0));
 
-        Occupant occupantToPlace = new Occupant(Occupant.Kind.PAWN, 0);
+        Occupant occupantToPlace = new Occupant(Occupant.Kind.PAWN, 55_0);
 
         //todo this don't work, it requires debug/rework
         initialGameState = initialGameState.withPlacedTile(pt1).withNewOccupant(null)
                 .withPlacedTile(pt2).withNewOccupant(null)
-                .withPlacedTile(pt3).withNewOccupant(occupantToPlace);
+                .withPlacedTile(pt4).withNewOccupant(occupantToPlace)
+                .withPlacedTile(pt5).withNewOccupant(null)
+                .withPlacedTile(pt3).withNewOccupant(null)
+                .withPlacedTile(st);
 
         GameState expectedGameState = initialGameState.withOccupantRemoved(occupantToPlace);
+        GameState noRemoveGaveState = initialGameState.withOccupantRemoved(null);
         String expectedCode1 = "A";
         String expectedCode2 = "7";
 
@@ -1274,7 +1281,7 @@ class ActionEncoderTest {
         assertTrue(expectedGameState.equals(pair1.getKey()));
         assertEquals(expectedCode1, pair1.getValue());
 
-        assertTrue(initialGameState.equals(pair2.getKey()));
+        assertTrue(noRemoveGaveState.equals(pair2.getKey()));
         assertEquals(expectedCode2, pair2.getValue());
     }
 
@@ -1282,131 +1289,5 @@ class ActionEncoderTest {
     @Test
     void decodeAndApply() {
     }
-
-    private static class BasicTextMaker implements TextMaker {
-        private static String scorers(Set<PlayerColor> scorers) {
-            return scorers.stream()
-                    .sorted()
-                    .map(Object::toString)
-                    .collect(Collectors.joining(",", "{", "}"));
-        }
-
-        private static String animals(Map<Animal.Kind, Integer> animals) {
-            return Arrays.stream(Animal.Kind.values())
-                    .map(k -> animals.getOrDefault(k, 0) + "×" + k)
-                    .collect(Collectors.joining("/"));
-        }
-
-        @Override
-        public String playerName(PlayerColor playerColor) {
-            return playerColor.name();
-        }
-
-        @Override
-        public String points(int points) {
-            return String.valueOf(points);
-        }
-
-        @Override
-        public String playerClosedForestWithMenhir(PlayerColor player) {
-            return playerName(player);
-        }
-
-        @Override
-        public String playersScoredForest(Set<PlayerColor> scorers,
-                                          int points,
-                                          int mushroomGroupCount,
-                                          int tileCount) {
-            return String.join("|",
-                    scorers(scorers),
-                    points(points),
-                    String.valueOf(mushroomGroupCount),
-                    String.valueOf(tileCount));
-        }
-
-        @Override
-        public String playersScoredRiver(Set<PlayerColor> scorers,
-                                         int points,
-                                         int fishCount,
-                                         int tileCount) {
-            return String.join("|",
-                    scorers(scorers),
-                    points(points),
-                    String.valueOf(fishCount),
-                    String.valueOf(tileCount));
-        }
-
-        @Override
-        public String playerScoredHuntingTrap(PlayerColor scorer,
-                                              int points,
-                                              Map<Animal.Kind, Integer> animals) {
-            return String.join("|",
-                    playerName(scorer),
-                    String.valueOf(points),
-                    animals(animals));
-        }
-
-        @Override
-        public String playerScoredLogboat(PlayerColor scorer, int points, int lakeCount) {
-            return String.join("|",
-                    playerName(scorer),
-                    points(points),
-                    String.valueOf(lakeCount));
-        }
-
-        @Override
-        public String playersScoredMeadow(Set<PlayerColor> scorers,
-                                          int points,
-                                          Map<Animal.Kind, Integer> animals) {
-            return String.join(
-                    "|",
-                    scorers(scorers),
-                    points(points),
-                    animals(animals));
-        }
-
-        @Override
-        public String playersScoredRiverSystem(Set<PlayerColor> scorers, int points, int fishCount) {
-            return String.join(
-                    "|",
-                    scorers(scorers),
-                    points(points),
-                    String.valueOf(fishCount));
-        }
-
-        @Override
-        public String playersScoredPitTrap(Set<PlayerColor> scorers,
-                                           int points,
-                                           Map<Animal.Kind, Integer> animals) {
-            return String.join("|",
-                    scorers(scorers),
-                    String.valueOf(points),
-                    animals(animals));
-        }
-
-        @Override
-        public String playersScoredRaft(Set<PlayerColor> scorers, int points, int lakeCount) {
-            return String.join("|",
-                    scorers(scorers),
-                    String.valueOf(points),
-                    String.valueOf(lakeCount));
-        }
-
-        @Override
-        public String playersWon(Set<PlayerColor> winners, int points) {
-            return String.join("|",
-                    scorers(winners),
-                    points(points));
-        }
-
-        @Override
-        public String clickToOccupy() {
-            return "clickToOccupy";
-        }
-
-        @Override
-        public String clickToUnoccupy() {
-            return "clickToUnoccupy";
-        }
-    }
 }
+
