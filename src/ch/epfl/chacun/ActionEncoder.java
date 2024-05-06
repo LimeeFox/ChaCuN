@@ -134,6 +134,7 @@ public class ActionEncoder {
         return null;
     }
 
+    //todo ask about an example for the "fringe order"
     private static Map<Pos, Integer> getIndexedFringe(GameState gameState) {
         List<Pos> sortedPositions = gameState.board().insertionPositions().stream()
                 .sorted(Comparator.comparing(Pos::x).thenComparing(Pos::y)).toList();
