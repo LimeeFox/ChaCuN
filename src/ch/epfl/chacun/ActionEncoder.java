@@ -16,11 +16,14 @@ import java.util.stream.IntStream;
  */
 public class ActionEncoder {
     /**
-     *
+     * Ajoute une tuile à notre état de jeu et encode cette action
      *
      * @param initialGameState
+     *          état de jeu initial, avant l'ajout de la tuile
      * @param tileToPlace
-     * @return
+     *          tuile que l'on souhaite ajouter à l'état de jeu
+     * @return  une paire composée d'un nouvel état de jeu contenant le tuile ajouté,
+     *          et d'une chaîne de charactèrs représentant le code en base32 de l'ajout de le tuile
      */
     public static Pair<GameState, String> withPlacedTile(GameState initialGameState, PlacedTile tileToPlace) {
         GameState currentGameState = initialGameState.withPlacedTile(tileToPlace);
@@ -38,6 +41,16 @@ public class ActionEncoder {
         return new Pair<>(currentGameState, code);
     }
 
+    /**
+     * Ajoute un occupant à notre état de jeu et encode cette action
+     *
+     * @param initialCameState
+     *          état de jeu initial, avant l'ajout de l'occupant
+     * @param occupant
+     *          occupant que l'on souhaite ajouter à l'état de jeu
+     * @return une paire composée d'un nouvel état de jeu avec l'occupant ajouté,
+     *         et d'une chaîne de charactèrs représentant le code en base32 de l'ajout de l'occupant
+     */
     public static Pair<GameState, String> withNewOccupant(GameState initialCameState, Occupant occupant) {
         GameState currentGameState = initialCameState.withNewOccupant(occupant);
 
@@ -57,6 +70,17 @@ public class ActionEncoder {
         return new Pair<>(currentGameState, code);
     }
 
+    /**
+     * Retire un pion de notre état de jeu et encode de cette action
+     *
+     * @param initialGameState
+     *          état de jeu initial, avant la reprise de la tuile
+     * @param removedOccupant
+     *          occupant que l'on souhaite réprendre à l'état de jeu
+     * @return une paire composée du nouvel état de jeu avec l'occupant retiré,
+     *         et d'une chaîne de charactèrs représentant le code en base32 de la reprise du pion
+     */
+    //todo what to do if removedOccupant is a hut?
     public static Pair<GameState, String> withOccupantRemoved(GameState initialGameState, Occupant removedOccupant) {
         GameState currentGameState = initialGameState.withOccupantRemoved(removedOccupant);
 
@@ -71,7 +95,7 @@ public class ActionEncoder {
         return new Pair<>(currentGameState, code);
     }
 
-    //todo used cannotDecode in case the code cannot be run normally (throw exception)
+    //todo use cannotDecode in case the code cannot be run normally (throw exception)
     public static Pair<GameState, String> decodeAndApply(GameState initialGameSate, String initialCode) {
         if (Base32.isValid(initialCode)) {
             GameState.Action nextAction = initialGameSate.nextAction();
