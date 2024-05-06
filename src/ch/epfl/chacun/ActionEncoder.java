@@ -95,43 +95,54 @@ public class ActionEncoder {
         return new Pair<>(currentGameState, code);
     }
 
-    //todo use cannotDecode in case the code cannot be run normally (throw exception)
+    //todo use decode for standard cases
+    //todo this method mostly takes care of exceptions
     public static Pair<GameState, String> decodeAndApply(GameState initialGameSate, String initialCode) {
-        if (Base32.isValid(initialCode)) {
-            GameState.Action nextAction = initialGameSate.nextAction();
-
-            GameState updatedGameState = initialGameSate;
-            String updatedCode = initialCode;
-
-            switch (nextAction) {
-                //todo check if tile position is indeed on fringe
-                case PLACE_TILE -> {
-                    int decoded = Base32.decode(initialCode);
-                    int p = decoded >>> 2;
-                    int r = decoded & 0b11;
-
-                    //todo make sure the list is in fact ordered the right way so as to get the proper indexed position
-                    Pos tilePos = getIndexedFringe(initialGameSate).keySet().stream().toList().get(p);
-
-                    updatedGameState = initialGameSate
-                            .withPlacedTile(new PlacedTile(initialGameSate.tileToPlace(),
-                                    initialGameSate.currentPlayer(),
-                                    Arrays.stream(Rotation.values()).toList().get(r),
-                                    tilePos));
-
-                }
-                //todo check if zone can be occupied (in general find possible error case and check for it
-                case OCCUPY_TILE ->  {
-
-                }
-                //todo check if pawn can be retaken
-                case RETAKE_PAWN -> {
-
-                }
-            }
-            return new Pair<>(updatedGameState, updatedCode);
-        }
         return null;
+    }
+
+    //todo this method will take care of decoding without exception
+    //todo ask what returned code should be
+    private static Pair<GameState, String> decode(GameState initialGameState, String code) {
+
+        GameState.Action nextAction = initialGameState.nextAction();
+
+        GameState updatedGameState = initialGameState;
+        //todo what is updated code?
+
+        int decoded = Base32.decode(code);
+
+        switch (nextAction) {
+            //todo check if tile position is indeed on fringe
+            case PLACE_TILE -> {
+                int p = decoded >>> 2;
+                int r = decoded & 0b11;
+
+                //todo make sure the list is in fact ordered the right way so as to get the proper indexed position
+                Pos tilePos = getIndexedFringe(initialGameState).keySet().stream().toList().get(p);
+
+                updatedGameState = initialGameState
+                        .withPlacedTile(new PlacedTile(initialGameState.tileToPlace(),
+                                initialGameState.currentPlayer(),
+                                Arrays.stream(Rotation.values()).toList().get(r),
+                                tilePos));
+            }
+            //todo check if zone can be occupied (in general find possible error case and check for it
+            case OCCUPY_TILE ->  {
+                Occupant occupantToPlace = null;
+                if (decoded != 0b11111) {
+                    int k = decoded >>> 4;
+                    int z = decoded & 0b1111;
+                    occupantToPlace = new Occupant(Occupant.Kind.values()[k], z);
+                }
+                updatedGameState = initialGameState.withNewOccupant(occupantToPlace);
+            }
+            //todo check if pawn can be retaken
+            case RETAKE_PAWN -> {
+
+            }
+        }
+        return new Pair<>(updatedGameState, code);
     }
 
     //todo ask about an example for the "fringe order"
@@ -151,10 +162,5 @@ public class ActionEncoder {
         return IntStream.range(0, sortedPawns.size())
                 .boxed()
                 .collect(Collectors.toMap(sortedPawns::get, i -> i));
-    }
-
-    //todo this method will take care of throwing exceptions (probably)
-    private static void cannotDecode() {
-
     }
 }
