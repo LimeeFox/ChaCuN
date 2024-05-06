@@ -27,7 +27,7 @@ public class ActionEncoder {
 
         // Encodage de la pose d'une tuile
         // Index de position sur la frange de la tuile à placer
-        int p = getIndexedFrange(initialGameState).get(tileToPlace.pos());
+        int p = getIndexedFringe(initialGameState).get(tileToPlace.pos());
         // Entier correspondant à la rotation de la tuile à placer
         int r = tileToPlace.rotation().ordinal();
         // Concatenation des deux morceaux d'information sous la forme "ppppp ppprr"
@@ -71,7 +71,7 @@ public class ActionEncoder {
         return new Pair<>(currentGameState, code);
     }
 
-    //todo i don't understand what the fuck the "Conseils de programmation" is saying for this
+    //todo used cannotDecode in case the code cannot be run normally (throw exception)
     public static Pair<GameState, String> decodeAndApply(GameState initialGameSate, String initialCode) {
         if (Base32.isValid(initialCode)) {
             GameState.Action nextAction = initialGameSate.nextAction();
@@ -80,13 +80,14 @@ public class ActionEncoder {
             String updatedCode = initialCode;
 
             switch (nextAction) {
+                //todo check if tile position is indeed on fringe
                 case PLACE_TILE -> {
                     int decoded = Base32.decode(initialCode);
                     int p = decoded >>> 2;
                     int r = decoded & 0b11;
 
                     //todo make sure the list is in fact ordered the right way so as to get the proper indexed position
-                    Pos tilePos = getIndexedFrange(initialGameSate).keySet().stream().toList().get(p);
+                    Pos tilePos = getIndexedFringe(initialGameSate).keySet().stream().toList().get(p);
 
                     updatedGameState = initialGameSate
                             .withPlacedTile(new PlacedTile(initialGameSate.tileToPlace(),
@@ -95,13 +96,21 @@ public class ActionEncoder {
                                     tilePos));
 
                 }
+                //todo check if zone can be occupied (in general find possible error case and check for it
+                case OCCUPY_TILE ->  {
+
+                }
+                //todo check if pawn can be retaken
+                case RETAKE_PAWN -> {
+
+                }
             }
             return new Pair<>(updatedGameState, updatedCode);
         }
         return null;
     }
 
-    private static Map<Pos, Integer> getIndexedFrange(GameState gameState) {
+    private static Map<Pos, Integer> getIndexedFringe(GameState gameState) {
         List<Pos> sortedPositions = gameState.board().insertionPositions().stream()
                 .sorted(Comparator.comparing(Pos::x).thenComparing(Pos::y)).toList();
 
@@ -117,5 +126,10 @@ public class ActionEncoder {
         return IntStream.range(0, sortedPawns.size())
                 .boxed()
                 .collect(Collectors.toMap(sortedPawns::get, i -> i));
+    }
+
+    //todo this method will take care of throwing exceptions (probably)
+    private static void cannotDecode() {
+
     }
 }
