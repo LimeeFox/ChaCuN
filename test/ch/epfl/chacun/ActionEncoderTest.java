@@ -1332,6 +1332,10 @@ class ActionEncoderTest {
         assertEquals(pair3, ActionEncoder.decodeAndApply(initialGameState2, codeR));
         assertEquals(pair4, ActionEncoder.decodeAndApply(initialGameState1, codeOn));
         assertEquals(pair5, ActionEncoder.decodeAndApply(initialGameState2, codeRn));
+
+        //Cas d'exceptions
+        assertNull(ActionEncoder.decodeAndApply(initialGameState, codeR));
+        assertNull(ActionEncoder.decodeAndApply(initialGameState1, codeA));
     }
 }
 

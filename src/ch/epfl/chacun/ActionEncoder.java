@@ -129,11 +129,10 @@ public class ActionEncoder {
      *          si la chaîne de charactèrs en base32 passé en argument n'est pas valid
      *          si l'index de la tuile à placer ne fait pas partie de la frange
      *          si l'occupant qu'on souhaite placer ne fait pas partie des occupants potentiels
-     *          si l'occupant qu'on souhaite retirer ne peux pas être retiré
+     *          si l'occupant qu'on souhaite retirer ne peux pas être retirée
      * @throws NullPointerException
-     *          si une des arguments est null
+     *          si la dernière tuile placée dans l'état de jeu est null
      */
-    //todo figure out why NullPointerException ?
     private static Pair<GameState, String> decodeAndApplyThrows(GameState initialGameState, String code) {
         Preconditions.checkArgument(Base32.isValid(code));
 
@@ -145,6 +144,7 @@ public class ActionEncoder {
 
         switch (nextAction) {
             case PLACE_TILE -> {
+                Preconditions.checkArgument(code.length() == 2);
                 int p = decoded >>> 2;
                 int r = decoded & 0b11;
 
@@ -162,6 +162,7 @@ public class ActionEncoder {
                                 tilePos));
             }
             case OCCUPY_TILE ->  {
+                Preconditions.checkArgument(code.length() == 1);
                 Occupant occupantToPlace = null;
                 if (decoded != 0b11111) {
                     int k = decoded >>> 4;
@@ -176,6 +177,7 @@ public class ActionEncoder {
                 updatedGameState = initialGameState.withNewOccupant(occupantToPlace);
             }
             case RETAKE_PAWN -> {
+                Preconditions.checkArgument(code.length() == 1);
                 Occupant occupantToRemove = null;
                 if (decoded != 0b11111) {
                     occupantToRemove = getIndexedPawns(initialGameState).keySet().stream().toList().get(decoded);
