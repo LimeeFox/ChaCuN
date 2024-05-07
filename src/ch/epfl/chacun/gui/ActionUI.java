@@ -6,6 +6,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 
@@ -16,6 +17,7 @@ import java.util.function.Consumer;
 public class ActionUI {
 
     //todo handler is WIP name for argument
+    //todo handler isn't used smhw
     public Node create(ObservableValue<List<String>> base32Codes, Consumer<String> handler) {
         HBox root = new HBox();
 
@@ -36,6 +38,13 @@ public class ActionUI {
             }
             return null;
         }));
+
+        actionField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                handler.accept(actionField.getText());
+                actionField.clear();
+            }
+        });
 
         root.getChildren().add(lastactionsText);
 
