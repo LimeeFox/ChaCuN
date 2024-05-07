@@ -1260,7 +1260,6 @@ class ActionEncoderTest {
 
         Occupant occupantToPlace = new Occupant(Occupant.Kind.PAWN, 55_0);
 
-        //todo this don't work, it requires debug/rework
         initialGameState = initialGameState.withPlacedTile(pt1).withNewOccupant(null)
                 .withPlacedTile(pt2).withNewOccupant(null)
                 .withPlacedTile(pt4).withNewOccupant(occupantToPlace)
@@ -1285,9 +1284,54 @@ class ActionEncoderTest {
         assertEquals(expectedCode2, pair2.getValue());
     }
 
-    //todo finish the original method before testing it
     @Test
     void decodeAndApply() {
+        List<PlayerColor> players = List.of(PlayerColor.RED, PlayerColor.BLUE);
+
+        GameState initialGameState = initialGameState(players,List.of(31, 36, 67), List.of());
+
+        PlacedTile pt1 = new PlacedTile(allTiles().get(31), PlayerColor.RED, Rotation.NONE, new Pos(0, -1));
+        PlacedTile pt2 = new PlacedTile(allTiles().get(36), PlayerColor.BLUE, Rotation.NONE, new Pos(0, -2));
+        PlacedTile pt3 = new PlacedTile(allTiles().get(67), PlayerColor.RED, Rotation.NONE, new Pos(-1, -1));
+        PlacedTile pt4 = new PlacedTile(allTiles().get(55), PlayerColor.RED, Rotation.NONE, new Pos(0, 1));
+        PlacedTile pt5 = new PlacedTile(allTiles().get(49), PlayerColor.BLUE, Rotation.NONE, new Pos(-1, 1));
+        PlacedTile st = new PlacedTile(allTiles().get(88), PlayerColor.RED, Rotation.RIGHT, new Pos(1, 0));
+
+        Occupant occupantToPlace = new Occupant(Occupant.Kind.PAWN, 55_0);
+
+        GameState initialGameState1 = initialGameState
+                .withPlacedTile(pt1).withNewOccupant(null)
+                .withPlacedTile(pt2).withNewOccupant(null)
+                .withPlacedTile(pt4);
+        GameState initialGameState2 = initialGameState1.withNewOccupant(occupantToPlace)
+                .withPlacedTile(pt5).withNewOccupant(null)
+                .withPlacedTile(pt3).withNewOccupant(null)
+                .withPlacedTile(st);
+
+        GameState gsA = initialGameState.withPlacedTile(pt1);
+        GameState gsO = initialGameState1.withNewOccupant(occupantToPlace);
+        GameState gsR = initialGameState2.withOccupantRemoved(occupantToPlace);
+        GameState gsOn = initialGameState1.withNewOccupant(null);
+        GameState gsRn = initialGameState2.withOccupantRemoved(null);
+
+        String codeA = "AA";
+        String codeO = "A";
+        String codeR = "A";
+        String codeOn = "7";
+        String codeRn = "7";
+
+
+        Pair<GameState, String> pair1 = new Pair<>(gsA, codeA);
+        Pair<GameState, String> pair2 = new Pair<>(gsO, codeO);
+        Pair<GameState, String> pair3 = new Pair<>(gsR, codeR);
+        Pair<GameState, String> pair4 = new Pair<>(gsOn, codeOn);
+        Pair<GameState, String> pair5 = new Pair<>(gsRn, codeRn);
+
+        assertEquals(pair1, ActionEncoder.decodeAndApply(initialGameState, codeA));
+        assertEquals(pair2, ActionEncoder.decodeAndApply(initialGameState1, codeO));
+        assertEquals(pair3, ActionEncoder.decodeAndApply(initialGameState2, codeR));
+        assertEquals(pair4, ActionEncoder.decodeAndApply(initialGameState1, codeOn));
+        assertEquals(pair5, ActionEncoder.decodeAndApply(initialGameState2, codeRn));
     }
 }
 

@@ -167,11 +167,11 @@ public class ActionEncoder {
                     int k = decoded >>> 4;
                     int z = decoded & 0b1111;
 
-                    occupantToPlace = new Occupant(Occupant.Kind.values()[k], z);
+                    occupantToPlace = new Occupant(Occupant.Kind.values()[k],
+                            initialGameState.board().lastPlacedTile().id() * 10 + z);
 
                     // On vérifie que notre occupant peut bien être placé
-                    Preconditions.checkArgument(initialGameState.lastTilePotentialOccupants()
-                            .contains(occupantToPlace));
+                    Preconditions.checkArgument(initialGameState.board().lastPlacedTile().occupant() == null);
                 }
                 updatedGameState = initialGameState.withNewOccupant(occupantToPlace);
             }
