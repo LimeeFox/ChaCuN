@@ -182,7 +182,7 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
      * Obtention d'une copie de la tuile placée sans occupant au préalable, avec un nouveau occupant
      *
      * @param occupant
-     *         l'ccupant à ajouter à la tuile
+     *         l'occupant à ajouter à la tuile
      * @return une copie de la tuile placée, mais avec le nouveau occupant passé en paramètre.
      * @throws IllegalArgumentException
      *         si le récepteur est déjà occupé
@@ -205,7 +205,7 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
      * Recherche de l'identification de la zone où un occupent se situe
      *
      * @param occupantKind
-     *         le type d'occupent dont on recherche la zone occupée
+     *         le type d'occupant dont on recherche la zone occupée
      * @return l'identification de la zone où un occupent se situe
      */
     public int idOfZoneOccupiedBy(Occupant.Kind occupantKind) {
