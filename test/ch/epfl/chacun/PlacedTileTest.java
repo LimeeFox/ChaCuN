@@ -8,7 +8,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class PlacedTileTest0 {
+class PlacedTileTest {
 
     @Test
     void id() {

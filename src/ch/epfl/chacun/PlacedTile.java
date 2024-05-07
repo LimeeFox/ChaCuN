@@ -146,37 +146,35 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
     }
 
     /**
-     * Recherche de tous les occupents potentiels de la tuile placée
+     * Recherche de tous les occupants potentiels de la tuile placée
      *
-     * @return un ensemble d'occupents potentiels de la tuile placée
+     * @return un ensemble d'occupants potentiels de la tuile placée
      */
     public Set<Occupant> potentialOccupants() {
         final Set<Occupant> occupants = new HashSet<>();
+        Set<Zone> zones = tile.zones();
 
-        // On récupère les occupants qu'on peut placer dans la forêt
-        for (Zone.Forest zone : forestZones()) {
-            occupants.add(new Occupant(Occupant.Kind.PAWN, zone.id()));
-        }
-
-        // On récupère les occupants qu'on peut placer dans un pré
-        for (Zone.Meadow zone : meadowZones()) {
-            occupants.add(new Occupant(Occupant.Kind.PAWN, zone.id()));
-        }
-
-        // On récupère les occupants qu'on peut placer dans la rivière
-        for (Zone.River zone : riverZones()) {
-            final int id = zone.id();
-            // Les rivières connectées à des lacs ne peuvent pas avoir de huttes
-            if (zone.hasLake()) {
-                occupants.add(new Occupant(Occupant.Kind.PAWN, id));
-                occupants.add(new Occupant(Occupant.Kind.HUT, zone.lake().id()));
-                continue;
+        zones.forEach(zone -> {
+            // On récupère les occupants contenus dans des rivières
+            if (zone.getClass().equals(Zone.River.class)) {
+                final int id = zone.id();
+                // Les rivières connectées à des lacs ne peuvent pas avoir de huttes
+                if (((Zone.River) zone).hasLake()) {
+                    occupants.add(new Occupant(Occupant.Kind.PAWN, id));
+                    occupants.add(new Occupant(Occupant.Kind.HUT, ((Zone.River) zone).lake().id()));
+                } else {
+                    // Sinon, elle peut contenir une hutte ou un pion
+                    occupants.add(new Occupant(Occupant.Kind.HUT, id));
+                    occupants.add(new Occupant(Occupant.Kind.PAWN, id));
+                }
             }
-            // Sinon, elle peut contenir une hutte ou un pion
-            occupants.add(new Occupant(Occupant.Kind.HUT, id));
-            occupants.add(new Occupant(Occupant.Kind.PAWN, id));
-        }
-
+            // On récupère les occupants qui ne sont pas contenus dans des rivières
+            else if (zone.getClass().equals(Zone.Lake.class)){
+                occupants.add(new Occupant(Occupant.Kind.HUT, zone.id()));
+            } else {
+                occupants.add(new Occupant(Occupant.Kind.PAWN, zone.id()));
+            }
+        });
         return occupants;
     }
 
