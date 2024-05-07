@@ -144,9 +144,7 @@ public class ActionEncoder {
         int decoded = Base32.decode(code);
 
         switch (nextAction) {
-            //todo check if tile position is indeed on fringe
             case PLACE_TILE -> {
-
                 int p = decoded >>> 2;
                 int r = decoded & 0b11;
 
@@ -164,7 +162,6 @@ public class ActionEncoder {
                                 tilePos));
             }
             case OCCUPY_TILE ->  {
-
                 Occupant occupantToPlace = null;
                 if (decoded != 0b11111) {
                     int k = decoded >>> 4;
@@ -178,7 +175,6 @@ public class ActionEncoder {
                 }
                 updatedGameState = initialGameState.withNewOccupant(occupantToPlace);
             }
-            //todo check if pawn can be retaken
             case RETAKE_PAWN -> {
                 Occupant occupantToRemove = null;
                 if (decoded != 0b11111) {
