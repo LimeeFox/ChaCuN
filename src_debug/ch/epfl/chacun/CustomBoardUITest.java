@@ -13,13 +13,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public final class ThibaultBoardUITest extends Application{
+public final class CustomBoardUITest extends Application{
     public static void main(String[] args) {launch(args);}
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         var playerNames = Map.of(
-                PlayerColor.RED, "Thibault",
+                PlayerColor.RED, "Cyriac",
                 PlayerColor.BLUE, "Adrien",
                 PlayerColor.GREEN, "Dylan");
         var playerColors = playerNames.keySet().stream().sorted().toList();
