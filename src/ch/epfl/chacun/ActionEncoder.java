@@ -80,46 +80,56 @@ public class ActionEncoder {
      * @return une paire composée du nouvel état de jeu avec l'occupant retiré,
      *         et d'une chaîne de charactèrs représentant le code en base32 de la reprise du pion
      */
-    //todo what to do if removedOccupant is a hut?
+    //todo find out why occupant allegedly can never be null
     public static Pair<GameState, String> withOccupantRemoved(GameState initialGameState, Occupant removedOccupant) {
+        Preconditions.checkArgument(removedOccupant.kind().equals(Occupant.Kind.PAWN)
+                || removedOccupant == null);
         GameState currentGameState = initialGameState.withOccupantRemoved(removedOccupant);
 
         // Encodage de la reprise d'un pion
         int o = 0b11111;
         if (removedOccupant != null) {
-
-            o = getIndexedOccupants(initialGameState).get(removedOccupant);
+            o = getindexedPawns(initialGameState).get(removedOccupant);
         }
         String code = Base32.encodeBits5(o);
 
         return new Pair<>(currentGameState, code);
     }
 
-    //todo use decode for standard cases
-    //todo this method mostly takes care of exceptions
-    public static Pair<GameState, String> decodeAndApply(GameState initialGameSate, String initialCode) {
-        return null;
+    public static Pair<GameState, String> decodeAndApply(GameState initialGameSate, String code) {
+        try {
+            Pair<GameState, String> testDecoder = decodeAndApplyThrows(initialGameSate, code);
+        }
+        catch(IllegalArgumentException | NullPointerException e) {
+            return null;
+        }
+        return  decodeAndApplyThrows(initialGameSate, code);
     }
 
     //todo this method will take care of decoding without exception
     //todo ask what returned code should be
-    private static Pair<GameState, String> decode(GameState initialGameState, String code) {
+    private static Pair<GameState, String> decodeAndApplyThrows(GameState initialGameState, String code) {
+        Preconditions.checkArgument(Base32.isValid(code));
 
         GameState.Action nextAction = initialGameState.nextAction();
 
         GameState updatedGameState = initialGameState;
-        //todo what is updated code?
 
         int decoded = Base32.decode(code);
 
         switch (nextAction) {
             //todo check if tile position is indeed on fringe
             case PLACE_TILE -> {
+
                 int p = decoded >>> 2;
                 int r = decoded & 0b11;
 
-                //todo make sure the list is in fact ordered the right way so as to get the proper indexed position
-                Pos tilePos = getIndexedFringe(initialGameState).keySet().stream().toList().get(p);
+                List<Pos> fringe = getIndexedFringe(initialGameState).keySet().stream().toList();
+
+                // On vérifie que la position de a la tuile est bien compris dans la frange
+                Preconditions.checkArgument(p <= fringe.size() - 1);
+
+                Pos tilePos = fringe.get(p);
 
                 updatedGameState = initialGameState
                         .withPlacedTile(new PlacedTile(initialGameState.tileToPlace(),
@@ -127,13 +137,17 @@ public class ActionEncoder {
                                 Arrays.stream(Rotation.values()).toList().get(r),
                                 tilePos));
             }
-            //todo check if zone can be occupied (in general find possible error case and check for it)
             case OCCUPY_TILE ->  {
+
                 Occupant occupantToPlace = null;
                 if (decoded != 0b11111) {
                     int k = decoded >>> 4;
                     int z = decoded & 0b1111;
+
                     occupantToPlace = new Occupant(Occupant.Kind.values()[k], z);
+
+                    // On vérifie que notre occupant peut bien être placé
+                    Preconditions.checkArgument(initialGameState.lastTilePotentialOccupants().contains(occupantToPlace));
                 }
                 updatedGameState = initialGameState.withNewOccupant(occupantToPlace);
             }
@@ -141,8 +155,9 @@ public class ActionEncoder {
             case RETAKE_PAWN -> {
                 Occupant occupantToRemove = null;
                 if (decoded != 0b11111) {
-                    occupantToRemove = getIndexedOccupants(initialGameState).keySet().stream().toList().get(decoded);
+                    occupantToRemove = getindexedPawns(initialGameState).keySet().stream().toList().get(decoded);
                 }
+                // Lance une "IllegalArgumentException" si l'occupant ne peut pas être retiré
                 updatedGameState = initialGameState.withOccupantRemoved(occupantToRemove);
             }
         }
@@ -159,8 +174,9 @@ public class ActionEncoder {
                 .collect(Collectors.toMap(sortedPositions::get, i -> i));
     }
 
-    private static Map<Occupant, Integer> getIndexedOccupants(GameState gameState) {
+    private static Map<Occupant, Integer> getindexedPawns(GameState gameState) {
         List<Occupant> sortedPawns = gameState.board().occupants().stream()
+                .filter(occupant ->  occupant.kind().equals(Occupant.Kind.PAWN))
                 .sorted(Comparator.comparing(Occupant::zoneId)).toList();
 
         return IntStream.range(0, sortedPawns.size())
