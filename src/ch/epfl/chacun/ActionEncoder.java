@@ -89,13 +89,23 @@ public class ActionEncoder {
         // Encodage de la reprise d'un pion
         int o = 0b11111;
         if (removedOccupant != null) {
-            o = getindexedPawns(initialGameState).get(removedOccupant);
+            o = getIndexedPawns(initialGameState).get(removedOccupant);
         }
         String code = Base32.encodeBits5(o);
 
         return new Pair<>(currentGameState, code);
     }
 
+    /**
+     * Decode et applique une action passé en base32 à notre état de jeu
+     *
+     * @param initialGameSate
+     *          état de jeu initial
+     * @param code
+     *          chaîne de charactèrs représentant une action en base32
+     * @return une paire composée d'un nouvel état de jeu et le code base32 qu'on lui a appliqué,
+     *         ou null si au cas où ces paramètres lancent une erreur à l'appel de decodeAndApplyThrows
+     */
     public static Pair<GameState, String> decodeAndApply(GameState initialGameSate, String code) {
         try {
             Pair<GameState, String> testDecoder = decodeAndApplyThrows(initialGameSate, code);
@@ -106,8 +116,24 @@ public class ActionEncoder {
         return  decodeAndApplyThrows(initialGameSate, code);
     }
 
-    //todo this method will take care of decoding without exception
-    //todo ask what returned code should be
+    /**
+     * Méthode d'aide qui gère les exceptions lors de l'appel de decodeAndApplyThrows
+     *
+     * @param initialGameState
+     *          état de jeu initial
+     * @param code
+     *          chaîne de charactèrs correspondant au code en base32 de l'action à appliquer
+     * @return une paire composée d'un nouvel état de jeu et le code base32 qu'on lui a appliqué
+     *
+     * @throws IllegalArgumentException
+     *          si la chaîne de charactèrs en base32 passé en argument n'est pas valid
+     *          si l'index de la tuile à placer ne fait pas partie de la frange
+     *          si l'occupant qu'on souhaite placer ne fait pas partie des occupants potentiels
+     *          si l'occupant qu'on souhaite retirer ne peux pas être retiré
+     * @throws NullPointerException
+     *          si une des arguments est null
+     */
+    //todo figure out why NullPointerException ?
     private static Pair<GameState, String> decodeAndApplyThrows(GameState initialGameState, String code) {
         Preconditions.checkArgument(Base32.isValid(code));
 
@@ -147,7 +173,8 @@ public class ActionEncoder {
                     occupantToPlace = new Occupant(Occupant.Kind.values()[k], z);
 
                     // On vérifie que notre occupant peut bien être placé
-                    Preconditions.checkArgument(initialGameState.lastTilePotentialOccupants().contains(occupantToPlace));
+                    Preconditions.checkArgument(initialGameState.lastTilePotentialOccupants()
+                            .contains(occupantToPlace));
                 }
                 updatedGameState = initialGameState.withNewOccupant(occupantToPlace);
             }
@@ -155,7 +182,7 @@ public class ActionEncoder {
             case RETAKE_PAWN -> {
                 Occupant occupantToRemove = null;
                 if (decoded != 0b11111) {
-                    occupantToRemove = getindexedPawns(initialGameState).keySet().stream().toList().get(decoded);
+                    occupantToRemove = getIndexedPawns(initialGameState).keySet().stream().toList().get(decoded);
                 }
                 // Lance une "IllegalArgumentException" si l'occupant ne peut pas être retiré
                 updatedGameState = initialGameState.withOccupantRemoved(occupantToRemove);
@@ -164,7 +191,13 @@ public class ActionEncoder {
         return new Pair<>(updatedGameState, code);
     }
 
-    //todo ask about an example for the "fringe order"
+    /**
+     * Méthode d'aide qui permet d'obtenir la frange d'un état de jeu, triée et indexée
+     *
+     * @param gameState
+     *          état de jeu dont on souhaite obtenir la frange
+     * @return une table associant les positions comprises sur la frange à leur index selon l'ordre x,y
+     */
     private static Map<Pos, Integer> getIndexedFringe(GameState gameState) {
         List<Pos> sortedPositions = gameState.board().insertionPositions().stream()
                 .sorted(Comparator.comparing(Pos::x).thenComparing(Pos::y)).toList();
@@ -174,7 +207,14 @@ public class ActionEncoder {
                 .collect(Collectors.toMap(sortedPositions::get, i -> i));
     }
 
-    private static Map<Occupant, Integer> getindexedPawns(GameState gameState) {
+    /**
+     * Méthode d'aide qui permet d'obtenir les pions d'un état de jeu, triée selon leur identifiant
+     *
+     * @param gameState
+     *          état de jeu dont on souhaite obtenir les pions
+     * @return une table associant les pions à leur index selon l'ordre des identifiants
+     */
+    private static Map<Occupant, Integer> getIndexedPawns(GameState gameState) {
         List<Occupant> sortedPawns = gameState.board().occupants().stream()
                 .filter(occupant ->  occupant.kind().equals(Occupant.Kind.PAWN))
                 .sorted(Comparator.comparing(Occupant::zoneId)).toList();
