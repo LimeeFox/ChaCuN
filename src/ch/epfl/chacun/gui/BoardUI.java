@@ -23,6 +23,7 @@ import java.util.function.Consumer;
  * Interface graphique qui affiche le plateau de jeu
  *
  * @author Cyriac Philippe (360553)
+ * @author Vladislav Yarkovoy (362242)
  */
 public class BoardUI {
     /**
@@ -35,7 +36,7 @@ public class BoardUI {
      * @param tileRotates
      * @param tileMoves
      * @param occupantConsumer
-     * @return
+     * @return La Node qui contient le plateau du jeu en forme de grille avec des cases correspondant à des tuiles
      */
     public static Node create(int scope,
                               ObservableValue<GameState> currentGameState,
