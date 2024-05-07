@@ -42,9 +42,19 @@ public class ActionUI {
         return root;
     }
 
+    /**
+     * Méthode d'aide qui permet d'afficher les 4 derniers codes en base32 d'une liste donnée selon le format:
+     *          "numéro d'apparition du code : code en base32"
+     *
+     * @param codes
+     *          liste des codes en base32 que l'on souhaite formatter pour ensuite afficher
+     * @return une chaîne de charactèrs contenant les 4 dernières positions de la liste chacune associée à son code en
+     *          base32
+     */
     private String formatBase32Codes(List<String> codes) {
         StringBuilder codesBuilder = new StringBuilder();
         int startIndex = Math.max(0, codes.size() - 4);
+        // On affiches que (au plus) les 4 derniers codes
         for (int i = startIndex; i < codes.size(); i++) {
             codesBuilder.append(i + 1).append(": ").append(codes.get(i));
             if (i < codes.size() - 1) {
