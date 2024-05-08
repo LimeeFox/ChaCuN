@@ -268,12 +268,11 @@ public record Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, in
      * @return l'ensemble de l'identité des tuiles contenant l'aire
      */
     public Set<Integer> tileIds() {
-        Set<Integer> Ids = new HashSet<>();
+        Set<Integer> ids = new HashSet<>();
         for (Zone zone : zones) {
-            Ids.add(zone.tileId());
+            ids.add(zone.tileId());
         }
-
-        return Ids;
+        return ids;
     }
 
     /**
