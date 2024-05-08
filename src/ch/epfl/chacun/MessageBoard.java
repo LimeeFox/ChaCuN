@@ -53,7 +53,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
             final int mushroomCount = Area.mushroomGroupCount(forest);
             final int tileCount = forest.tileIds().size();
 
-            List<Message> forestMessages = new ArrayList<>(List.copyOf(messages));
+            List<Message> forestMessages = new ArrayList<>(messages);
             forestMessages.add(new Message(textMaker.playersScoredForest(majorityOccupants,
                     Points.forClosedForest(tileCount, mushroomCount),
                     Area.mushroomGroupCount(forest), tileCount),
@@ -75,7 +75,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * @return un tableau d'affichage avec un nouveau message indiquant au joueur qu'il peut jouer un second tour
      */
     public MessageBoard withClosedForestWithMenhir(PlayerColor player, Area<Zone.Forest> forest) {
-        List<Message> menhirMessages = new ArrayList<>(List.copyOf(messages));
+        List<Message> menhirMessages = new ArrayList<>(messages);
         menhirMessages.add(new Message(textMaker.playerClosedForestWithMenhir(player),
                 0, forest.majorityOccupants(), forest.tileIds()));
         return new MessageBoard(this.textMaker, menhirMessages);
@@ -96,7 +96,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
             final Set<PlayerColor> majorityOccupants = river.majorityOccupants();
             final int pointsForClosedRiver = Points.forClosedRiver(tileCount, fishCount);
 
-            List<Message> riverMessages = new ArrayList<>(List.copyOf(messages));
+            List<Message> riverMessages = new ArrayList<>(messages);
             riverMessages.add(new Message(textMaker.playersScoredRiver(majorityOccupants,
                     pointsForClosedRiver, fishCount, tileCount),
                     pointsForClosedRiver, majorityOccupants, river.tileIds()));
@@ -169,7 +169,7 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
         final int lakeCount = Area.lakeCount(riverSystem);
         final int pointsForLogboat = Points.forLogboat(lakeCount);
 
-        List<Message> messageList = new ArrayList<>(List.copyOf(messages));
+        List<Message> messageList = new ArrayList<>(messages);
         messageList.add(new Message(textMaker.playerScoredLogboat(scorer,
                 pointsForLogboat, lakeCount),
                 pointsForLogboat, Set.of(scorer), riverSystem.tileIds()));
