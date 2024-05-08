@@ -198,7 +198,7 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
      * @return une tuile placée identique au récepteur, mais sans occupant
      */
     public PlacedTile withNoOccupant() {
-        return new PlacedTile(tile, placer, rotation, pos, null);
+        return new PlacedTile(tile, placer, rotation, pos);
     }
 
     /**
