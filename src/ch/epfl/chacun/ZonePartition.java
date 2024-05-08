@@ -79,8 +79,9 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          *         si la zone n'appartient pas à une aire de la partition, ou si l'aire est déjà occupée
          */
         public void addInitialOccupant(Z zone, PlayerColor color) {
-            Area<Z> occupiedArea = areaContaining(zone).withInitialOccupant(color);
-            builderAreas.remove(areaContaining(zone));
+            Area<Z> unOccupiedArea = areaContaining(zone);
+            Area<Z> occupiedArea = unOccupiedArea.withInitialOccupant(color);
+            builderAreas.remove(unOccupiedArea);
             builderAreas.add(occupiedArea);
         }
 
