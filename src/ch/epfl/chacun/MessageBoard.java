@@ -1,7 +1,6 @@
 package ch.epfl.chacun;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Contenu du tableau d'affichage
@@ -118,10 +117,8 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      */
     public MessageBoard withScoredHuntingTrap(PlayerColor scorer, Area<Zone.Meadow> adjacentMeadow) {
         Map<Animal.Kind, Integer> animalMap = new HashMap<>();
-                adjacentMeadow.zones().forEach(meadow -> {
-            meadow.animals().forEach(animal -> animalMap.put(animal.kind(),
-                    animalMap.getOrDefault(animal.kind(), 0) + 1));
-        });
+                adjacentMeadow.zones().forEach(meadow -> meadow.animals().forEach(animal -> animalMap.put(animal.kind(),
+                    animalMap.getOrDefault(animal.kind(), 0) + 1)));
 
         final int scoredPoints = Points.forMeadow(animalMap.getOrDefault(Animal.Kind.MAMMOTH, 0),
                 animalMap.getOrDefault(Animal.Kind.AUROCHS, 0),
@@ -183,26 +180,6 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
             }
         }
         return this;
-    }
-
-    /**
-     * Méthode d'aide qui sert à compter les animaux par leur type
-     *
-     * @param meadow
-     *         le pré dans lequel on compte les animaux
-     * @param cancelledAnimals
-     *         les animaux annulés, si il y en a
-     * @return une Map où chaque type d'animal a un nombre d'occurrences qui lui est attribué
-     */
-    private Map<Animal.Kind, Integer> animalMap(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
-        Map<Animal.Kind, Integer> animalIntegerMap = new HashMap<>();
-        Area.animals(meadow, cancelledAnimals).forEach( animal -> {
-            if (!cancelledAnimals.contains(animal)) {
-                        animalIntegerMap.put(animal.kind(),
-                                animalIntegerMap.getOrDefault(animal.kind(), 0) + 1);
-                    }
-        });
-        return animalIntegerMap;
     }
 
     /**
@@ -301,12 +278,33 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      *
      * @param message
      *          message à ajouter à l'instance
-     * @return un tableau d'affichage similaire à l'instance mais avec l'ajout du nouveau message
+     * @return un tableau d'affichage similaire à l'instance, mais avec l'ajout du nouveau message
      */
     private MessageBoard withNewMessage(Message message) {
         List<Message> messageList = new ArrayList<>(messages);
         messageList.add(message);
         return new MessageBoard(textMaker, messageList);
+    }
+
+
+    /**
+     * Méthode d'aide qui sert à compter les animaux par leur type
+     *
+     * @param meadow
+     *         le pré dans lequel on compte les animaux
+     * @param cancelledAnimals
+     *         les animaux annulés, si il y en a
+     * @return une Map où chaque type d'animal a un nombre d'occurrences qui lui est attribué
+     */
+    private Map<Animal.Kind, Integer> animalMap(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
+        Map<Animal.Kind, Integer> animalIntegerMap = new HashMap<>();
+        Area.animals(meadow, cancelledAnimals).forEach( animal -> {
+            if (!cancelledAnimals.contains(animal)) {
+                animalIntegerMap.put(animal.kind(),
+                        animalIntegerMap.getOrDefault(animal.kind(), 0) + 1);
+            }
+        });
+        return animalIntegerMap;
     }
 
     /**
