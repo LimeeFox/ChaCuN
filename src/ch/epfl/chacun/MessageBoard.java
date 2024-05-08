@@ -117,38 +117,19 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * sa fosse
      */
     public MessageBoard withScoredHuntingTrap(PlayerColor scorer, Area<Zone.Meadow> adjacentMeadow) {
-        Set<Animal> animals = new HashSet<>();
-        for (Zone.Meadow meadowZone : adjacentMeadow.zones()) {
-            animals.addAll(meadowZone.animals());
-        }
+        Map<Animal.Kind, Integer> animalMap = new HashMap<>();
+                adjacentMeadow.zones().forEach(meadow -> {
+            meadow.animals().forEach(animal -> animalMap.put(animal.kind(),
+                    animalMap.getOrDefault(animal.kind(), 0) + 1));
+        });
 
-        final int tigerCount = (int) animals.stream()
-                .filter(animal -> animal.kind().equals(Animal.Kind.TIGER))
-                .count();
-
-        final int mammothCount = (int) animals.stream()
-                .filter(animal -> animal.kind().equals(Animal.Kind.MAMMOTH))
-                .count();
-
-        final int aurochsCount = (int) animals.stream()
-                .filter(animal -> animal.kind().equals(Animal.Kind.AUROCHS))
-                .count();
-
-        final int deerCount = (int) animals.stream()
-                .filter(animal -> animal.kind().equals(Animal.Kind.DEER))
-                .count();
-
-        final int scoredPoints = Points.forMeadow(mammothCount, aurochsCount, deerCount);
+        final int scoredPoints = Points.forMeadow(animalMap.getOrDefault(Animal.Kind.MAMMOTH, 0),
+                animalMap.getOrDefault(Animal.Kind.AUROCHS, 0),
+                animalMap.getOrDefault(Animal.Kind.DEER, 0));
 
         if (scoredPoints > 0) {
-            Map<Animal.Kind, Integer> animalIntegerMap = new HashMap<>();
-            animalIntegerMap.put(Animal.Kind.TIGER, tigerCount);
-            animalIntegerMap.put(Animal.Kind.AUROCHS, aurochsCount);
-            animalIntegerMap.put(Animal.Kind.MAMMOTH, mammothCount);
-            animalIntegerMap.put(Animal.Kind.DEER, deerCount);
-
             return withNewMessage(new Message(textMaker.playerScoredHuntingTrap(scorer,
-                    scoredPoints, animalIntegerMap),
+                    scoredPoints, animalMap),
                     scoredPoints, Set.of(scorer), adjacentMeadow.tileIds()));
         }
         return this;
