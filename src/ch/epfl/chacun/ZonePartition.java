@@ -15,8 +15,34 @@ import java.util.Set;
 
 public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
 
+    public ZonePartition {
+        areas = Set.copyOf(areas);
+    }
+
+    public ZonePartition() {
+        this(new HashSet<>());
+    }
+
     /**
-     * Baptisseur de partition de zone
+     * Aire contenant une zone demandée
+     *
+     * @param zone
+     *         zone qui doit contenir l'aire recherchée
+     * @return l'air qui contient la zone demandée
+     * @throws IllegalArgumentException
+     *         si aucune des aires ne contient la zone demandée
+     */
+    public Area<Z> areaContaining(Z zone) {
+        for (Area<Z> area : areas) {
+            if (area.zones().contains(zone)) {
+                return area;
+            }
+        }
+        throw new IllegalArgumentException();
+    }
+
+    /**
+     * Bâtisseur de partition de zone
      *
      * @param <Z>
      *         le type de la zone en construction
@@ -128,31 +154,5 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
         public ZonePartition<Z> build() {
             return new ZonePartition<Z>(builderAreas);
         }
-    }
-
-    public ZonePartition {
-        areas = Set.copyOf(areas);
-    }
-
-    public ZonePartition() {
-        this(new HashSet<>());
-    }
-
-    /**
-     * Aire contenant une zone demandée
-     *
-     * @param zone
-     *         zone qui doit contenir l'aire recherchée
-     * @return l'air qui contient la zone demandée
-     * @throws IllegalArgumentException
-     *         si aucune des aires ne contient la zone demandée
-     */
-    public Area<Z> areaContaining(Z zone) {
-        for (Area<Z> area : areas) {
-            if (area.zones().contains(zone)) {
-                return area;
-            }
-        }
-        throw new IllegalArgumentException();
     }
 }
