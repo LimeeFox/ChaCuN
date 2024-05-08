@@ -195,13 +195,13 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      * @return une Map où chaque type d'animal a un nombre d'occurrences qui lui est attribué
      */
     private Map<Animal.Kind, Integer> animalMap(Area<Zone.Meadow> meadow, Set<Animal> cancelledAnimals) {
-        Set<Animal> validAnimals = Area.animals(meadow, cancelledAnimals);
-
         Map<Animal.Kind, Integer> animalIntegerMap = new HashMap<>();
-        Map<Animal.Kind, Long> kindCount = validAnimals.stream()
-                .collect(Collectors.groupingBy(Animal::kind, Collectors.counting()));
-
-        kindCount.forEach((kind, count) -> animalIntegerMap.merge(kind, count.intValue(), Integer::sum));
+        Area.animals(meadow, cancelledAnimals).forEach( animal -> {
+            if (!cancelledAnimals.contains(animal)) {
+                        animalIntegerMap.put(animal.kind(),
+                                animalIntegerMap.getOrDefault(animal.kind(), 0) + 1);
+                    }
+        });
         return animalIntegerMap;
     }
 
