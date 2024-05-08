@@ -15,7 +15,14 @@ import java.util.stream.Collectors;
  */
 public record MessageBoard(TextMaker textMaker, List<Message> messages) {
 
-    //Constructeur qui garantie l'immuabilité de la classe
+    /**
+     * Constructeur garantissant l'immuabilité de la classe
+     *
+     * @param textMaker
+     *          créateur de text qui affiche les messages selon un format défini
+     * @param messages
+     *          liste des messages contenus dans le tableau d'affichage
+     */
     public MessageBoard {
         messages = List.copyOf(messages);
     }
