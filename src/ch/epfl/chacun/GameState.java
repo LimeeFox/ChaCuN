@@ -258,13 +258,14 @@ public record GameState(
                         long deerCount = animalCount.getOrDefault(Animal.Kind.DEER, 0L);
                         // Compter le nombre de cerfs à annuler en fonction du nombre de tigres (qui les mangent)
                         int deerToCancel = (int) Math.min(deerCount, tigerCount);
-                        // Ajout dès cerfs annulés aux animaux annulés
-                        animals.stream()
+                        Set<Animal> cancelledDeer = animals.stream()
                                 .filter(animal -> animal.kind() == Animal.Kind.DEER)
-                                .limit(deerToCancel)
-                                .forEach(cancelledAnimals::add);
+                                .limit(deerToCancel).collect(Collectors.toSet());
+                        // Ajout dès cerfs annulés aux animaux annulés
+                        animals.addAll(cancelledDeer);
 
-                        updatedMessageBoard = updatedMessageBoard.withScoredHuntingTrap(scorer, adjacentMeadow);
+                        updatedMessageBoard = updatedMessageBoard.withScoredHuntingTrap(scorer, adjacentMeadow,
+                                cancelledDeer);
                         // Annule tous les animaux du plateau de jeu, y compris les cerfs "mangés"
                         updatedBoard.withMoreCancelledAnimals(cancelledAnimals);
                         //todo "annuler les animaux" (you know what i mean)
