@@ -142,7 +142,7 @@ public record GameState(
         potentialOccupants.removeIf(occupant -> {
             boolean hasFreeOccupants = freeOccupantsCount(currentPlayer(), occupant.kind()) <= 0;
             if (hasFreeOccupants) {
-                return true; // Aucun occupant ne peut être placés si le joueur en possède aucun
+                return true; // Aucun occupant ne peut être placé si le joueur en possède aucun
             }
 
             // On vérifie l'occupation de châque zone
