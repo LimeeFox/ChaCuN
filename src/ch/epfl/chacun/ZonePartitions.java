@@ -57,28 +57,17 @@ public record ZonePartitions(
             int[] nbOpenings = new int[10];
 
             // On va parcourir d'abord toutes les zones sur les côtés de la tuile [1]
-            for (Zone sideZone : tile.sideZones()) {
                 for (TileSide tileSide : tile.sides()) {
+                    for (Zone sideZone : tileSide.zones()) {
+                            nbOpenings[sideZone.localId()] += 1; // [3]
 
-                    List<Zone> tileSideZones = tileSide.zones();
-                    if (tileSideZones.contains(sideZone)) { // [2]
-                        int nbConnections = 0;
-                        for (Zone zone : tileSideZones) {
-                            if (zone.equals(sideZone)) {
-                                nbConnections++;
+                            // N'oublions pas les lacs
+                            if (sideZone instanceof Zone.River river && river.hasLake()) {
+                                nbOpenings[river.localId()] += 1;
+                                nbOpenings[river.lake().localId()] += 1;
                             }
                         }
-                        nbOpenings[sideZone.localId()] += nbConnections; // [3]
-
-                        // N'oublions pas les lacs
-                        if (sideZone instanceof Zone.River river && river.hasLake()) {
-                            nbOpenings[river.localId()] += 1;
-                            nbOpenings[river.lake().localId()] += 1;
-                        }
                     }
-                }
-            }
-
             // Ajouter les zones en tant qu'aires, inoccupées, à nos partitions
             for (Zone sideZone : tile.sideZones()) {
                 switch (sideZone) {
