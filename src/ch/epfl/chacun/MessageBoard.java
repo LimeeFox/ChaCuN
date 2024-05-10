@@ -117,8 +117,11 @@ public record MessageBoard(TextMaker textMaker, List<Message> messages) {
      */
     public MessageBoard withScoredHuntingTrap(PlayerColor scorer, Area<Zone.Meadow> adjacentMeadow) {
         Map<Animal.Kind, Integer> animalMap = new HashMap<>();
-                adjacentMeadow.zones().forEach(meadow -> meadow.animals().forEach(animal -> animalMap.put(animal.kind(),
-                    animalMap.getOrDefault(animal.kind(), 0) + 1)));
+                adjacentMeadow.zones().forEach(meadow -> meadow.animals().forEach(animal -> {
+
+                    animalMap.put(animal.kind(),
+                    animalMap.getOrDefault(animal.kind(), 0) + 1);
+                }));
 
         final int scoredPoints = Points.forMeadow(animalMap.getOrDefault(Animal.Kind.MAMMOTH, 0),
                 animalMap.getOrDefault(Animal.Kind.AUROCHS, 0),
