@@ -17,7 +17,7 @@ public class Base32 {
      * @return true si la chaîne de charactèrs donnée ne contient que des charactèrs de l'ALPHABET
      */
     public static boolean isValid(String s) {
-        return s.chars().allMatch(c -> ALPHABET.indexOf((char) c) != -1);
+        return s.toUpperCase().chars().allMatch(c -> ALPHABET.indexOf((char) c) != -1);
     }
 
     /**
