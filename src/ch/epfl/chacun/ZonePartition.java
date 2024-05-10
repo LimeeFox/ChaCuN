@@ -15,8 +15,34 @@ import java.util.Set;
 
 public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
 
+    public ZonePartition {
+        areas = Set.copyOf(areas);
+    }
+
+    public ZonePartition() {
+        this(new HashSet<>());
+    }
+
     /**
-     * Baptisseur de partition de zone
+     * Aire contenant une zone demandée
+     *
+     * @param zone
+     *         zone qui doit contenir l'aire recherchée
+     * @return l'air qui contient la zone demandée
+     * @throws IllegalArgumentException
+     *         si aucune des aires ne contient la zone demandée
+     */
+    public Area<Z> areaContaining(Z zone) {
+        for (Area<Z> area : areas) {
+            if (area.zones().contains(zone)) {
+                return area;
+            }
+        }
+        throw new IllegalArgumentException();
+    }
+
+    /**
+     * Bâtisseur de partition de zone
      *
      * @param <Z>
      *         le type de la zone en construction
@@ -53,8 +79,9 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          *         si la zone n'appartient pas à une aire de la partition, ou si l'aire est déjà occupée
          */
         public void addInitialOccupant(Z zone, PlayerColor color) {
-            Area<Z> occupiedArea = areaContaining(zone).withInitialOccupant(color);
-            builderAreas.remove(areaContaining(zone));
+            Area<Z> unOccupiedArea = areaContaining(zone);
+            Area<Z> occupiedArea = unOccupiedArea.withInitialOccupant(color);
+            builderAreas.remove(unOccupiedArea);
             builderAreas.add(occupiedArea);
         }
 
@@ -70,9 +97,9 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          *         ou si elle n'est pas occupée par au moins un occupant de la couleur donnée
          */
         public void removeOccupant(Z zone, PlayerColor color) {
-            Area<Z> unoccupiedArea = areaContaining(zone).withoutOccupant(color);
-            builderAreas.remove(areaContaining(zone));
-            builderAreas.add(unoccupiedArea);
+            Area<Z> occupiedArea = areaContaining(zone);
+            builderAreas.remove(occupiedArea);
+            builderAreas.add(occupiedArea.withoutOccupant(color));
         }
 
         /**
@@ -128,31 +155,5 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
         public ZonePartition<Z> build() {
             return new ZonePartition<Z>(builderAreas);
         }
-    }
-
-    public ZonePartition {
-        areas = Set.copyOf(areas);
-    }
-
-    public ZonePartition() {
-        this(new HashSet<>());
-    }
-
-    /**
-     * Aire contenant une zone demandée
-     *
-     * @param zone
-     *         zone qui doit contenir l'aire recherchée
-     * @return l'air qui contient la zone demandée
-     * @throws IllegalArgumentException
-     *         si aucune des aires ne contient la zone demandée
-     */
-    public Area<Z> areaContaining(Z zone) {
-        for (Area<Z> area : areas) {
-            if (area.zones().contains(zone)) {
-                return area;
-            }
-        }
-        throw new IllegalArgumentException();
     }
 }

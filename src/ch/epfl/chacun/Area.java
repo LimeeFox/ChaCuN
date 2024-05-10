@@ -93,21 +93,17 @@ public record Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, in
      * se trouvant à ses extrémités
      */
     public static int riverFishCount(Area<Zone.River> river) {
-        Set<Zone.Lake> lakes = new HashSet<>();
         int fishCount = 0;
 
         for (Zone.River zone : river.zones()) {
             fishCount += zone.fishCount();
 
             // Verifier si on a deja compté les poissons dans ce lac
-            Zone.Lake lake = zone.lake();
-            if (lake == null) continue;
-            if (lakes.contains(lake)) continue;
-
-            lakes.add(lake);
-            fishCount += lake.fishCount();
+            if (zone.hasLake()) {
+                Zone.Lake lake = zone.lake();
+                fishCount += lake.fishCount();
+            }
         }
-
         return fishCount;
     }
 
@@ -272,12 +268,11 @@ public record Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, in
      * @return l'ensemble de l'identité des tuiles contenant l'aire
      */
     public Set<Integer> tileIds() {
-        Set<Integer> Ids = new HashSet<>();
+        Set<Integer> ids = new HashSet<>();
         for (Zone zone : zones) {
-            Ids.add(zone.tileId());
+            ids.add(zone.tileId());
         }
-
-        return Ids;
+        return ids;
     }
 
     /**

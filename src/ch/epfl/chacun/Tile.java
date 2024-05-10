@@ -51,11 +51,7 @@ public record Tile(int id, Kind kind, TileSide n, TileSide e, TileSide s, TileSi
     public Set<Zone> sideZones() {
         Set<Zone> tileSideZones = new HashSet<>(Set.of());
         for (TileSide side : sides()) {
-            for (Zone zone : side.zones()) {
-                if (!(zone instanceof Zone.Lake)) {
-                    tileSideZones.add(zone);
-                }
-            }
+            tileSideZones.addAll(side.zones());
         }
         return tileSideZones;
     }

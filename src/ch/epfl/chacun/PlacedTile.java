@@ -146,37 +146,35 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
     }
 
     /**
-     * Recherche de tous les occupents potentiels de la tuile placée
+     * Recherche de tous les occupants potentiels de la tuile placée
      *
-     * @return un ensemble d'occupents potentiels de la tuile placée
+     * @return un ensemble d'occupants potentiels de la tuile placée
      */
     public Set<Occupant> potentialOccupants() {
         final Set<Occupant> occupants = new HashSet<>();
+        Set<Zone> zones = tile.zones();
 
-        // On récupère les occupants qu'on peut placer dans la forêt
-        for (Zone.Forest zone : forestZones()) {
-            occupants.add(new Occupant(Occupant.Kind.PAWN, zone.id()));
-        }
-
-        // On récupère les occupants qu'on peut placer dans un pré
-        for (Zone.Meadow zone : meadowZones()) {
-            occupants.add(new Occupant(Occupant.Kind.PAWN, zone.id()));
-        }
-
-        // On récupère les occupants qu'on peut placer dans la rivière
-        for (Zone.River zone : riverZones()) {
-            final int id = zone.id();
-            // Les rivières connectées à des lacs ne peuvent pas avoir de huttes
-            if (zone.hasLake()) {
-                occupants.add(new Occupant(Occupant.Kind.PAWN, id));
-                occupants.add(new Occupant(Occupant.Kind.HUT, zone.lake().id()));
-                continue;
+        zones.forEach(zone -> {
+            // On récupère les occupants contenus dans des rivières
+            if (zone.getClass().equals(Zone.River.class)) {
+                final int id = zone.id();
+                // Les rivières connectées à des lacs ne peuvent pas avoir de huttes
+                if (((Zone.River) zone).hasLake()) {
+                    occupants.add(new Occupant(Occupant.Kind.PAWN, id));
+                    occupants.add(new Occupant(Occupant.Kind.HUT, ((Zone.River) zone).lake().id()));
+                } else {
+                    // Sinon, elle peut contenir une hutte ou un pion
+                    occupants.add(new Occupant(Occupant.Kind.HUT, id));
+                    occupants.add(new Occupant(Occupant.Kind.PAWN, id));
+                }
             }
-            // Sinon, elle peut contenir une hutte ou un pion
-            occupants.add(new Occupant(Occupant.Kind.HUT, id));
-            occupants.add(new Occupant(Occupant.Kind.PAWN, id));
-        }
-
+            // On récupère les occupants qui ne sont pas contenus dans des rivières
+            else if (zone.getClass().equals(Zone.Lake.class)){
+                occupants.add(new Occupant(Occupant.Kind.HUT, zone.id()));
+            } else {
+                occupants.add(new Occupant(Occupant.Kind.PAWN, zone.id()));
+            }
+        });
         return occupants;
     }
 
@@ -184,7 +182,7 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
      * Obtention d'une copie de la tuile placée sans occupant au préalable, avec un nouveau occupant
      *
      * @param occupant
-     *         l'ccupant à ajouter à la tuile
+     *         l'occupant à ajouter à la tuile
      * @return une copie de la tuile placée, mais avec le nouveau occupant passé en paramètre.
      * @throws IllegalArgumentException
      *         si le récepteur est déjà occupé
@@ -200,14 +198,14 @@ public record PlacedTile(Tile tile, PlayerColor placer, Rotation rotation, Pos p
      * @return une tuile placée identique au récepteur, mais sans occupant
      */
     public PlacedTile withNoOccupant() {
-        return new PlacedTile(tile, placer, rotation, pos, null);
+        return new PlacedTile(tile, placer, rotation, pos);
     }
 
     /**
      * Recherche de l'identification de la zone où un occupent se situe
      *
      * @param occupantKind
-     *         le type d'occupent dont on recherche la zone occupée
+     *         le type d'occupant dont on recherche la zone occupée
      * @return l'identification de la zone où un occupent se situe
      */
     public int idOfZoneOccupiedBy(Occupant.Kind occupantKind) {

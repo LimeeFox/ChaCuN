@@ -24,7 +24,6 @@ public record Animal(int id, Kind kind) {
      * @return identifiant de la case sur laquelle se trouve l'animal
      */
     public int tileId() {
-        int animalTileId = Math.floorDiv(id, 100);
-        return animalTileId;
+        return Zone.tileId(Math.floorDiv(id, 10));
     }
 }

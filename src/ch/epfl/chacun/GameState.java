@@ -128,39 +128,44 @@ public record GameState(
      * @return l'ensemble des occupants potentiels de la dernière tuile posée que le joueur courant pourrait
      * effectivement placer
      * @throws IllegalArgumentException
-     *         si le plateau est vide, autrement dit, si aucune tuile n'a était posée
+     *         si le plateau est vide, autrement dit, si aucune tuile n'a été posée
      */
     public Set<Occupant> lastTilePotentialOccupants() {
         Preconditions.checkArgument(!board.equals(Board.EMPTY));
         PlacedTile tile = board.lastPlacedTile();
         Preconditions.checkArgument(tile != null);
-        Set<Occupant> filteredPotentialOccupants = new HashSet<>();
 
-        /*
-        Puisque nous vérifions que le plateau de jeu n'est pas vide (qu'il contient en effet au moins une tuile),
-        alors la dernière tuile posée ne peut pas être null
-        */
-        tile.potentialOccupants().forEach(occupant -> {
-            // On enlève l'occupant potentiel si le joueur n'a plus d'occupants libres
-            int freeOccupants = freeOccupantsCount(currentPlayer(), occupant.kind());
-            boolean hasFreeOccupants = freeOccupantsCount(currentPlayer(), occupant.kind()) > 0;
+        // On crée un ensemble des occupants potentiels
+        Set<Occupant> potentialOccupants = new HashSet<>(tile.potentialOccupants());
 
-            boolean isValid = hasFreeOccupants;
-
+        // On enlève les occupants potentiels qui ne se sont pas conforme aux conditions
+        potentialOccupants.removeIf(occupant -> {
+            boolean hasFreeOccupants = freeOccupantsCount(currentPlayer(), occupant.kind()) <= 0;
             if (hasFreeOccupants) {
-                Zone zone = tile.zoneWithId(occupant.zoneId());
-                switch (zone) {
-                    case Zone.Forest forest -> isValid = !board.forestArea(forest).isOccupied();
-                    case Zone.Meadow meadow -> isValid = !board.meadowArea(meadow).isOccupied();
-                    case Zone.Lake lake -> isValid = !board.riverSystemArea(lake).isOccupied();
-                    case Zone.River river -> isValid = (occupant.kind() == Occupant.Kind.PAWN) ?
-                            !board.riverArea(river).isOccupied() :
-                            !board.riverSystemArea(river).isOccupied();
-                }
+                return true; // Aucun occupant ne peut être placé si le joueur en possède aucun
             }
-            if (isValid) filteredPotentialOccupants.add(occupant);
+
+            // On vérifie l'occupation de châque zone
+            Zone zone = tile.zoneWithId(occupant.zoneId());
+            switch (zone) {
+                case Zone.Forest forest:
+                    return board.forestArea(forest).isOccupied();
+                case Zone.Meadow meadow:
+                    return board.meadowArea(meadow).isOccupied();
+                case Zone.Lake lake:
+                    return board.riverSystemArea(lake).isOccupied();
+                case Zone.River river:
+                    if (occupant.kind() == Occupant.Kind.PAWN) {
+                        return board.riverArea(river).isOccupied();
+                    } else {
+                        return board.riverSystemArea(river).isOccupied();
+                    }
+                default:
+                    return false;
+            }
         });
-        return filteredPotentialOccupants;
+
+        return potentialOccupants;
     }
 
     /**
@@ -207,7 +212,6 @@ public record GameState(
         */
         List<PlayerColor> updatedPlayerList = players;
         final TileDecks updatedTileDecks = tileDecks;
-        Tile updatedTileToPlace = null;
         Board updatedBoard = board.withNewTile(tile);
         Action updatedNextAction = Action.OCCUPY_TILE;
         // La màj de messageBoard dépend des points obtenus et des pouvoirs utilisés
@@ -217,7 +221,7 @@ public record GameState(
 
         final int placedPawns = updatedBoard.occupantCount(currentPlayer(), Occupant.Kind.PAWN);
 
-        // Traitement des pouvoirs spéciaux qui ont un effet immédiat après le pose de la tuile
+        // Traitement des pouvoirs spéciaux qui ont un effet immédiat après la pose de la tuile
         Zone specialPowerZone = tile.specialPowerZone();
         if (specialPowerZone != null) {
             List<Zone.SpecialPower> immediateEffectPowers = List.of(Zone.SpecialPower.SHAMAN, Zone.SpecialPower.LOGBOAT,
@@ -227,7 +231,7 @@ public record GameState(
                 switch (tilePower) {
                     case SHAMAN -> {
                         if (placedPawns > 0) {
-                            return new GameState(updatedPlayerList, updatedTileDecks, updatedTileToPlace, updatedBoard,
+                            return new GameState(updatedPlayerList, updatedTileDecks, null, updatedBoard,
                                     Action.RETAKE_PAWN, updatedMessageBoard);
                         }
                     }
@@ -252,29 +256,32 @@ public record GameState(
                         Set<Animal> cancelledAnimals = new HashSet<>();
                         long tigerCount = animalCount.getOrDefault(Animal.Kind.TIGER, 0L);
                         long deerCount = animalCount.getOrDefault(Animal.Kind.DEER, 0L);
-                        // Compter le nombre de cerfs à anuller en fonction du nombre de tigres (qui les mangent)
+                        // Compter le nombre de cerfs à annuler en fonction du nombre de tigres (qui les mangent)
                         int deerToCancel = (int) Math.min(deerCount, tigerCount);
+                        // Ajout dès cerfs annulés aux animaux annulés
                         animals.stream()
                                 .filter(animal -> animal.kind() == Animal.Kind.DEER)
                                 .limit(deerToCancel)
                                 .forEach(cancelledAnimals::add);
 
                         updatedMessageBoard = updatedMessageBoard.withScoredHuntingTrap(scorer, adjacentMeadow);
+                        // Annule tous les animaux du plateau de jeu, y compris les cerfs "mangés"
                         updatedBoard.withMoreCancelledAnimals(cancelledAnimals);
+                        //todo "annuler les animaux" (you know what i mean)
                     }
                 }
             }
         }
-        return new GameState(updatedPlayerList, updatedTileDecks, updatedTileToPlace, updatedBoard, updatedNextAction,
+        return new GameState(updatedPlayerList, updatedTileDecks, null, updatedBoard, updatedNextAction,
                 updatedMessageBoard).withTurnFinishedIfOccupationImpossible();
     }
 
     /**
      * Methode d'aide qui permet de gérer la fin d'un tour et détermine la potentielle prochaine action du joueur
-     * courant, si son tour n'est pas encore terminé, ou termine la tour du joueur courant et permet au prochain joueur
+     * courant, si son tour n'est pas encore terminé, ou termine le tour du joueur courant et permet au prochain joueur
      * de continuer la partie
      *
-     * @return l'état de jeu pour que le joueur courant puisse placer sa prochaine tuile, s'il a fermée une aire forêt
+     * @return l'état de jeu pour que le joueur courant puisse placer sa prochaine tuile, s'il a fermé une aire forêt
      * contenant un menhir avec une tuile normal,
      * ou l'état de jeu pour que le prochain joueur puisse jouer (placer sa tuile)
      * ou l'état du jeu qui correspond à la fin de la partie
@@ -302,21 +309,21 @@ public record GameState(
         boolean playerGetsMenhir = false;
 
         // Gérer les aires rivières fermées lors de ce tour
-        Set<Area<Zone.River>> lastClosedRivers = new HashSet<>();
-        if (board.riversClosedByLastTile() != null) {
-            lastClosedRivers = board.riversClosedByLastTile();
+        Set<Area<Zone.River>> lastClosedRivers = board.riversClosedByLastTile();
+        if (lastClosedRivers != null) {
             for (Area<Zone.River> closedRiver : Objects.requireNonNull(lastClosedRivers)) {
                 //Màj du tableau de messages pour les points marqués par la fermeture des rivières
                 updatedMessageBoard = updatedMessageBoard.withScoredRiver(closedRiver);
             }
+        } else {
+            lastClosedRivers = Set.of();
         }
 
         // Gérer les aires forêt fermées lors de ce tour
-        Set<Area<Zone.Forest>> lastClosedForests = new HashSet<>();
-        if (board.forestsClosedByLastTile() != null) {
-            lastClosedForests = board.forestsClosedByLastTile();
+        Set<Area<Zone.Forest>> lastClosedForests = board.forestsClosedByLastTile();
+        if (lastClosedForests != null) {
             for (Area<Zone.Forest> closedForest : Objects.requireNonNull(lastClosedForests)) {
-                //Màj du tableau de messages pour les points marqués par le fermeture des forêts
+                //Màj du tableau de messages pour les points marqués par la fermeture des forêts
                 updatedMessageBoard = updatedMessageBoard.withScoredForest(closedForest);
 
                 /*
@@ -324,7 +331,7 @@ public record GameState(
                     l'aire forêt fermée par le joueur courant contient un menhir
                     la dernière tuile placée (par le joueur courant) n'est pas de type menhir (ce qui assure qu'il ne
                     rejoue pas plus d'une fois)
-                On vérifie aussi que la dernière tuile placée n'est pas null, pour éviter des erreurs, et qu'on ait pas
+                On vérifie aussi que la dernière tuile placée n'est pas null, pour éviter des erreurs, et qu'on n'a pas
                 déjà confirmé que le joueur puisse rejouer (par soucis d'optimisation)
                 */
                 if (lastPlacedTile != null
@@ -337,6 +344,8 @@ public record GameState(
                     updatedMessageBoard = updatedMessageBoard.withClosedForestWithMenhir(currentPlayer(), closedForest);
                 }
             }
+        } else {
+            lastClosedForests = Set.of();
         }
 
         // Les cueilleurs et pêcheurs des aires fermées sont retirés du plateau
@@ -369,9 +378,9 @@ public record GameState(
     }
 
     /**
-     * Méthode d'aire qui gére la fin de la partie, avec le comptage des points pour la fin de partie
+     * Méthode d'aide qui gére la fin de la partie, avec le comptage des points pour la fin de partie
      *
-     * @return un nouvel état de jeu indiquant le fin de la partie
+     * @return un nouvel état de jeu indiquant la fin de la partie
      */
     private GameState withFinalPointsCounted() {
         Preconditions.checkArgument(nextAction.equals(Action.END_GAME));
@@ -479,7 +488,7 @@ public record GameState(
     private GameState withTurnFinishedIfOccupationImpossible() {
         // Le joueur ne peut passer à OCCUPY_TILE seulement s'il reste de la place sur la dernière tuile
         if (!lastTilePotentialOccupants().isEmpty()) {
-            return new GameState(players, tileDecks, tileToPlace, board, Action.OCCUPY_TILE, messageBoard);
+            return this;
         }
 
         // Sinon, on vérifie la fin du tour du joueur
@@ -492,8 +501,8 @@ public record GameState(
      *
      * @param occupant
      *         l'occupant à supprimer du Plateau du jeu
-     * @return updatedGameSate.withTurnFinishedIfOccupationImpossible()
-     * avec l'occupant donnée retiré du plateau de jeu, si celui-ci n'est pas null
+     * @return updatedGameState.withTurnFinishedIfOccupationImpossible()
+     * avec l'occupant donné retiré du plateau de jeu, si celui-ci n'est pas null
      * @throws IllegalArgumentException
      *         si la prochaine action n'est pas RETAKE_PAWN,
      *         si l'occupant donné n'est ni null, ni un pion
@@ -510,10 +519,10 @@ public record GameState(
         }
 
         // Màj de l'état du jeu, avec le nouveau plateau de jeu qui tien compte des possibles modifications
-        GameState updatedGameSate = new GameState(players, tileDecks, tileToPlace,
+        GameState updatedGameState = new GameState(players, tileDecks, tileToPlace,
                 updatedBoard, Action.OCCUPY_TILE, messageBoard);
 
-        return updatedGameSate.withTurnFinishedIfOccupationImpossible();
+        return updatedGameState.withTurnFinishedIfOccupationImpossible();
     }
 
     /**

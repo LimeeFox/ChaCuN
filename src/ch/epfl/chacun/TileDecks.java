@@ -7,7 +7,7 @@ import java.util.function.Predicate;
  * Les 3 piles de tuile des 3 sortes différentes : début, normal, avec menhir
  *
  * @param startTiles
- *         tas qui contient la tuile de départ (ou rien, si la tuile à été placée)
+ *         tas qui contient la tuile de départ (ou rien, si la tuile a été placée)
  * @param normalTiles
  *         tas qui contient les tuiles normales
  * @param menhirTiles
@@ -97,7 +97,7 @@ public record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, List<Tile
      * @return nouveau triplet de piles de tuiles
      */
     public TileDecks withTopTileDrawnUntil(Tile.Kind kind, Predicate<Tile> predicate) {
-        TileDecks drawnDecks = new TileDecks(startTiles, normalTiles, menhirTiles);
+        TileDecks drawnDecks = this;
         while (drawnDecks.deckSize(kind) > 0 && !predicate.test(topTile(kind))) {
             drawnDecks = drawnDecks.withTopTileDrawn(kind);
         }

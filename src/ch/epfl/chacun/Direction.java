@@ -22,15 +22,14 @@ public enum Direction {
     public static final int COUNT = ALL.size();
 
     /**
-     * Direction après une rotation
+     * Applique une rotation à la direction
      *
-     * @return nouvelle direction obtenue par rotation
+     * @param rotation
+     *          rotation que l'on souhaite appliquer à la direction this
+     * @return la direction résultant de la rotation appliquée
      */
     public Direction rotated(Rotation rotation) {
-        Direction rotatedDirection;
-        int rotatedDirectionIndex = (ordinal() + rotation.quarterTurnsCW()) % COUNT;
-        rotatedDirection = ALL.get(rotatedDirectionIndex);
-        return rotatedDirection;
+        return ALL.get((ordinal() + rotation.quarterTurnsCW()) % COUNT);
     }
 
     /**
@@ -39,6 +38,6 @@ public enum Direction {
      * @return direction inverse à this
      */
     public Direction opposite() {
-        return ALL.get((ordinal() + COUNT / 2) % COUNT);
+        return this.rotated(Rotation.HALF_TURN);
     }
 }
