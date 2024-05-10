@@ -3,8 +3,6 @@ package ch.epfl.chacun;
 import java.util.List;
 import java.util.function.Predicate;
 
-//todo discuss "redundant code"
-
 /**
  * Les 3 piles de tuile des 3 sortes différentes : début, normal, avec menhir
  *

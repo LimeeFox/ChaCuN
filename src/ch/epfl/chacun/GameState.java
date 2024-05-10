@@ -134,33 +134,38 @@ public record GameState(
         Preconditions.checkArgument(!board.equals(Board.EMPTY));
         PlacedTile tile = board.lastPlacedTile();
         Preconditions.checkArgument(tile != null);
-        Set<Occupant> filteredPotentialOccupants = new HashSet<>();
 
-        /*
-        Puisque nous vérifions que le plateau de jeu n'est pas vide (qu'il contient en effet au moins une tuile),
-        alors la dernière tuile posée ne peut pas être null
-        */
-        tile.potentialOccupants().forEach(occupant -> {
-            // On enlève l'occupant potentiel si le joueur n'a plus d'occupants libres
-            int freeOccupants = freeOccupantsCount(currentPlayer(), occupant.kind());
-            boolean hasFreeOccupants = freeOccupantsCount(currentPlayer(), occupant.kind()) > 0;
+        // Directly create a set from the potential occupants
+        Set<Occupant> potentialOccupants = new HashSet<>(tile.potentialOccupants());
 
-            boolean isValid = hasFreeOccupants;
-
+        // Remove elements that do not meet the conditions
+        potentialOccupants.removeIf(occupant -> {
+            boolean hasFreeOccupants = freeOccupantsCount(currentPlayer(), occupant.kind()) <= 0;
             if (hasFreeOccupants) {
-                Zone zone = tile.zoneWithId(occupant.zoneId());
-                switch (zone) {
-                    case Zone.Forest forest -> isValid = !board.forestArea(forest).isOccupied();
-                    case Zone.Meadow meadow -> isValid = !board.meadowArea(meadow).isOccupied();
-                    case Zone.Lake lake -> isValid = !board.riverSystemArea(lake).isOccupied();
-                    case Zone.River river -> isValid = (occupant.kind() == Occupant.Kind.PAWN) ?
-                            !board.riverArea(river).isOccupied() :
-                            !board.riverSystemArea(river).isOccupied();
-                }
+                return true; // Remove if no free occupants are available
             }
-            if (isValid) filteredPotentialOccupants.add(occupant);
+
+            // Checking the zone condition based on the type of the zone
+            Zone zone = tile.zoneWithId(occupant.zoneId());
+            switch (zone) {
+                case Zone.Forest forest:
+                    return board.forestArea(forest).isOccupied();
+                case Zone.Meadow meadow:
+                    return board.meadowArea(meadow).isOccupied();
+                case Zone.Lake lake:
+                    return board.riverSystemArea(lake).isOccupied();
+                case Zone.River river:
+                    if (occupant.kind() == Occupant.Kind.PAWN) {
+                        return board.riverArea(river).isOccupied();
+                    } else {
+                        return board.riverSystemArea(river).isOccupied();
+                    }
+                default:
+                    return false;
+            }
         });
-        return filteredPotentialOccupants;
+
+        return potentialOccupants;
     }
 
     /**
@@ -217,7 +222,7 @@ public record GameState(
 
         final int placedPawns = updatedBoard.occupantCount(currentPlayer(), Occupant.Kind.PAWN);
 
-        // Traitement des pouvoirs spéciaux qui ont un effet immédiat après le pose de la tuile
+        // Traitement des pouvoirs spéciaux qui ont un effet immédiat après la pose de la tuile
         Zone specialPowerZone = tile.specialPowerZone();
         if (specialPowerZone != null) {
             List<Zone.SpecialPower> immediateEffectPowers = List.of(Zone.SpecialPower.SHAMAN, Zone.SpecialPower.LOGBOAT,
@@ -371,7 +376,7 @@ public record GameState(
     /**
      * Méthode d'aire qui gére la fin de la partie, avec le comptage des points pour la fin de partie
      *
-     * @return un nouvel état de jeu indiquant le fin de la partie
+     * @return un nouvel état de jeu indiquant la fin de la partie
      */
     private GameState withFinalPointsCounted() {
         Preconditions.checkArgument(nextAction.equals(Action.END_GAME));
@@ -479,7 +484,7 @@ public record GameState(
     private GameState withTurnFinishedIfOccupationImpossible() {
         // Le joueur ne peut passer à OCCUPY_TILE seulement s'il reste de la place sur la dernière tuile
         if (!lastTilePotentialOccupants().isEmpty()) {
-            return new GameState(players, tileDecks, tileToPlace, board, Action.OCCUPY_TILE, messageBoard);
+            return this;
         }
 
         // Sinon, on vérifie la fin du tour du joueur
@@ -492,8 +497,8 @@ public record GameState(
      *
      * @param occupant
      *         l'occupant à supprimer du Plateau du jeu
-     * @return updatedGameSate.withTurnFinishedIfOccupationImpossible()
-     * avec l'occupant donnée retiré du plateau de jeu, si celui-ci n'est pas null
+     * @return updatedGameState.withTurnFinishedIfOccupationImpossible()
+     * avec l'occupant donné retiré du plateau de jeu, si celui-ci n'est pas null
      * @throws IllegalArgumentException
      *         si la prochaine action n'est pas RETAKE_PAWN,
      *         si l'occupant donné n'est ni null, ni un pion
@@ -510,10 +515,10 @@ public record GameState(
         }
 
         // Màj de l'état du jeu, avec le nouveau plateau de jeu qui tien compte des possibles modifications
-        GameState updatedGameSate = new GameState(players, tileDecks, tileToPlace,
+        GameState updatedGameState = new GameState(players, tileDecks, tileToPlace,
                 updatedBoard, Action.OCCUPY_TILE, messageBoard);
 
-        return updatedGameSate.withTurnFinishedIfOccupationImpossible();
+        return updatedGameState.withTurnFinishedIfOccupationImpossible();
     }
 
     /**

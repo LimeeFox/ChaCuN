@@ -28,8 +28,6 @@ public final class TextMakerFr implements TextMaker{
         return playerNamesAndColors.get(playerColor);
     }
 
-    //todo not sure whether this is actually to be sued publicaly but in doubt, i've decided adapt it directly to be
-    // used within the class
     @Override
     public String points(int points) {
         return STR."\{points} point\{plurality(points, false)}";
@@ -258,8 +256,6 @@ public final class TextMakerFr implements TextMaker{
      * @return une chaîne de caractères contenant l'énumération des joueurs dans un ordre précis et reliant les deux
      * derniers de la liste par "et".
      */
-    //todo much like the other private methods, check coherence with the public methods
-    //todo possible rework because of use of joiner
     private String organisePlayersAsString(Set<PlayerColor> players) {
         Preconditions.checkArgument(!players.isEmpty());
 
