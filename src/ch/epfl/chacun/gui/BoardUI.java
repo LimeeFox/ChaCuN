@@ -142,6 +142,8 @@ public class BoardUI {
                             cancellationToken.setImage(marker);
                             cancellationToken.setId(STR."marker_\{animal.id()}");
                             cancellationToken.getStyleClass().add("marker");
+                            cancellationToken.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
+                            cancellationToken.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
 
                             ObservableValue<Boolean> isCancelled = board
                                     .map(b -> b.cancelledAnimals().contains(animal));

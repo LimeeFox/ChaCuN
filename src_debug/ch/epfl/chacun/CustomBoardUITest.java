@@ -8,9 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class CustomBoardUITest extends Application{
@@ -19,17 +17,18 @@ public final class CustomBoardUITest extends Application{
     @Override
     public void start(Stage primaryStage) throws Exception {
         var playerNames = Map.of(
-                PlayerColor.RED, "Cyriac",
-                PlayerColor.BLUE, "Adrien",
+                //PlayerColor.RED, "Cyriac",
+                //PlayerColor.BLUE, "Adrien",
                 PlayerColor.GREEN, "Dylan");
         var playerColors = playerNames.keySet().stream().sorted().toList();
 
         var tilesByKind = Tiles.TILES.stream()
                 .collect(Collectors.groupingBy(Tile::kind));
 
+
         var startDeck = tilesByKind.get(Tile.Kind.START);
         var normalDeck = tilesByKind.get(Tile.Kind.NORMAL);
-        var menhirDeck = tilesByKind.get(Tile.Kind.MENHIR);
+        var menhirDeck = List.of(Tiles.TILES.get(94));
 
         Collections.shuffle(normalDeck);
         Collections.shuffle(menhirDeck);
