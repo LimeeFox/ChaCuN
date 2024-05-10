@@ -135,17 +135,17 @@ public record GameState(
         PlacedTile tile = board.lastPlacedTile();
         Preconditions.checkArgument(tile != null);
 
-        // Directly create a set from the potential occupants
+        // On crée un ensemble des occupants potentiels
         Set<Occupant> potentialOccupants = new HashSet<>(tile.potentialOccupants());
 
-        // Remove elements that do not meet the conditions
+        // On enlève les occupants potentiels qui ne se sont pas conforme aux conditions
         potentialOccupants.removeIf(occupant -> {
             boolean hasFreeOccupants = freeOccupantsCount(currentPlayer(), occupant.kind()) <= 0;
             if (hasFreeOccupants) {
-                return true; // Remove if no free occupants are available
+                return true; // Aucun occupant ne peut être placés si le joueur en possède aucun
             }
 
-            // Checking the zone condition based on the type of the zone
+            // On vérifie l'occupation de châque zone
             Zone zone = tile.zoneWithId(occupant.zoneId());
             switch (zone) {
                 case Zone.Forest forest:
@@ -212,7 +212,6 @@ public record GameState(
         */
         List<PlayerColor> updatedPlayerList = players;
         final TileDecks updatedTileDecks = tileDecks;
-        Tile updatedTileToPlace = null;
         Board updatedBoard = board.withNewTile(tile);
         Action updatedNextAction = Action.OCCUPY_TILE;
         // La màj de messageBoard dépend des points obtenus et des pouvoirs utilisés
