@@ -56,7 +56,7 @@ public final class CustomBoardUITest extends Application{
 
 
         var boardNode = BoardUI
-                .create(12,
+                .create(3,
                         gameState,
                         tileToPlaceRotationP,
                         visibleOccupantsP,
