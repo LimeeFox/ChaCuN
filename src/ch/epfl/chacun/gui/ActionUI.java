@@ -15,14 +15,11 @@ import java.util.StringJoiner;
 import java.util.function.Consumer;
 
 public class ActionUI {
-
-    //todo handler is WIP name for argument
-    //todo handler isn't used smhw
     public Node create(ObservableValue<List<String>> base32Codes, Consumer<String> handler) {
         HBox root = new HBox();
 
-        root.getStylesheets().add("board.css");
-        root.setId("board");
+        root.getStylesheets().add("actions.css");
+        root.setId("actions");
 
         // Nouveau text contenant les codes en base 32 correspondants à châque action éffectué lors de la partie
         Text lastactionsText = new Text();
@@ -63,9 +60,9 @@ public class ActionUI {
     private String formatBase32Codes(List<String> codes) {
         StringBuilder codesBuilder = new StringBuilder();
         int startIndex = Math.max(0, codes.size() - 4);
-        // On affiches que (au plus) les 4 derniers codes
+        // On affiche que (au plus) les 4 derniers codes
         for (int i = startIndex; i < codes.size(); i++) {
-            codesBuilder.append(i + 1).append(": ").append(codes.get(i));
+            codesBuilder.append(i + 1).append(": ").append(codes.get(i).toUpperCase());
             if (i < codes.size() - 1) {
                 codesBuilder.append(", ");
             }
