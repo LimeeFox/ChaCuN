@@ -95,7 +95,7 @@ public class BoardUI {
                             // On a besoin de créer un occupant pour CHAQUE joueur, qu'on va en premier temps, cacher,
                             // et en deuxième temps, le refaire apparaître au cas oû la tuile se fait occuper
                             SVGPath occupantIcon = (SVGPath) Icon
-                                    .newFor(board.getValue().tileAt(pos).placer(), occupant.kind());
+                                    .newFor(tile.placer(), occupant.kind());
                             occupantIcon.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
 
                             occupantIcon.visibleProperty().bind(visibleOccupants
@@ -224,14 +224,17 @@ public class BoardUI {
                 });
 
                 // todo when I was writing this method, only God and I knew wtf it did. Now only God does. help pls idk wtf this shit does
+                /*
                 highlightedTiles.addListener((o, oldValue, newValue) -> {
-                    if (newValue.isEmpty() || !oldValue.contains(board.getValue().tileAt(pos).id()))
+                    if (newValue.isEmpty() || !newValue.contains(board.getValue().tileAt(pos).id()))
                         veil(group, Color.TRANSPARENT);
                     // Si la case contient une tuile, et que certaines tuiles sont mises en évidence
                     // mais pas celle de la case, alors elle est recouverte d'un voile noir qui l'assombrit
-                    else if (!newValue.contains(board.getValue().tileAt(pos).id()))
+                    else if (!newValue.contains(board.getValue().tileAt(pos) != null) && !newValue.isEmpty())
                         veil(group, Color.BLACK);
                 });
+                
+                 */
 
                 group.getChildren().add(tileFace);
                 boardGridPane.add(group, x + scope, y + scope);
