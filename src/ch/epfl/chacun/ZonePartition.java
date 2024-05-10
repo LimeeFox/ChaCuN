@@ -98,7 +98,7 @@ public record ZonePartition<Z extends Zone>(Set<Area<Z>> areas) {
          */
         public void removeOccupant(Z zone, PlayerColor color) {
             Area<Z> unoccupiedArea = areaContaining(zone).withoutOccupant(color);
-            builderAreas.remove(areaContaining(zone));
+            builderAreas.remove(unoccupiedArea);
             builderAreas.add(unoccupiedArea);
         }
 
