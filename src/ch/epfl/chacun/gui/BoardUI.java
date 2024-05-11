@@ -98,8 +98,8 @@ public class BoardUI {
                                     .newFor(tile.placer(), occupant.kind());
                             occupantIcon.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
 
-                            occupantIcon.visibleProperty().bind(visibleOccupants
-                                    .map(occupants -> occupants.contains(occupant)));
+                            occupantIcon.visibleProperty()
+                                    .bind(visibleOccupants.map(occupants -> occupants.contains(occupant)));
 
                             // Gérer la rotation de l'occupant. La rotation doit être inversée pour les occupants
                             occupantIcon.setRotate(-group.getRotate());
@@ -112,28 +112,6 @@ public class BoardUI {
                             });
 
                             group.getChildren().add(occupantIcon);
-                            /* fixme deprecated
-                            for (PlayerColor playerColor : newGameState.players()) {
-                                SVGPath occupantIcon = (SVGPath) Icon.newFor(playerColor, occupant.kind());
-                                occupantIcon.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
-
-                                occupantIcon.visibleProperty().bind(visibleOccupants
-                                        .map(occupants -> occupants.contains(occupant)));
-
-                                // Gérer la rotation de l'occupant. La rotation doit être inversée pour les occupants
-                                occupantIcon.setRotate(-group.getRotate());
-
-                                occupantIcon.setOnMouseClicked(event -> {
-                                    if (event.getButton() == MouseButton.PRIMARY) {
-                                            //&& visibleOccupants.getValue().contains(occupant)) {
-                                        occupantConsumer.accept(occupant);
-                                    }
-                                });
-
-                                group.getChildren().add(occupantIcon);
-                            }
-
-                             */
                         }
 
                         // Gérer les jetons d'annulation
@@ -225,6 +203,8 @@ public class BoardUI {
                     });
                 });
 
+                // Auditeur qui gère la mise en évidence des tuiles lorsqu'un joueur survole un texte
+                // Qui concerne une zone avec cette tuile avec sa souris
                 highlightedTiles.addListener((o, oldValue, newValue) -> {
                     PlacedTile placedTile = board.getValue().tileAt(pos);
                     if (placedTile != null) {

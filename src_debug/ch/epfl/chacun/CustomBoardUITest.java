@@ -28,7 +28,7 @@ public final class CustomBoardUITest extends Application{
 
         var startDeck = tilesByKind.get(Tile.Kind.START);
         var normalDeck = tilesByKind.get(Tile.Kind.NORMAL);
-        var menhirDeck = List.of(Tiles.TILES.get(94));
+        var menhirDeck = tilesByKind.get(Tile.Kind.MENHIR);//new ArrayList<>(List.of(Tiles.TILES.get(94), Tiles.TILES.get(92)));
 
         Collections.shuffle(normalDeck);
         Collections.shuffle(menhirDeck);
@@ -55,7 +55,7 @@ public final class CustomBoardUITest extends Application{
 
 
         var boardNode = BoardUI
-                .create(3,
+                .create(12,
                         gameState,
                         tileToPlaceRotationP,
                         visibleOccupantsP,

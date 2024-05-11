@@ -152,8 +152,8 @@ public final class TextMakerFr implements TextMaker {
     @Override
     public String playersScoredMeadow(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant que "
-                + STR."qu'occupant·e\{plurality(scorers.size(), true)} d'un pré contenant"
-                + STR."\{organiseAnimalsAsString(animals)}.";
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} d'un pré contenant";
+                //+ STR."\{organiseAnimalsAsString(animals)}.";
     }
 
     /**
@@ -293,6 +293,9 @@ public final class TextMakerFr implements TextMaker {
      *         tableau associant des types d'animaux à leur quantité
      * @return une chaîne de caractères indiquant la présence d'animaux et leur quantité
      */
+    // fixme: i had to comment this out cuz otherwise it would prevent the game from working cuz an animal map
+    // fixme would try to get the value of an integer that is null, maybe my fix in a different PR will help with that
+    /*
     private String organiseAnimalsAsString(Map<Animal.Kind, Integer> animals) {
         // On trie les animaux dans l'ordre et on enlève les types qui n'ont aucune présence dans la table associative
         // ainsi que les tigres (en principe, ils ne sont pas compté)
@@ -356,6 +359,8 @@ public final class TextMakerFr implements TextMaker {
         return animalMessage.toString();
     }
 
+     */
+
     /**
      * Méthode d'aide qui permet de créer une chaîne de caractères indiquant le nombre d'animaux si cette chaîne est
      * précédé du mot "entourée"
@@ -381,7 +386,9 @@ public final class TextMakerFr implements TextMaker {
             // Sinon on affiche "d'aucun animal"
             animalMessage.append("d'");
         }
-        return animalMessage.append(organiseAnimalsAsString(animals)).toString();
+        return animalMessage.toString();//.append(organiseAnimalsAsString(animals)).toString();
+        // fixme: i had to comment this out cuz otherwise it would prevent the game from working cuz an animal map
+        // fixme would try to get the value of an integer that is null, maybe my fix in a different PR will help with that
     }
 
     /**
