@@ -17,9 +17,9 @@ public final class CustomBoardUITest extends Application{
     @Override
     public void start(Stage primaryStage) throws Exception {
         var playerNames = Map.of(
-                //PlayerColor.RED, "Cyriac",
-                //PlayerColor.BLUE, "Adrien",
-                PlayerColor.GREEN, "Dylan");
+                PlayerColor.RED, "Raphael",
+                PlayerColor.BLUE, "Vlad");
+                //PlayerColor.GREEN, "Dylan");
         var playerColors = playerNames.keySet().stream().sorted().toList();
 
         var tilesByKind = Tiles.TILES.stream()

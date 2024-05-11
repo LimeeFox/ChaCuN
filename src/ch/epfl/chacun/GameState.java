@@ -70,7 +70,7 @@ public record GameState(
      *         si le tableau de message de la partie (messageBoard) est null
      */
     public GameState {
-        //Preconditions.checkArgument(players.size() >= 2);
+        Preconditions.checkArgument(players.size() >= 2);
         Preconditions.checkArgument(tileToPlace == null ^ nextAction == Action.PLACE_TILE);
         Objects.requireNonNull(tileDecks);
         Objects.requireNonNull(board);
