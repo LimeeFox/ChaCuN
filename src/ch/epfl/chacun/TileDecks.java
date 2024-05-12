@@ -1,5 +1,7 @@
 package ch.epfl.chacun;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -31,13 +33,7 @@ public record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, List<Tile
      * @return taille de la pile de tuiles du type demandé
      */
     public int deckSize(Tile.Kind kind) {
-        int deckKindSize = 0;
-        switch (kind) {
-            case START -> deckKindSize = startTiles.size();
-            case NORMAL -> deckKindSize = normalTiles.size();
-            case MENHIR -> deckKindSize = menhirTiles.size();
-        }
-        return deckKindSize;
+        return getTileDeckForKind(kind).size();
     }
 
     /**
@@ -48,25 +44,7 @@ public record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, List<Tile
      * @return tuile en haut de la pile
      */
     public Tile topTile(Tile.Kind kind) {
-        Tile tile = null;
-        switch (kind) {
-            case START:
-                if (!startTiles.isEmpty()) {
-                    tile = startTiles.getFirst();
-                    break;
-                }
-            case NORMAL:
-                if (!normalTiles.isEmpty()) {
-                    tile = normalTiles.getFirst();
-                    break;
-                }
-            case MENHIR:
-                if (!menhirTiles.isEmpty()) {
-                    tile = menhirTiles.getFirst();
-                    break;
-                }
-        }
-        return tile;
+        return getTileDeckForKind(kind).getFirst();
     }
 
     /**
@@ -80,10 +58,11 @@ public record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, List<Tile
      */
     public TileDecks withTopTileDrawn(Tile.Kind kind) {
         Preconditions.checkArgument(deckSize(kind) > 0);
+
         return switch (kind) {
-            case START -> new TileDecks(startTiles.subList(1, startTiles.size()), normalTiles, menhirTiles);
-            case NORMAL -> new TileDecks(startTiles, normalTiles.subList(1, normalTiles.size()), menhirTiles);
-            case MENHIR -> new TileDecks(startTiles, normalTiles, menhirTiles.subList(1, menhirTiles.size()));
+            case START -> new TileDecks(startTiles.subList(1, deckSize(Tile.Kind.START)), normalTiles, menhirTiles);
+            case NORMAL -> new TileDecks(startTiles, normalTiles.subList(1, deckSize(Tile.Kind.NORMAL)), menhirTiles);
+            case MENHIR -> new TileDecks(startTiles, normalTiles, menhirTiles.subList(1, deckSize(Tile.Kind.MENHIR)));
         };
     }
 
@@ -102,5 +81,24 @@ public record TileDecks(List<Tile> startTiles, List<Tile> normalTiles, List<Tile
             drawnDecks = drawnDecks.withTopTileDrawn(kind);
         }
         return drawnDecks;
+    }
+
+    /**
+     * Méthode d'aide qui permet d'obtenir un tas de tuile d'un type donnée
+     *
+     * @param kind
+     *          type du tas de tuiles recherché
+     * @return tileDeck
+     *          le tas de tuile du type de tuile donné
+     */
+    private List<Tile> getTileDeckForKind(Tile.Kind kind) {
+        List<Tile> tileDeck= List.of();
+
+        switch (kind) {
+            case START -> tileDeck = startTiles;
+            case NORMAL -> tileDeck = normalTiles;
+            case MENHIR -> tileDeck = menhirTiles;
+        }
+        return tileDeck;
     }
 }
