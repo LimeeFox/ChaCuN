@@ -2,6 +2,9 @@ package ch.epfl.chacun.gui;
 
 import ch.epfl.chacun.*;
 import javafx.application.Application;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
@@ -49,7 +52,37 @@ public class Main extends Application {
         TileDecks tileDecks =
                 new TileDecks(decks.get(Tile.Kind.START), decks.get(Tile.Kind.NORMAL), decks.get(Tile.Kind.MENHIR));
 
+        /*
+        Les valeurs observables à créer
+         */
+        // L'état du jeu
+        ObjectProperty<GameState> gameState = new SimpleObjectProperty<>(
+                GameState.initial(players.keySet().stream().toList(), tileDecks, textMakerFr));
 
+        // La rotation des tuiles
+        ObjectProperty<Rotation> tileRotation = new SimpleObjectProperty<>(Rotation.NONE);
+
+        // Les occupants
+        ObjectProperty<Set<Occupant>> visibleOccupants = new SimpleObjectProperty<>(Set.of());
+
+        // Les tuiles à mettre en évidence
+        ObjectProperty<Set<Integer>> highlightedTiles = new SimpleObjectProperty<>(Set.of());
+
+        // La tuile à placer sur le plateau
+        ObservableValue<Tile> tileToPlace = gameState.map(gs -> gs.tileDecks().normalTiles().getFirst());//fixme GameState::tileToPlace, in the meantime i did smth hacky but i wanna kms
+
+        // Le nombre de tuiles restantes dans les piles
+        ObservableValue<Integer> normalTilesLeft = gameState.map(g -> g.tileDecks().normalTiles().size());
+        ObservableValue<Integer> menhirTilesLeft = gameState.map(g -> g.tileDecks().menhirTiles().size());
+
+        // Le message à afficher
+        ObjectProperty<String> message = new SimpleObjectProperty<>("caca"); // todo update this with either TextMakerFR.clickToOccupy and TextMakerFR.clickToUnoccupy
+
+        // un autre truc de messageboard que jai pas trop compris todo rewrite comment lmao
+        ObservableValue<List<MessageBoard.Message>> messages = gameState.map(g -> g.messageBoard().messages());
+
+        // Les identités de toutes les tuiles
+        ObjectProperty<Set<Integer>> tileIdsToHighlight = new SimpleObjectProperty<>(Set.of());
 
         /*
         L'interface graphique de droite
@@ -57,31 +90,60 @@ public class Main extends Application {
         // La Node d'Actions et des Piles du jeu
         VBox decksAndActions = new VBox();
         //Node Actions = todo merge actionsUI
-        Node Decks = DecksUI.create();
-        //decksAndActions.getChildren().add(Actions);
+        System.out.println(tileToPlace.getValue());
+        Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
+                occupant -> gameState.getValue().withNewOccupant(null));
+        //decksAndActions.getChildren().add(Actions); todo merge ActionsUI
         decksAndActions.getChildren().add(Decks);
 
         // La Node de l'interface des joueurs et l'interface du tableau de messages
-        Node Players = PlayersUI.create();
-        Node MessageBoard = MessageBoardUI.create();
+        Node Players = PlayersUI.create(gameState, textMakerFr);
+        Node MessageBoard = MessageBoardUI.create(messages, tileIdsToHighlight);
 
         // La racine de la partie droite de l'interface graphique principale du jeu
         BorderPane sideUI = new BorderPane();
-        sideUI.getChildren().add(Players);
-        sideUI.getChildren().add(MessageBoard);
+        sideUI.setTop(Players);
+        sideUI.setCenter(MessageBoard);
+        sideUI.setBottom(decksAndActions);
 
         /*
         L'interface graphique de centre
         */
-        //Node Board = todo merge BoardUI
+        Node Board = BoardUI
+                .create(
+                        ch.epfl.chacun.Board.REACH,
+                        gameState,
+                        tileRotation,
+                        visibleOccupants,
+                        highlightedTiles,
+                        rotation -> {
+                            tileRotation.set(tileRotation.get().add(rotation));
+                        },
+                        move -> {
+                            GameState gs = gameState.getValue();
+                            gameState.set(gs.withPlacedTile(new PlacedTile(tileToPlace.getValue(), gs.currentPlayer(), tileRotation.getValue(), move)));
+                        },
+                        occupant -> {
+                            GameState gs = gameState.getValue();
+                            GameState.Action nextAction = gs.nextAction();
+
+                            if (nextAction == GameState.Action.OCCUPY_TILE) {
+                                gameState.set(gs.withNewOccupant(occupant));
+                            } else if (nextAction == GameState.Action.RETAKE_PAWN
+                                    && occupant.kind() == Occupant.Kind.PAWN) {
+                                gameState.set(gs.withOccupantRemoved(occupant));
+                            }
+
+                            visibleOccupants.set(gs.board().occupants());
+                        });
 
         /*
         Mise en commun de toutes les interfaces
         */
         BorderPane root = new BorderPane();
 
-        root.getChildren().add(sideUI);
-        //root.getChildren().add(Board);
+        root.setRight(sideUI);
+        root.setCenter(Board);
 
 
         Scene scene = new Scene(root, 250, 400);
@@ -89,6 +151,11 @@ public class Main extends Application {
         stage.setScene(scene);
         stage.setWidth(1440);
         stage.setHeight(1080);
+
+        // Une fois le graphe de scène construit, son contenu est modifié pour contenir le résultat de l'application
+        // de la méthode withStartingTilePlaced à cet état initial
+        gameState.set(gameState.getValue().withStartingTilePlaced());
+
         stage.show();
     }
 }

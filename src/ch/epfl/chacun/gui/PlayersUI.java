@@ -84,6 +84,7 @@ public abstract class PlayersUI {
         ObservableValue<PlayerColor> currentPlayer0 = currentGameState.map(GameState::currentPlayer);
         currentPlayer0.addListener((observable, oldPlayer, newPlayer) -> {
             // Enlever le highlight du joueur précedant pour le mettre sur le joueur courant
+            System.out.println(playerNodes);
             playerNodes.get(oldPlayer).getStyleClass().remove("current");
             playerNodes.get(newPlayer).getStyleClass().add("current");
         });

@@ -20,6 +20,22 @@ import java.util.function.Consumer;
  * @author Vladislav Yarkovoy (362242)
  */
 public abstract class DecksUI {
+    /**
+     * Constructeur de DecksUI
+     *
+     * @param tileToPlace
+     *         la tuile à placer
+     * @param normalTilesLeft
+     *         le nombre de tuiles restantes dans la pile des tuiles "normales"
+     * @param menhirTilesLeft
+     *         le nombre de tuiles restantes dans la pile des tuiles "menhir"
+     * @param message
+     *         texte à afficher à la place de la tuile à placer
+     * @param occupantConsumer
+     *         gestionnaire d'événements destiné à être appelé lorsque le joueur courant signale
+     *         qu'il ne désire pas de poser ou reprendre un occupant, en cliquant sur @message
+     * @return l'interface graphique des piles de tuiles avec un aperçu de la tuile à poser
+     */
     public static Node create(
             ObservableValue<Tile> tileToPlace,
             ObservableValue<Integer> normalTilesLeft,
