@@ -116,8 +116,8 @@ public class BoardUI {
                             occupantIcon.setRotate(-group.getRotate());
 
                             occupantIcon.setOnMouseClicked(event -> {
-                                if (event.getButton() == MouseButton.PRIMARY) {
-                                    //&& visibleOccupants.getValue().contains(occupant)) {
+                                if (event.getButton() == MouseButton.PRIMARY && event.isStillSincePress()) {
+                                    //&& visibleOccupants.getValue().contains(occupant)) { fixme a mon avis il serait interessant de tester si ce check est necessaire, potential fix for issue #58
                                     occupantConsumer.accept(occupant);
                                 }
                             });
@@ -194,7 +194,8 @@ public class BoardUI {
                     // Gérer la rotation de la tuile
                     group.setOnMouseClicked(event -> {
                         if (board.getValue().insertionPositions().contains(pos)
-                                && nextAction == GameState.Action.PLACE_TILE) {
+                                && nextAction == GameState.Action.PLACE_TILE
+                                && event.isStillSincePress()) {
                             // Si c'est un click droit, alors tourner la tuile dans le sens anti-horaire
                             // Ou dans le sens horaire si le bouton ALT (Option sur MacOS) est appuyée
                             if (event.getButton() == MouseButton.SECONDARY) {
@@ -237,6 +238,8 @@ public class BoardUI {
         scrollPane.setId("board-scroll-pane");
         scrollPane.getStylesheets().add("board.css");
         scrollPane.setContent(boardGridPane);
+        scrollPane.setHvalue(0.5);
+        scrollPane.setVvalue(0.5);
 
         return scrollPane;
     }

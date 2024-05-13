@@ -69,7 +69,7 @@ public class Main extends Application {
         ObjectProperty<Set<Integer>> highlightedTiles = new SimpleObjectProperty<>(Set.of());
 
         // La tuile à placer sur le plateau
-        ObservableValue<Tile> tileToPlace = gameState.map(gs -> gs.tileDecks().normalTiles().getFirst());//fixme GameState::tileToPlace, in the meantime i did smth hacky but i wanna kms
+        ObservableValue<Tile> tileToPlace = gameState.map(GameState::tileToPlace); // gs -> gs.tileDecks().normalTiles().getFirst() //fixme GameState::tileToPlace, in the meantime i did smth hacky but i wanna kms
 
         // Le nombre de tuiles restantes dans les piles
         ObservableValue<Integer> normalTilesLeft = gameState.map(g -> g.tileDecks().normalTiles().size());
@@ -90,7 +90,7 @@ public class Main extends Application {
         // La Node d'Actions et des Piles du jeu
         VBox decksAndActions = new VBox();
         //Node Actions = todo merge actionsUI
-        System.out.println(tileToPlace.getValue());
+        // fixme System.out.println(tileToPlace.getValue());
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
                 occupant -> gameState.getValue().withNewOccupant(null));
         //decksAndActions.getChildren().add(Actions); todo merge ActionsUI

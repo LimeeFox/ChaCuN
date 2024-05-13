@@ -72,7 +72,15 @@ public abstract class PlayersUI {
             for (int i = 0; i < Occupant.occupantsCount(Occupant.Kind.PAWN); i++) {
                 player.getChildren().add(Icon.newFor(playerColor, Occupant.Kind.PAWN));
             }
+
+            // Pour l'initialisation (qui se fait seulement une fois, tout au début de la partie)
+            // On aimerait déterminer et mettre en évidence le joueur courant (le premier à jouer)
+            if (gameState.currentPlayer() == playerColor) {
+                System.out.println(STR."CURRENT PLAYER IS \{playerColor}");
+                player.getStyleClass().add("current");
+            }
             playerNodes.put(playerColor, player);
+            System.out.println(STR."CURRENT player is \{gameState}");
         }
 
         VBox playersBox = new VBox();
