@@ -251,13 +251,13 @@ public record GameState(
                         }
                         Map<Animal.Kind, Long> animalCount = animals.stream()
                                 .collect(Collectors.groupingBy(Animal::kind, Collectors.counting()));
-                        System.out.println(STR."Animal Count: \{animalCount}");
+                        //System.out.println(STR."Animal Count: \{animalCount}");
 
                         // Filtrer les animaux
                         Set<Animal> cancelledAnimals = new HashSet<>();
                         long tigerCount = animalCount.getOrDefault(Animal.Kind.TIGER, 0L);
                         long deerCount = animalCount.getOrDefault(Animal.Kind.DEER, 0L);
-                        System.out.println(STR."DEER COUNT: \{deerCount}");
+                        //System.out.println(STR."DEER COUNT: \{deerCount}");
                         // Compter le nombre de cerfs à annuler en fonction du nombre de tigres (qui les mangent)
                         int deerToCancel = (int) Math.min(deerCount, tigerCount);
                         // Ajout dès cerfs annulés aux animaux annulés
@@ -266,11 +266,11 @@ public record GameState(
                                 .limit(deerToCancel)
                                 .forEach(cancelledAnimals::add);
 
-                        System.out.println(STR."Cancelled animals: \{cancelledAnimals}");
+                        //System.out.println(STR."Cancelled animals: \{cancelledAnimals}");
                         updatedMessageBoard = updatedMessageBoard.withScoredHuntingTrap(scorer, adjacentMeadow);
                         // Annule tous les animaux du plateau de jeu, y compris les cerfs "mangés"
+                        cancelledAnimals.addAll(animals);
                         updatedBoard = updatedBoard.withMoreCancelledAnimals(cancelledAnimals);
-                        //todo "annuler les animaux" (you know what i mean)
                     }
                 }
             }
