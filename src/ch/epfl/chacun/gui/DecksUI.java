@@ -55,10 +55,10 @@ public abstract class DecksUI {
 
         ImageView normalTilesImageView = new ImageView();
         normalTilesImageView.setId("NORMAL");
-        Image normalImage = new Image(STR."256/NORMAL.jpg");
+        Image normalImage = new Image(STR."/256/NORMAL.jpg");
         normalTilesImageView.setImage(normalImage);
-        normalTilesImageView.setFitHeight(normalImage.getHeight() * 0.5);
-        normalTilesImageView.setFitWidth(normalImage.getWidth() * 0.5);
+        normalTilesImageView.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE * 0.5);
+        normalTilesImageView.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE * 0.5);
 
         normalTilesPane.getChildren().add(normalTilesImageView);
         normalTilesPane.getChildren().add(normalTilesText);
@@ -75,10 +75,10 @@ public abstract class DecksUI {
 
         ImageView menhirTilesImageView = new ImageView();
         menhirTilesImageView.setId("MENHIR");
-        Image menhirImage = new Image(STR."256/MENHIR.jpg");
+        Image menhirImage = new Image(STR."/256/MENHIR.jpg");
         menhirTilesImageView.setImage(menhirImage);
-        menhirTilesImageView.setFitHeight(menhirImage.getHeight() * 0.5);
-        menhirTilesImageView.setFitWidth(menhirImage.getWidth() * 0.5);
+        menhirTilesImageView.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE * 0.5);
+        menhirTilesImageView.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE * 0.5);
 
         menhirTilesPane.getChildren().add(menhirTilesImageView);
         menhirTilesPane.getChildren().add(menhirTilesText);
@@ -101,10 +101,13 @@ public abstract class DecksUI {
 
         // On modifie l'image en fonction de la tuile à placer
         ImageView tileToPlaceImageView = new ImageView();
+        tileToPlaceImageView.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE);
+        tileToPlaceImageView.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
+
         ObservableValue<Image> tileToPlaceImage = tileToPlace.map(Tile::id).map(ImageLoader::normalImageForTile);
         tileToPlaceImageView.imageProperty().bind(tileToPlaceImage);
 
-        occupantInfoText.setWrappingWidth(tileToPlaceImageView.getFitWidth() * 0.8);
+        occupantInfoText.setWrappingWidth(ImageLoader.LARGE_TILE_FIT_SIZE * 0.8);
         occupantInfoText.textProperty().bind(message);
 
         ObservableValue<Boolean> messageIsNull = message.map(String::isEmpty);
