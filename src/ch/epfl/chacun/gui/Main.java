@@ -27,14 +27,14 @@ public class Main extends Application {
         /*
         L'initialisation des joueurs ainsi que de la graine du jeu
          */
-        Map<PlayerColor, String> players = new HashMap<>();
+        Map<PlayerColor, String> players = new TreeMap<>();
         List<String> playerNames = getParameters().getUnnamed();
 
         // todo check if others did it like that too, cuz this feels too complicated (bazooka squirrel)
         final Iterator<PlayerColor> colorIterator = Arrays.asList(PlayerColor.values()).iterator();
         playerNames.forEach(name -> {
             //if (colorIterator.hasNext()) { // fixme dans la consigne, ils disent que par soucis de simplicité on peut juste laisser le programme planter si il y a trop de joueurs, ducoup j'enleve ce if mais je le garde au cas ou
-            players.put(colorIterator.next(), name);
+            players.put(colorIterator.next(), name); // todo ducoup ecrire un commentaire au dessus ici mentionnant ça ^^^
             //}
         });
 
@@ -69,14 +69,24 @@ public class Main extends Application {
         ObjectProperty<Set<Integer>> highlightedTiles = new SimpleObjectProperty<>(Set.of());
 
         // La tuile à placer sur le plateau
-        ObservableValue<Tile> tileToPlace = gameState.map(GameState::tileToPlace); // gs -> gs.tileDecks().normalTiles().getFirst() //fixme GameState::tileToPlace, in the meantime i did smth hacky but i wanna kms
+        ObservableValue<Tile> tileToPlace = gameState.map(GameState::tileToPlace);
 
         // Le nombre de tuiles restantes dans les piles
         ObservableValue<Integer> normalTilesLeft = gameState.map(g -> g.tileDecks().normalTiles().size());
         ObservableValue<Integer> menhirTilesLeft = gameState.map(g -> g.tileDecks().menhirTiles().size());
 
         // Le message à afficher
-        ObjectProperty<String> message = new SimpleObjectProperty<>("test"); // todo update this with either TextMakerFR.clickToOccupy and TextMakerFR.clickToUnoccupy
+        ObservableValue<String> message = gameState.map(g -> {
+            if (g.tileToPlace() == null) {
+                GameState.Action action = g.nextAction();
+                if (action == GameState.Action.OCCUPY_TILE) {
+                    return textMakerFr.clickToOccupy();
+                } else if (action == GameState.Action.RETAKE_PAWN) {
+                    return textMakerFr.clickToUnoccupy();
+                }
+            }
+            return "";
+        });
 
         // un autre truc de messageboard que jai pas trop compris todo rewrite comment lmao
         ObservableValue<List<MessageBoard.Message>> messages = gameState.map(g -> g.messageBoard().messages());
@@ -90,7 +100,6 @@ public class Main extends Application {
         // La Node d'Actions et des Piles du jeu
         VBox decksAndActions = new VBox();
         //Node Actions = todo merge actionsUI
-        // fixme System.out.println(tileToPlace.getValue());
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
                 occupant -> gameState.getValue().withNewOccupant(occupant));
         //decksAndActions.getChildren().add(Actions); todo merge ActionsUI
@@ -121,7 +130,11 @@ public class Main extends Application {
                         },
                         move -> {
                             GameState gs = gameState.getValue();
-                            gameState.set(gs.withPlacedTile(new PlacedTile(tileToPlace.getValue(), gs.currentPlayer(), tileRotation.getValue(), move)));
+                            gameState.set(gs.withPlacedTile(
+                                    new PlacedTile(tileToPlace.getValue(),
+                                    gs.currentPlayer(),
+                                    tileRotation.getValue(),
+                                    move)));
                         },
                         occupant -> {
                             GameState gs = gameState.getValue();
