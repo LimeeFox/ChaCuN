@@ -76,7 +76,7 @@ public class Main extends Application {
         ObservableValue<Integer> menhirTilesLeft = gameState.map(g -> g.tileDecks().menhirTiles().size());
 
         // Le message à afficher
-        ObjectProperty<String> message = new SimpleObjectProperty<>("caca"); // todo update this with either TextMakerFR.clickToOccupy and TextMakerFR.clickToUnoccupy
+        ObjectProperty<String> message = new SimpleObjectProperty<>("test"); // todo update this with either TextMakerFR.clickToOccupy and TextMakerFR.clickToUnoccupy
 
         // un autre truc de messageboard que jai pas trop compris todo rewrite comment lmao
         ObservableValue<List<MessageBoard.Message>> messages = gameState.map(g -> g.messageBoard().messages());
@@ -92,7 +92,7 @@ public class Main extends Application {
         //Node Actions = todo merge actionsUI
         // fixme System.out.println(tileToPlace.getValue());
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
-                occupant -> gameState.getValue().withNewOccupant(null));
+                occupant -> gameState.getValue().withNewOccupant(occupant));
         //decksAndActions.getChildren().add(Actions); todo merge ActionsUI
         decksAndActions.getChildren().add(Decks);
 

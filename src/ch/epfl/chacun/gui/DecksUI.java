@@ -104,7 +104,7 @@ public abstract class DecksUI {
         ObservableValue<Image> tileToPlaceImage = tileToPlace.map(Tile::id).map(ImageLoader::normalImageForTile);
         tileToPlaceImageView.imageProperty().bind(tileToPlaceImage);
 
-        occupantInfoText.setWrappingWidth(tileToPlaceImageView.getImage().getWidth() * 0.8);
+        occupantInfoText.setWrappingWidth(tileToPlaceImageView.getFitWidth() * 0.8);
         occupantInfoText.textProperty().bind(message);
 
         ObservableValue<Boolean> messageIsNull = message.map(String::isEmpty);
