@@ -63,7 +63,18 @@ public class Main extends Application {
         ObjectProperty<Rotation> tileRotation = new SimpleObjectProperty<>(Rotation.NONE);
 
         // Les occupants
-        ObjectProperty<Set<Occupant>> visibleOccupants = new SimpleObjectProperty<>(Set.of());
+        ObservableValue<Set<Occupant>> visibleOccupants = gameState.map(gs -> {
+            Set<Occupant> occupants = new HashSet<>();
+
+            if (gs.nextAction() == GameState.Action.OCCUPY_TILE) {
+                occupants.addAll(gs.lastTilePotentialOccupants());
+            } else {
+                occupants.removeAll(gs.lastTilePotentialOccupants());
+            }
+
+            occupants.addAll(gs.board().occupants());
+            return occupants;
+        });
 
         // Les tuiles à mettre en évidence
         ObjectProperty<Set<Integer>> highlightedTiles = new SimpleObjectProperty<>(Set.of());
@@ -106,8 +117,6 @@ public class Main extends Application {
                     if (nextAction == GameState.Action.OCCUPY_TILE) {
                         gameState.set(gs.withNewOccupant(occupant));
                     }
-
-                    visibleOccupants.set(gs.board().occupants());
                 });
         decksAndActions.getChildren().add(Actions);
         decksAndActions.getChildren().add(Decks);
@@ -147,7 +156,6 @@ public class Main extends Application {
                             if (gameState.getValue().nextAction() == GameState.Action.OCCUPY_TILE) {
                                 Set<Occupant> newVisibleOccupants = gameState.getValue().board().occupants();
                                 newVisibleOccupants.addAll(gameState.getValue().lastTilePotentialOccupants());
-                                visibleOccupants.set(newVisibleOccupants);
                             }
                         },
                         occupant -> {
@@ -160,10 +168,6 @@ public class Main extends Application {
                                     && occupant.kind() == Occupant.Kind.PAWN) {
                                 gameState.set(gs.withOccupantRemoved(occupant));
                             }
-
-                            // On est obligé de réaccéder à la valeur observable de game state car sinon il y aura
-                            // toujours un délai de 1 action d'occupation de tuile sur l'interface graphique
-                            visibleOccupants.set(gameState.getValue().board().occupants());
                         });
 
         /*
