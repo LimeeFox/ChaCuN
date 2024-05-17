@@ -91,15 +91,13 @@ public class Main extends Application {
         // un autre truc de messageboard que jai pas trop compris todo rewrite comment lmao
         ObservableValue<List<MessageBoard.Message>> messages = gameState.map(g -> g.messageBoard().messages());
 
-        // Les identités de toutes les tuiles
-        ObjectProperty<Set<Integer>> tileIdsToHighlight = new SimpleObjectProperty<>(Set.of());
-
         /*
         L'interface graphique de droite
         */
+        ObjectProperty<List<String>> actions = new SimpleObjectProperty<>();
         // La Node d'Actions et des Piles du jeu
         VBox decksAndActions = new VBox();
-        // todo Node Actions = ActionUI.create();
+        Node Actions = ActionUI.create();
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
                 occupant -> {
                     GameState gs = gameState.getValue();
@@ -111,12 +109,12 @@ public class Main extends Application {
 
                     visibleOccupants.set(gs.board().occupants());
                 });
-        // todo decksAndActions.getChildren().add(Actions);
+        decksAndActions.getChildren().add(Actions);
         decksAndActions.getChildren().add(Decks);
 
         // La Node de l'interface des joueurs et l'interface du tableau de messages
         Node Players = PlayersUI.create(gameState, textMakerFr);
-        Node MessageBoard = MessageBoardUI.create(messages, tileIdsToHighlight);
+        Node MessageBoard = MessageBoardUI.create(messages, highlightedTiles);
 
         // La racine de la partie droite de l'interface graphique principale du jeu
         BorderPane sideUI = new BorderPane();
