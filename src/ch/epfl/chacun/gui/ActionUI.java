@@ -11,7 +11,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.function.Consumer;
 
 /**
@@ -63,7 +62,7 @@ public class ActionUI {
     }
 
     /**
-     * Méthode d'aide qui permet d'afficher les 4 derniers codes en base32 d'une liste donnée selon le format:
+     * Méthode d'aide qui permet d'afficher les 4 derniers codes en base32 d'une liste donnée selon le format :
      *          "numéro d'apparition du code : code en base32"
      *
      * @param codes
