@@ -108,12 +108,11 @@ public class ActionEncoder {
      */
     public static Pair<GameState, String> decodeAndApply(GameState initialGameSate, String code) {
         try {
-            Pair<GameState, String> testDecoder = decodeAndApplyThrows(initialGameSate, code);
+            return decodeAndApplyThrows(initialGameSate, code);
         }
         catch(IllegalArgumentException | NullPointerException e) {
             return null;
         }
-        return  decodeAndApplyThrows(initialGameSate, code);
     }
 
     /**
