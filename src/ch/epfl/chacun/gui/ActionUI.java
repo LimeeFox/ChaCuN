@@ -14,7 +14,21 @@ import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
+/**
+ *
+ */
 public class ActionUI {
+    /**
+     * Génère l'interface graphique permettant le jeu à distance grâce aux codes en base 32
+     *
+     * @param base32Codes
+     *          valeur observable de la liste des chaînes de charactèrs des codes en base 32 correspondants aux actions
+     *          effectuées lors de la partie, dans l'ordre chronologique
+     * @param handler
+     *          gestionnaire d'événement qui permet d'effectuer l'action correspondant à un code en base32 valid
+     * @return l'interface graphique correspondant de jeu à distance, avec les codes en base 32 avec une boîte de texte
+     *          pour y entrer des codes valides
+     */
     public Node create(ObservableValue<List<String>> base32Codes, Consumer<String> handler) {
         HBox root = new HBox();
 
