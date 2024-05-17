@@ -118,7 +118,8 @@ public class BoardUI {
                             occupantIcon.setOnMouseClicked(event -> {
                                 if (event.getButton() == MouseButton.PRIMARY
                                         && event.isStillSincePress()
-                                        && newGameState.lastTilePotentialOccupants().contains(occupant)) { //fixme a mon avis il serait interessant de tester si ce check est necessaire, potential fix for issue #58
+                                        && (newGameState.lastTilePotentialOccupants().contains(occupant)
+                                        || newGameState.nextAction() == GameState.Action.RETAKE_PAWN)) {
                                     occupantConsumer.accept(occupant);
                                 }
                             });
