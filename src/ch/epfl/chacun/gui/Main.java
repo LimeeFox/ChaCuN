@@ -112,9 +112,8 @@ public class Main extends Application {
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
                 occupant -> {
                     GameState gs = gameState.getValue();
-                    GameState.Action nextAction = gs.nextAction();
 
-                    if (nextAction == GameState.Action.OCCUPY_TILE) {
+                    if (gs.nextAction() == GameState.Action.OCCUPY_TILE) {
                         gameState.set(gs.withNewOccupant(occupant));
                     }
                 });
@@ -158,7 +157,7 @@ public class Main extends Application {
                                 newVisibleOccupants.addAll(gameState.getValue().lastTilePotentialOccupants());
                             }
                         },
-                        occupant -> {
+                        occupant -> { //todo make a private method cuz deck consumer uses the same one
                             GameState gs = gameState.getValue();
                             GameState.Action nextAction = gs.nextAction();
 
