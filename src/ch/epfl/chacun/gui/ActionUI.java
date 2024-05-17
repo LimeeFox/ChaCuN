@@ -29,8 +29,8 @@ public class ActionUI {
         root.setId("actions");
 
         // Nouveau text contenant les codes en base 32 correspondants à châque action éffectué lors de la partie
-        Text lastactionsText = new Text();
-        lastactionsText.textProperty().bind(Bindings.createStringBinding(() ->
+        Text lastActionsText = new Text();
+        lastActionsText.textProperty().bind(Bindings.createStringBinding(() ->
             formatBase32Codes(base32Codes.getValue()), base32Codes));
 
 
@@ -40,6 +40,7 @@ public class ActionUI {
             if (change.toString().chars().allMatch(c -> Base32.isValid(String.valueOf(c)))) {
                 return change;
             }
+            //todo ask what to return in case change does not match alphabet
             return null;
         }));
 
@@ -50,7 +51,7 @@ public class ActionUI {
             }
         });
 
-        root.getChildren().add(lastactionsText);
+        root.getChildren().add(lastActionsText);
 
         return root;
     }
