@@ -20,6 +20,22 @@ import java.util.function.Consumer;
  * @author Vladislav Yarkovoy (362242)
  */
 public abstract class DecksUI {
+    /**
+     * Constructeur de DecksUI
+     *
+     * @param tileToPlace
+     *         la tuile à placer
+     * @param normalTilesLeft
+     *         le nombre de tuiles restantes dans la pile des tuiles "normales"
+     * @param menhirTilesLeft
+     *         le nombre de tuiles restantes dans la pile des tuiles "menhir"
+     * @param message
+     *         texte à afficher à la place de la tuile à placer
+     * @param occupantConsumer
+     *         gestionnaire d'événements destiné à être appelé lorsque le joueur courant signale
+     *         qu'il ne désire pas de poser ou reprendre un occupant, en cliquant sur @message
+     * @return l'interface graphique des piles de tuiles avec un aperçu de la tuile à poser
+     */
     public static Node create(
             ObservableValue<Tile> tileToPlace,
             ObservableValue<Integer> normalTilesLeft,
@@ -39,10 +55,10 @@ public abstract class DecksUI {
 
         ImageView normalTilesImageView = new ImageView();
         normalTilesImageView.setId("NORMAL");
-        Image normalImage = new Image(STR."256/NORMAL.jpg");
+        Image normalImage = new Image(STR."/256/NORMAL.jpg");
         normalTilesImageView.setImage(normalImage);
-        normalTilesImageView.setFitHeight(normalImage.getHeight() * 0.5);
-        normalTilesImageView.setFitWidth(normalImage.getWidth() * 0.5);
+        normalTilesImageView.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE * 0.5);
+        normalTilesImageView.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE * 0.5);
 
         normalTilesPane.getChildren().add(normalTilesImageView);
         normalTilesPane.getChildren().add(normalTilesText);
@@ -59,10 +75,10 @@ public abstract class DecksUI {
 
         ImageView menhirTilesImageView = new ImageView();
         menhirTilesImageView.setId("MENHIR");
-        Image menhirImage = new Image(STR."256/MENHIR.jpg");
+        Image menhirImage = new Image(STR."/256/MENHIR.jpg");
         menhirTilesImageView.setImage(menhirImage);
-        menhirTilesImageView.setFitHeight(menhirImage.getHeight() * 0.5);
-        menhirTilesImageView.setFitWidth(menhirImage.getWidth() * 0.5);
+        menhirTilesImageView.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE * 0.5);
+        menhirTilesImageView.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE * 0.5);
 
         menhirTilesPane.getChildren().add(menhirTilesImageView);
         menhirTilesPane.getChildren().add(menhirTilesText);
@@ -85,17 +101,20 @@ public abstract class DecksUI {
 
         // On modifie l'image en fonction de la tuile à placer
         ImageView tileToPlaceImageView = new ImageView();
+        tileToPlaceImageView.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE);
+        tileToPlaceImageView.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
+
         ObservableValue<Image> tileToPlaceImage = tileToPlace.map(Tile::id).map(ImageLoader::normalImageForTile);
         tileToPlaceImageView.imageProperty().bind(tileToPlaceImage);
 
-        occupantInfoText.setWrappingWidth(tileToPlaceImageView.getImage().getWidth() * 0.8);
+        occupantInfoText.setWrappingWidth(ImageLoader.LARGE_TILE_FIT_SIZE * 0.8);
         occupantInfoText.textProperty().bind(message);
 
         ObservableValue<Boolean> messageIsNull = message.map(String::isEmpty);
         tileToPlaceImageView.visibleProperty().bind(messageIsNull);
 
         occupantInfoText.setOnMouseClicked(e -> {
-            if (!occupantInfoText.getText().isEmpty()) {
+            if (!messageIsNull.getValue()) {
                 occupantConsumer.accept(null);
             }
         });

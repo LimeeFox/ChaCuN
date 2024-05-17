@@ -60,7 +60,7 @@ public class MessageBoardUI {
                     // Lorsque la souris survole un message, on ajoute l'identifiant des tuiles concernées aux
                     // identifiants des tuiles qu'on souhaite surligner (highlight)
                     text.setOnMouseEntered(event -> {
-                        tileIds.set(message.tileIds());
+                        tileIds.set(message.tileIds()); // todo ask
                     });
 
                     // Set on mouse exited event

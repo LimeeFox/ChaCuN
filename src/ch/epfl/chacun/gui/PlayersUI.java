@@ -23,7 +23,7 @@ import static java.lang.StringTemplate.STR;
  */
 public abstract class PlayersUI {
     /**
-     * Créé une Node selon le graphe suivant: <a href="https://cs108.epfl.ch/p/i/players-sg;32.png">...</a>
+     * Créé une intérface graphique qui contient les joueurs et leur statut du jeu (occupants libres, points, etc...)
      *
      * @param currentGameState
      *         l'état actuel du jeu
@@ -32,11 +32,15 @@ public abstract class PlayersUI {
      * @return la @Node de l'interface graphique qui contient les joueurs
      */
     public static Node create(ObservableValue<GameState> currentGameState, TextMaker textMaker) {
-        // Creation de nodes pour chaque joueur
-        Map<PlayerColor, TextFlow> playerNodes = new TreeMap<>();
-        GameState gameState = currentGameState.getValue();
+        // La racine de l'interface entière des joueurs
+        VBox playersBox = new VBox();
+        playersBox.setId("players");
+        playersBox.getStylesheets().add("players.css");
 
-        for (PlayerColor playerColor : gameState.players()) {
+        // Creation de nodes pour chaque joueur
+        GameState gameState = currentGameState.getValue();
+        Set<PlayerColor> p = new TreeSet<>(gameState.players());
+        for (PlayerColor playerColor : p) {
             // On a besoin d'un cercle pour indiquer la couleur du joueur aux utilisateurs
             Circle circle = new Circle();
             circle.setRadius(5);
@@ -72,31 +76,30 @@ public abstract class PlayersUI {
             for (int i = 0; i < Occupant.occupantsCount(Occupant.Kind.PAWN); i++) {
                 player.getChildren().add(Icon.newFor(playerColor, Occupant.Kind.PAWN));
             }
-            playerNodes.put(playerColor, player);
-        }
 
-        VBox playersBox = new VBox();
-        playersBox.setId("players");
-        playersBox.getStylesheets().add("players.css");
-        playersBox.getChildren().addAll(playerNodes.values());
+            // Pour l'initialisation (qui se fait seulement une fois, tout au début de la partie)
+            // On aimerait déterminer et mettre en évidence le joueur courant (le premier à jouer)
+            if (gameState.currentPlayer() == playerColor) {
+                player.getStyleClass().add("current");
+            }
 
-        // Listener pour mettre à jour le joueur courant lors des changements d'état du jeu
-        ObservableValue<PlayerColor> currentPlayer0 = currentGameState.map(GameState::currentPlayer);
-        currentPlayer0.addListener((observable, oldPlayer, newPlayer) -> {
-            // Enlever le highlight du joueur précedant pour le mettre sur le joueur courant
-            playerNodes.get(oldPlayer).getStyleClass().remove("current");
-            playerNodes.get(newPlayer).getStyleClass().add("current");
-        });
+            // Auditeur pour mettre à jour le joueur courant lors des changements d'état du jeu
+            ObservableValue<PlayerColor> currentPlayer = currentGameState.map(GameState::currentPlayer);
+            currentPlayer.addListener((observable, oldPlayer, newPlayer) -> {
+                // Enlever la mise en évidence du joueur précedant pour que le nouveau joueur courant le remplace
+                if (playerColor == newPlayer) {
+                    player.getStyleClass().add("current");
+                } else if (playerColor == oldPlayer) {
+                    player.getStyleClass().remove("current");
+                }
+            });
 
-        // Listener pour mettre à jour les pions des joueurs lors des changements d'état du jeu
-        ObservableValue<Integer> freeHutsCount = currentGameState
-                .map(gs -> gs.freeOccupantsCount(gs.currentPlayer(), Occupant.Kind.HUT));
-        ObservableValue<Integer> freePawnsCount = currentGameState
-                .map(gs -> gs.freeOccupantsCount(gs.currentPlayer(), Occupant.Kind.PAWN));
+            // Auditeur pour mettre à jour les pions des joueurs lors des changements d'état du jeu
+            ObservableValue<Integer> freeHutsCount = currentGameState
+                    .map(gs -> gs.freeOccupantsCount(playerColor, Occupant.Kind.HUT));
+            ObservableValue<Integer> freePawnsCount = currentGameState
+                    .map(gs -> gs.freeOccupantsCount(playerColor, Occupant.Kind.PAWN));
 
-        // On itère sur tous les joueurs pour obtenir leur liste de nodes "occupants" //todo potentially optimize this, similarly to adrien (I told him how to do it btw)
-        for (PlayerColor playerColor : gameState.players()) {
-            TextFlow player = playerNodes.get(playerColor);
             Set<SVGPath> occupants = player.getChildren().stream()
                     .filter(child -> child instanceof SVGPath)
                     .map(child -> (SVGPath) child)
@@ -112,6 +115,8 @@ public abstract class PlayersUI {
             occupants.stream().skip(freeHutsCount.getValue() + freePawnsCount.getValue()).forEach(svg -> {
                 svg.opacityProperty().bind(Bindings.createDoubleBinding(() -> 0.1));
             });
+
+            playersBox.getChildren().add(player);
         }
 
         return playersBox;
