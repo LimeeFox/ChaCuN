@@ -99,7 +99,7 @@ public class Main extends Application {
         */
         // La Node d'Actions et des Piles du jeu
         VBox decksAndActions = new VBox();
-        //Node Actions = todo merge actionsUI
+        // todo Node Actions = ActionUI.create();
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
                 occupant -> {
                     GameState gs = gameState.getValue();
@@ -111,7 +111,7 @@ public class Main extends Application {
 
                     visibleOccupants.set(gs.board().occupants());
                 });
-        //decksAndActions.getChildren().add(Actions); todo merge ActionsUI
+        // todo decksAndActions.getChildren().add(Actions);
         decksAndActions.getChildren().add(Decks);
 
         // La Node de l'interface des joueurs et l'interface du tableau de messages
@@ -163,7 +163,9 @@ public class Main extends Application {
                                 gameState.set(gs.withOccupantRemoved(occupant));
                             }
 
-                            visibleOccupants.set(gs.board().occupants());
+                            // On est obligé de réaccéder à la valeur observable de game state car sinon il y aura
+                            // toujours un délai de 1 action d'occupation de tuile sur l'interface graphique
+                            visibleOccupants.set(gameState.getValue().board().occupants());
                         });
 
         /*

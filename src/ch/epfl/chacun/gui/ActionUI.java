@@ -15,7 +15,14 @@ import java.util.StringJoiner;
 import java.util.function.Consumer;
 
 public class ActionUI {
-    public Node create(ObservableValue<List<String>> base32Codes, Consumer<String> handler) {
+    /**
+     * todo add javadoc pls
+     *
+     * @param base32Codes
+     * @param handler
+     * @return
+     */
+    public static Node create(ObservableValue<List<String>> base32Codes, Consumer<String> handler) {
         HBox root = new HBox();
 
         root.getStylesheets().add("actions.css");
@@ -57,7 +64,7 @@ public class ActionUI {
      * @return une chaîne de charactèrs contenant les 4 dernières positions de la liste chacune associée à son code en
      *          base32
      */
-    private String formatBase32Codes(List<String> codes) {
+    private static String formatBase32Codes(List<String> codes) {
         StringBuilder codesBuilder = new StringBuilder();
         int startIndex = Math.max(0, codes.size() - 4);
         // On affiche que (au plus) les 4 derniers codes
