@@ -32,6 +32,10 @@ public abstract class PlayersUI {
      * @return la @Node de l'interface graphique qui contient les joueurs
      */
     public static Node create(ObservableValue<GameState> currentGameState, TextMaker textMaker) {
+        // Quelques constantes utiles
+        final int HUTS = Occupant.occupantsCount(Occupant.Kind.HUT);
+        final int PAWNS = Occupant.occupantsCount(Occupant.Kind.PAWN);
+
         // La racine de l'interface entière des joueurs
         VBox playersBox = new VBox();
         playersBox.setId("players");
@@ -100,21 +104,31 @@ public abstract class PlayersUI {
             ObservableValue<Integer> freePawnsCount = currentGameState
                     .map(gs -> gs.freeOccupantsCount(playerColor, Occupant.Kind.PAWN));
 
-            Set<SVGPath> occupants = player.getChildren().stream()
+            List<SVGPath> occupants = player.getChildren().stream()
                     .filter(child -> child instanceof SVGPath)
                     .map(child -> (SVGPath) child)
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
+                    .collect(Collectors.toCollection(LinkedList::new));
 
             // On saute les n premiers occupants non placés afin de rendre ceux aux extrêmes droites opaques
-            occupants.stream()
-                    .skip(freeHutsCount.getValue())
-                    .limit(3 - freeHutsCount.getValue())
-                    .forEach(svg -> svg.opacityProperty().bind(Bindings.createDoubleBinding(() -> 0.1)));
+            for (int i = 0 ; i < HUTS ; i++) {
+                final int index = i;
+                occupants.get(i).opacityProperty().bind(freeHutsCount.map(freeHuts -> {
+                    if (index < freeHuts) {
+                        return 1.0;
+                    }
+                    return 0.1;
+                }));
 
-            // Pareil mais pour les pions
-            occupants.stream().skip(freeHutsCount.getValue() + freePawnsCount.getValue()).forEach(svg -> {
-                svg.opacityProperty().bind(Bindings.createDoubleBinding(() -> 0.1));
-            });
+            }
+            for (int i = HUTS ; i < HUTS + PAWNS ; i++) {
+                final int index = i;
+                occupants.get(i).opacityProperty().bind(freePawnsCount.map(freePawns -> {
+                    if (index < freePawns + HUTS) {
+                        return 1.0;
+                    }
+                    return 0.1;
+                }));
+            }
 
             playersBox.getChildren().add(player);
         }
