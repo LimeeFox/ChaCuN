@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+//todo when does the ui update? when is a code added to the ui (without typing it in)?h
+
 /**
  * Contient des méthodes permettant d'encoder et de décoder des actions et les appliquer à un état de jeu
  *
@@ -23,7 +25,7 @@ public class ActionEncoder {
      * @param tileToPlace
      *          tuile que l'on souhaite ajouter à l'état de jeu
      * @return  une paire composée d'un nouvel état de jeu contenant le tuile ajouté,
-     *          et d'une chaîne de charactèrs représentant le code en base32 de l'ajout de le tuile
+     *          et d'une chaîne de charactèrs représentant le code en base32 de l'ajout de la tuile
      */
     public static Pair<GameState, String> withPlacedTile(GameState initialGameState, PlacedTile tileToPlace) {
         GameState currentGameState = initialGameState.withPlacedTile(tileToPlace);
@@ -97,7 +99,7 @@ public class ActionEncoder {
     }
 
     /**
-     * Decode et applique une action passé en base32 à notre état de jeu
+     * Decode et applique une action passée en base32 à notre état de jeu
      *
      * @param initialGameSate
      *          état de jeu initial
@@ -150,7 +152,7 @@ public class ActionEncoder {
 
                 List<Pos> fringe = getIndexedFringe(initialGameState).keySet().stream().toList();
 
-                // On vérifie que la position de a la tuile est bien compris dans la frange
+                // On vérifie que la position de la tuile est bien compris dans la frange
                 Preconditions.checkArgument(p <= fringe.size() - 1);
 
                 Pos tilePos = fringe.get(p);
@@ -194,7 +196,7 @@ public class ActionEncoder {
      *
      * @param gameState
      *          état de jeu dont on souhaite obtenir la frange
-     * @return une table associant les positions comprises sur la frange à leur index selon l'ordre x,y
+     * @return une table associant les positions comprises sur la frange à leur index selon l'ordre x, y
      */
     private static Map<Pos, Integer> getIndexedFringe(GameState gameState) {
         List<Pos> sortedPositions = gameState.board().insertionPositions().stream()

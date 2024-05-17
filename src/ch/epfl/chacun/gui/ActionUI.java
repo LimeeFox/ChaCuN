@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- *
+ * Classe de création de l'interface graphique pour le jeu à distance
  */
 public class ActionUI {
     /**
