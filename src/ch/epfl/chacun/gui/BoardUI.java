@@ -116,8 +116,9 @@ public class BoardUI {
                             occupantIcon.setRotate(-group.getRotate());
 
                             occupantIcon.setOnMouseClicked(event -> {
-                                if (event.getButton() == MouseButton.PRIMARY && event.isStillSincePress()) {
-                                    //&& visibleOccupants.getValue().contains(occupant)) { fixme a mon avis il serait interessant de tester si ce check est necessaire, potential fix for issue #58
+                                if (event.getButton() == MouseButton.PRIMARY
+                                        && event.isStillSincePress()
+                                        && newGameState.lastTilePotentialOccupants().contains(occupant)) { //fixme a mon avis il serait interessant de tester si ce check est necessaire, potential fix for issue #58
                                     occupantConsumer.accept(occupant);
                                 }
                             });
