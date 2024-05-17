@@ -102,7 +102,13 @@ public class Main extends Application {
 
         // Interface graphique des codes en base 32 pour le jeu à distance
         Node Actions = ActionUI.create(base32Codes, handler -> {
+            //todo null case (prob if or ? : format)
+            base32Codes.setValue(new ArrayList<>(base32Codes.getValue()));
             base32Codes.getValue().add(handler);
+            gameState.setValue(ActionEncoder.decodeAndApply(gameState.getValue(), handler).getKey());
+            System.out.println(handler);
+            System.out.println(base32Codes.getValue());
+            //todo show
         });
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
                 occupant -> {

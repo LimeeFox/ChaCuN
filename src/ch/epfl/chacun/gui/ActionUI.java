@@ -30,18 +30,13 @@ public class ActionUI {
 
         // Nouveau text contenant les codes en base 32 correspondants à châque action éffectué lors de la partie
         Text lastActionsText = new Text();
-        lastActionsText.textProperty().bind(Bindings.createStringBinding(() ->
-            formatBase32Codes(base32Codes.getValue()), base32Codes));
+        lastActionsText.textProperty().bind(base32Codes.map((ActionUI::formatBase32Codes)));
 
 
         TextField actionField = new TextField();
         actionField.setTextFormatter(new TextFormatter<>(change -> {
             change.setText(change.getText().toUpperCase());
-            if (change.toString().chars().allMatch(c -> Base32.isValid(String.valueOf(c)))) {
-                return change;
-            }
-            //todo ask what to return in case change does not match alphabet
-            return null;
+            return  change.getControlNewText().matches(STR."[\{Base32.ALPHABET}]*") ? change : null;
         }));
 
         actionField.setOnKeyPressed(event -> {
@@ -52,6 +47,7 @@ public class ActionUI {
         });
 
         root.getChildren().add(lastActionsText);
+        root.getChildren().add(actionField);
 
         return root;
     }
