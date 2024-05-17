@@ -102,13 +102,19 @@ public class Main extends Application {
         // un autre truc de messageboard que jai pas trop compris todo rewrite comment lmao
         ObservableValue<List<MessageBoard.Message>> messages = gameState.map(g -> g.messageBoard().messages());
 
+        // Liste chronologique des actions encodées en base 32 de la partie
+        ObjectProperty<List<String>> base32Codes = new SimpleObjectProperty<>(List.of());
+
         /*
         L'interface graphique de droite
         */
-        ObjectProperty<List<String>> actions = new SimpleObjectProperty<>();
         // La Node d'Actions et des Piles du jeu
         VBox decksAndActions = new VBox();
-        //Node Actions = ActionUI.create();
+
+        // Interface graphique des codes en base 32 pour le jeu à distance
+        Node Actions = ActionUI.create(base32Codes, handler -> {
+            base32Codes.getValue().add(handler);
+        });
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
                 occupant -> {
                     GameState gs = gameState.getValue();
