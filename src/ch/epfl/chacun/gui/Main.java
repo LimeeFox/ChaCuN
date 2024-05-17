@@ -62,7 +62,7 @@ public class Main extends Application {
         // La rotation des tuiles
         ObjectProperty<Rotation> tileRotation = new SimpleObjectProperty<>(Rotation.NONE);
 
-        // Les occupants
+        // Les occupants qui doivent s'afficher (ceux à placer ainsi que ceux déjà placés)
         ObservableValue<Set<Occupant>> visibleOccupants = gameState.map(gs -> {
             Set<Occupant> occupants = new HashSet<>();
 
@@ -108,7 +108,7 @@ public class Main extends Application {
         ObjectProperty<List<String>> actions = new SimpleObjectProperty<>();
         // La Node d'Actions et des Piles du jeu
         VBox decksAndActions = new VBox();
-        Node Actions = ActionUI.create();
+        //Node Actions = ActionUI.create();
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
                 occupant -> {
                     GameState gs = gameState.getValue();
@@ -118,7 +118,7 @@ public class Main extends Application {
                         gameState.set(gs.withNewOccupant(occupant));
                     }
                 });
-        decksAndActions.getChildren().add(Actions);
+        //decksAndActions.getChildren().add(Actions);
         decksAndActions.getChildren().add(Decks);
 
         // La Node de l'interface des joueurs et l'interface du tableau de messages
