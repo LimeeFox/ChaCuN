@@ -101,7 +101,16 @@ public class Main extends Application {
         VBox decksAndActions = new VBox();
         //Node Actions = todo merge actionsUI
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
-                occupant -> gameState.getValue().withNewOccupant(occupant));
+                occupant -> {
+                    GameState gs = gameState.getValue();
+                    GameState.Action nextAction = gs.nextAction();
+
+                    if (nextAction == GameState.Action.OCCUPY_TILE) {
+                        gameState.set(gs.withNewOccupant(occupant));
+                    }
+
+                    visibleOccupants.set(gs.board().occupants());
+                });
         //decksAndActions.getChildren().add(Actions); todo merge ActionsUI
         decksAndActions.getChildren().add(Decks);
 
@@ -134,7 +143,14 @@ public class Main extends Application {
                                     new PlacedTile(tileToPlace.getValue(),
                                     gs.currentPlayer(),
                                     tileRotation.getValue(),
-                                    move)));
+                                    move)
+                            ));
+
+                            if (gameState.getValue().nextAction() == GameState.Action.OCCUPY_TILE) {
+                                Set<Occupant> newVisibleOccupants = gameState.getValue().board().occupants();
+                                newVisibleOccupants.addAll(gameState.getValue().lastTilePotentialOccupants());
+                                visibleOccupants.set(newVisibleOccupants);
+                            }
                         },
                         occupant -> {
                             GameState gs = gameState.getValue();

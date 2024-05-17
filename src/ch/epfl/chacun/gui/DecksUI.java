@@ -114,7 +114,7 @@ public abstract class DecksUI {
         tileToPlaceImageView.visibleProperty().bind(messageIsNull);
 
         occupantInfoText.setOnMouseClicked(e -> {
-            if (!occupantInfoText.getText().isEmpty()) {
+            if (!messageIsNull.getValue()) {
                 occupantConsumer.accept(null);
             }
         });
