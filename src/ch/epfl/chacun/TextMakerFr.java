@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 import static java.lang.StringTemplate.STR;
 
 /**
- * Classe qui permet de génerer tout le texte français nécessaire à l'interface graphique de ChaCuN
+ * Classe qui permet de générer tout le texte français nécessaire à l'interface graphique de ChaCuN
  *
  * @author Cyriac Philippe (360553)
  * @author Vladislav Yarkovoy (362242)
@@ -20,6 +20,8 @@ public final class TextMakerFr implements TextMaker {
     }
 
     /**
+     * Nom de joueur associé à une couleur donnée
+     *
      * @param playerColor
      *         la couleur du joueur dont on cherche le nom
      * @return le nom du joueur associé à la couleur donnée
@@ -37,7 +39,7 @@ public final class TextMakerFr implements TextMaker {
 
     @Override
     public String playerClosedForestWithMenhir(PlayerColor player) {
-        return STR."\{playerNamesAndColors.get(player)} a fermé une forêt contenant un menhir et peut donc placer une"
+        return STR."\{playerName(player)} a fermé une forêt contenant un menhir et peut donc placer une "
                 + "tuile menhir.";
     }
 
@@ -62,7 +64,9 @@ public final class TextMakerFr implements TextMaker {
 
         // On vérifie si la forêt concernée par le message contient des groupes de champignons
         if (mushroomGroupCount > 0) {
-            mushroomMessage = STR." et de \{mushroomGroupCount} groupe \{plurality(mushroomGroupCount, false)} de champignons.";
+            mushroomMessage = "et de "
+                    + STR."+\{mushroomGroupCount} groupe\{plurality(mushroomGroupCount, false)} "
+                    + "de champignons.";
         }
 
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
@@ -113,7 +117,7 @@ public final class TextMakerFr implements TextMaker {
     @Override
     public String playerScoredHuntingTrap(PlayerColor scorer, int points, Map<Animal.Kind, Integer> animals) {
 
-        return STR."\{scorer} a remporté \{points(points)} en plaçant la fosse à pieux dans un "
+        return STR."\{playerName(scorer)} a remporté \{points(points)} en plaçant la fosse à pieux dans un "
                 + STR."pré dans lequel elle est entourée \{animalMessage(animals)}.";
     }
 
@@ -132,7 +136,7 @@ public final class TextMakerFr implements TextMaker {
      */
     @Override
     public String playerScoredLogboat(PlayerColor scorer, int points, int lakeCount) {
-        return STR."\{scorer} a remporté \{points(points)} en plaçant la pirogue dans un réseau "
+        return STR."\{playerName(scorer)} a remporté \{points(points)} en plaçant la pirogue dans un réseau "
                 + STR."hydrographique contenant \{lakeCount} lac\{plurality(lakeCount, false)}.";
     }
 
@@ -198,17 +202,21 @@ public final class TextMakerFr implements TextMaker {
     }
 
     /**
+     * Affichage du nombre de points obtenus pour le placement du radeau
+     *
      * @param scorers
      *         les occupants majoritaires du réseau hydrographique comportant le radeau
      * @param points
      *         les points remportés
      * @param lakeCount
-     *         le nombre de lacs contenus dans le réseau hydrographique
-     * @return
+     *         le nombre de lacs contenus dans le réseau hydrographique du radeau
+     * @return une chaîne de charactèrs indiquant :
+     *          les joueurs ayant marqué des points,
+     *          le nombre de points remportés
      */
     @Override
     public String playersScoredRaft(Set<PlayerColor> scorers, int points, int lakeCount) {
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)}"
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
                 + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
                 + STR."majoritaire\{plurality(scorers.size(), false)} contenant le radeau et "
                 + STR."\{lakeCount} lac\{plurality(lakeCount, false)}";
@@ -250,7 +258,7 @@ public final class TextMakerFr implements TextMaker {
     }
 
     /**
-     * Méthode d'aide qui permet de créer une chaîne de caractères contenant les joueurs concernées dans l'ordre RBGYP
+     * Méthode d'aide qui permet de créer une chaîne de caractères contenant les joueurs concernés dans l'ordre RBGYP
      * et reliant les deux derniers joueurs d'un "et".
      *
      * @param players
@@ -374,16 +382,14 @@ public final class TextMakerFr implements TextMaker {
                 animalPresence = true;
             }
         }
-        // S'il y a des animaux on affiche "de [nombres d'animaux pour chaque type]"
+        // S'il y a des animaux, on affiche "de [nombres d'animaux pour chaque type]"
         if (animalPresence) {
             animalMessage.append("de ");
         } else {
             // Sinon on affiche "d'aucun animal"
             animalMessage.append("d'");
         }
-        return animalMessage.toString();//.append(organiseAnimalsAsString(animals)).toString();
-        // fixme: i had to comment this out cuz otherwise it would prevent the game from working cuz an animal map
-        // fixme would try to get the value of an integer that is null, maybe my fix in a different PR will help with that
+        return animalMessage.append(organiseAnimalsAsString(animals)).toString();
     }
 
     /**
@@ -393,7 +399,7 @@ public final class TextMakerFr implements TextMaker {
      *         nombre de l'objet qu'on souhaite compter
      * @param isGendered
      *         indique si le la pluralité doit prendre en compte le format d'écriture inclusive
-     * @return une chaîne de caractères ajoutant la lettre s si count est pluriel
+     * @return une chaîne de caractères ajoutant la lettre "s" si count est pluriel
      */
     private String plurality(int count, boolean isGendered) {
         StringBuilder builder = new StringBuilder();
@@ -414,6 +420,6 @@ public final class TextMakerFr implements TextMaker {
      * @return une chaîne de caractères indiquant le nombre de tuiles
      */
     private String tiles(int tileCount) {
-        return STR."\{tileCount} tuiles}";
+        return STR."\{tileCount} tuiles";
     }
 }
