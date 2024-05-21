@@ -113,14 +113,16 @@ public class Main extends Application {
 
         // Interface graphique des codes en base 32 pour le jeu à distance
         Node Actions = ActionUI.create(base32Codes, handler -> {
-            //todo null case (prob if or ? : format)
             List<String> codes = new ArrayList<>(base32Codes.getValue());
-            codes.add(handler);
-            base32Codes.setValue(codes);
-            gameState.setValue(ActionEncoder.decodeAndApply(gameState.getValue(), handler).getKey());
-            System.out.println(handler);
-            System.out.println(base32Codes.getValue());
-            //todo show
+            try {
+                gameState.setValue(Objects.requireNonNull(ActionEncoder.decodeAndApply(gameState.getValue(), handler))
+                        .getKey());
+                codes.add(handler);
+                base32Codes.setValue(codes);
+            } catch (Exception e) {
+                //todo maybe indicate that code is invalid
+                System.out.println("Ce code ne peux pas être appliqué. Écrivez-en un nouveau.");
+            }
         });
         //todo create method to encode actions onto list
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
