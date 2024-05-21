@@ -97,8 +97,8 @@ public final class TextMakerFr implements TextMaker {
             fishMessage = STR." et contenant \{fishCount} poisson\{plurality(fishCount, false)}.";
         }
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
-                + STR."qu'occupant·e\{plurality(scorers.size(), true)} composée de \{tiles(tileCount)} "
-                + STR."\{fishMessage}";
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} majoritaire d'une composée de "
+                + STR."\{tiles(tileCount)}\{fishMessage}.";
     }
 
     /**
