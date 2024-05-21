@@ -23,7 +23,7 @@ public class ActionEncoder {
      * @param tileToPlace
      *          tuile que l'on souhaite ajouter à l'état de jeu
      * @return  une paire composée d'un nouvel état de jeu contenant le tuile ajouté,
-     *          et d'une chaîne de charactèrs représentant le code en base32 de l'ajout de le tuile
+     *          et d'une chaîne de charactèrs représentant le code en base32 de l'ajout de la tuile
      */
     public static Pair<GameState, String> withPlacedTile(GameState initialGameState, PlacedTile tileToPlace) {
         GameState currentGameState = initialGameState.withPlacedTile(tileToPlace);
@@ -56,11 +56,12 @@ public class ActionEncoder {
 
         // Encodage de l'ajout d'un occupant
         // Type d'occupant
-        int k = occupant.kind().ordinal();
+        int k = 0b1;
         // Identifiant de la zone occupé
-        int z = 0b11111;
+        int z = 0b01111;
         if (occupant != null) {
-            z = occupant.zoneId();
+            k = occupant.kind().ordinal();
+            z = occupant.zoneId() % 10;
         }
         // Concatenation sous forme "kzzzz"
         int n = (k << 4) + z;
@@ -97,7 +98,7 @@ public class ActionEncoder {
     }
 
     /**
-     * Decode et applique une action passé en base32 à notre état de jeu
+     * Decode et applique une action passée en base32 à notre état de jeu
      *
      * @param initialGameSate
      *          état de jeu initial
@@ -149,7 +150,7 @@ public class ActionEncoder {
 
                 List<Pos> fringe = getIndexedFringe(initialGameState).keySet().stream().toList();
 
-                // On vérifie que la position de a la tuile est bien compris dans la frange
+                // On vérifie que la position de à la tuile est bien compris dans la frange
                 Preconditions.checkArgument(p <= fringe.size() - 1);
 
                 Pos tilePos = fringe.get(p);
@@ -193,7 +194,7 @@ public class ActionEncoder {
      *
      * @param gameState
      *          état de jeu dont on souhaite obtenir la frange
-     * @return une table associant les positions comprises sur la frange à leur index selon l'ordre x,y
+     * @return une table associant les positions comprises sur la frange à leur index selon l'ordre x, y
      */
     private static Map<Pos, Integer> getIndexedFringe(GameState gameState) {
         List<Pos> sortedPositions = gameState.board().insertionPositions().stream()
