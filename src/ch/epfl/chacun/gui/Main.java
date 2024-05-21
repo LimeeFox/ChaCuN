@@ -12,6 +12,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.random.RandomGenerator;
 import java.util.random.RandomGeneratorFactory;
 import java.util.stream.Collectors;
@@ -110,13 +111,7 @@ public class Main extends Application {
         VBox decksAndActions = new VBox();
         //Node Actions = ActionUI.create();
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
-                occupant -> {
-                    GameState gs = gameState.getValue();
-
-                    if (gs.nextAction() == GameState.Action.OCCUPY_TILE) {
-                        gameState.set(gs.withNewOccupant(occupant));
-                    }
-                });
+                occupant -> occupantConsumer(gameState, occupant));
         //decksAndActions.getChildren().add(Actions);
         decksAndActions.getChildren().add(Decks);
 
@@ -147,9 +142,9 @@ public class Main extends Application {
                             GameState gs = gameState.getValue();
                             gameState.set(gs.withPlacedTile(
                                     new PlacedTile(tileToPlace.getValue(),
-                                    gs.currentPlayer(),
-                                    tileRotation.getValue(),
-                                    move)
+                                            gs.currentPlayer(),
+                                            tileRotation.getValue(),
+                                            move)
                             ));
 
                             if (gameState.getValue().nextAction() == GameState.Action.OCCUPY_TILE) {
@@ -157,17 +152,7 @@ public class Main extends Application {
                                 newVisibleOccupants.addAll(gameState.getValue().lastTilePotentialOccupants());
                             }
                         },
-                        occupant -> { //todo make a private method cuz deck consumer uses the same one
-                            GameState gs = gameState.getValue();
-                            GameState.Action nextAction = gs.nextAction();
-
-                            if (nextAction == GameState.Action.OCCUPY_TILE) {
-                                gameState.set(gs.withNewOccupant(occupant));
-                            } else if (nextAction == GameState.Action.RETAKE_PAWN
-                                    && occupant.kind() == Occupant.Kind.PAWN) {
-                                gameState.set(gs.withOccupantRemoved(occupant));
-                            }
-                        });
+                        occupant -> occupantConsumer(gameState, occupant));
 
         /*
         Mise en commun de toutes les interfaces
@@ -189,5 +174,26 @@ public class Main extends Application {
         gameState.set(gameState.getValue().withStartingTilePlaced());
 
         stage.show();
+    }
+
+    /**
+     * Méthode d'aide qui permet de réutiliser le géstionnaire d'événements en lien avec l'occupant, vu que c'est le
+     * même pour l'interface graphique de la pile, puis celle du plateau de jeu
+     *
+     * @param gameState
+     *         l'état du jeu actuel, qui est à modifier selon les critères de la méthode
+     * @param occupant
+     *         l'occupant qui est à mettre sur le plateau ou à y retirer.
+     */
+    private void occupantConsumer(ObjectProperty<GameState> gameState, Occupant occupant) {
+        GameState gs = gameState.getValue();
+        GameState.Action nextAction = gs.nextAction();
+
+        if (nextAction == GameState.Action.OCCUPY_TILE) {
+            gameState.set(gs.withNewOccupant(occupant));
+        } else if (nextAction == GameState.Action.RETAKE_PAWN
+                && (occupant == null || occupant.kind() == Occupant.Kind.PAWN)) {
+            gameState.set(gs.withOccupantRemoved(occupant));
+        }
     }
 }
