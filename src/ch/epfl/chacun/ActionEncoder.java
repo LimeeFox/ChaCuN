@@ -197,7 +197,7 @@ public class ActionEncoder {
      */
     private static Map<Pos, Integer> getIndexedFringe(GameState gameState) {
         List<Pos> sortedPositions = gameState.board().insertionPositions().stream()
-                .sorted(Comparator.comparing(Pos::x).thenComparing(Pos::y)).toList();
+                .sorted(Comparator.comparing(Pos::y).thenComparing(Pos::x)).toList();
 
         return IntStream.range(0, sortedPositions.size())
                 .boxed()
