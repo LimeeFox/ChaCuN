@@ -99,7 +99,7 @@ public class Main extends Application {
             return "";
         });
 
-        // un autre truc de messageboard que jai pas trop compris todo rewrite comment lmao
+        // un autre truc de MessageBoard que jai pas trop compris todo rewrite comment lmao
         ObservableValue<List<MessageBoard.Message>> messages = gameState.map(g -> g.messageBoard().messages());
 
         // Liste chronologique des actions encodées en base 32 de la partie
@@ -124,7 +124,9 @@ public class Main extends Application {
                 System.out.println("Ce code ne peux pas être appliqué. Écrivez-en un nouveau.");
             }
         });
-        //todo create method to encode actions onto list
+
+
+
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
                 occupant -> {
                     GameState gs = gameState.getValue();
@@ -161,13 +163,13 @@ public class Main extends Application {
                         rotation -> {
                             tileRotation.set(tileRotation.get().add(rotation));
                         },
-                        move -> {
+                        pos -> {
                             GameState gs = gameState.getValue();
                             gameState.set(gs.withPlacedTile(
                                     new PlacedTile(tileToPlace.getValue(),
                                     gs.currentPlayer(),
                                     tileRotation.getValue(),
-                                    move)
+                                    pos)
                             ));
 
                             if (gameState.getValue().nextAction() == GameState.Action.OCCUPY_TILE) {
@@ -181,10 +183,14 @@ public class Main extends Application {
 
                             if (nextAction == GameState.Action.OCCUPY_TILE) {
                                 gameState.set(gs.withNewOccupant(occupant));
+                                int occupantKindNumber = occupant.kind().ordinal() << 4;
+                                String code = Base32.encodeBits5((occupant.kind().ordinal() << 4)
+                                        + occupant.zoneId());
                             } else if (nextAction == GameState.Action.RETAKE_PAWN
                                     && occupant.kind() == Occupant.Kind.PAWN) {
                                 gameState.set(gs.withOccupantRemoved(occupant));
                             }
+                            //todo add code to base32Codes or sth
                         });
 
         /*
