@@ -115,12 +115,17 @@ public class BoardUI {
                             // Gérer la rotation de l'occupant. La rotation doit être inversée pour les occupants
                             occupantIcon.setRotate(-group.getRotate());
 
-                            occupantIcon.setOnMouseClicked(event -> {
+                            occupantIcon.setOnMouseClicked(event -> { // todo there are quite a lot of checks here, see if we can cut corners, by any chance?
                                 if (event.getButton() == MouseButton.PRIMARY
                                         && event.isStillSincePress()
                                         && (newGameState.lastTilePotentialOccupants().contains(occupant)
                                         || newGameState.nextAction() == GameState.Action.RETAKE_PAWN)) {
-                                    occupantConsumer.accept(occupant);
+                                    PlayerColor currentPlayer = newGameState.currentPlayer();
+                                    if (currentPlayer != null
+                                            && occupantIcon.fillProperty().getValue()
+                                            .equals(ColorMap.fillColor(currentPlayer))) {
+                                        occupantConsumer.accept(occupant);
+                                    }
                                 }
                             });
 

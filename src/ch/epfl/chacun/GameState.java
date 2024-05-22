@@ -475,7 +475,7 @@ public record GameState(
 
         updatedMessageBoard = updatedMessageBoard.withWinners(winners, maxPts);
 
-        return new GameState(players, tileDecks, null, board, Action.END_GAME, updatedMessageBoard);
+        return new GameState(players, tileDecks, null, updatedBoard, Action.END_GAME, updatedMessageBoard);
     }
 
     /**

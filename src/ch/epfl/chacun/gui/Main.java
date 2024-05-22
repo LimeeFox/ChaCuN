@@ -13,6 +13,7 @@ import javafx.stage.Stage;
 import javafx.util.Pair;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.random.RandomGenerator;
 import java.util.random.RandomGeneratorFactory;
 import java.util.stream.Collectors;
@@ -129,6 +130,7 @@ public class Main extends Application {
 
 
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
+
                 occupant -> {
                     GameState currentGameState = gameState.getValue();
                     GameState.Action nextAction = currentGameState.nextAction();
@@ -171,6 +173,7 @@ public class Main extends Application {
 
                             Pair<GameState, String> action = ActionEncoder.withPlacedTile(currentGameState,
                                     new PlacedTile(tileToPlace.getValue(),
+
                                             currentGameState.currentPlayer(),
                                             tileRotation.getValue(),
                                             pos));
@@ -183,11 +186,13 @@ public class Main extends Application {
                             gameState.set(action.getKey());
                             System.out.println("game");
 
+
                             if (gameState.getValue().nextAction() == GameState.Action.OCCUPY_TILE) {
                                 Set<Occupant> newVisibleOccupants = gameState.getValue().board().occupants();
                                 newVisibleOccupants.addAll(gameState.getValue().lastTilePotentialOccupants());
                             }
                         },
+
                         occupant -> {
                             GameState currentGameState = gameState.getValue();
                             GameState.Action nextAction = currentGameState.nextAction();
@@ -216,6 +221,7 @@ public class Main extends Application {
                             //todo add code to base32Codes or sth
                         });
 
+
         /*
         Mise en commun de toutes les interfaces
         */
@@ -236,5 +242,26 @@ public class Main extends Application {
         gameState.set(gameState.getValue().withStartingTilePlaced());
 
         stage.show();
+    }
+
+    /**
+     * Méthode d'aide qui permet de réutiliser le géstionnaire d'événements en lien avec l'occupant, vu que c'est le
+     * même pour l'interface graphique de la pile, puis celle du plateau de jeu
+     *
+     * @param gameState
+     *         l'état du jeu actuel, qui est à modifier selon les critères de la méthode
+     * @param occupant
+     *         l'occupant qui est à mettre sur le plateau ou à y retirer.
+     */
+    private void occupantConsumer(ObjectProperty<GameState> gameState, Occupant occupant) {
+        GameState gs = gameState.getValue();
+        GameState.Action nextAction = gs.nextAction();
+
+        if (nextAction == GameState.Action.OCCUPY_TILE) {
+            gameState.set(gs.withNewOccupant(occupant));
+        } else if (nextAction == GameState.Action.RETAKE_PAWN
+                && (occupant == null || occupant.kind() == Occupant.Kind.PAWN)) {
+            gameState.set(gs.withOccupantRemoved(occupant));
+        }
     }
 }
