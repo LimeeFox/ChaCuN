@@ -24,7 +24,7 @@ public abstract class ImageLoader {
      * Obtenir une tuile selon son @tileId de taille 256px
      */
     public static Image normalImageForTile(int tileId) {
-        return new Image(STR."\{NORMAL_TILE_PIXEL_SIZE}/\{String.format("%02d", tileId)}.jpg");
+        return new Image(STR."/\{NORMAL_TILE_PIXEL_SIZE}/\{String.format("%02d", tileId)}.jpg");
 
     }
 
@@ -35,6 +35,6 @@ public abstract class ImageLoader {
      * Obtenir une tuile selon son @tileId de taille 512px
      */
     public static Image largeImageForTile(int tileId) {
-        return new Image(STR."\{LARGE_TILE_PIXEL_SIZE}/\{String.format("%02d", tileId)}.jpg");
+        return new Image(STR."/\{LARGE_TILE_PIXEL_SIZE}/\{String.format("%02d", tileId)}.jpg");
     }
 }

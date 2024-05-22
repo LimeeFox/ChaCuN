@@ -1,9 +1,13 @@
 package ch.epfl.chacun;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @SuppressWarnings("all")
 public final class Tiles {
+    private Tiles() {}
+
     public static final List<Tile> TILES = createTiles();
 
     private static List<Tile> createTiles() {
