@@ -221,4 +221,16 @@ public class ActionEncoder {
                 .boxed()
                 .collect(Collectors.toMap(sortedPawns::get, i -> i));
     }
+
+    /**
+     * Enregistrement représentant une paire composée de l'état du jeu résultant du code en base 32 auquel il est
+     * associé
+     *
+     * @param gameState
+     *          état de jeu résultant du code en base 32 auquel il est associé
+     * @param base32Code
+     *          chaîne de charactèrs représentant le code en base 32 qui a produit l'état de jeu auquel la chaîne est
+     *          associée
+     */
+    public record ActionState(GameState gameState, String base32Code) {}
 }
