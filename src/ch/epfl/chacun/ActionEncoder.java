@@ -82,7 +82,6 @@ public class ActionEncoder {
      * @return une paire composée du nouvel état de jeu avec l'occupant retiré,
      *         et d'une chaîne de charactèrs représentant le code en base32 de la reprise du pion
      */
-    //todo find out why occupant allegedly can never be null
     public static Pair<GameState, String> withOccupantRemoved(GameState initialGameState, Occupant removedOccupant) {
         Preconditions.checkArgument(removedOccupant.kind().equals(Occupant.Kind.PAWN)
                 || removedOccupant == null);
