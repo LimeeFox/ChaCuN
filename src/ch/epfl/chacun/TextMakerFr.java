@@ -93,7 +93,7 @@ public final class TextMakerFr implements TextMaker {
             fishMessage = STR." et contenant \{fishCount} poisson\{plurality(fishCount, false)}.";
         }
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
-                + STR."qu'occupant·e\{plurality(scorers.size(), true)} composée de \{tiles(tileCount)}} "
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} composée de \{tiles(tileCount)} "
                 + STR."\{fishMessage}";
     }
 
@@ -293,9 +293,6 @@ public final class TextMakerFr implements TextMaker {
      *         tableau associant des types d'animaux à leur quantité
      * @return une chaîne de caractères indiquant la présence d'animaux et leur quantité
      */
-    // fixme: i had to comment this out cuz otherwise it would prevent the game from working cuz an animal map
-    // fixme would try to get the value of an integer that is null, maybe my fix in a different PR will help with that
-    /*
     private String organiseAnimalsAsString(Map<Animal.Kind, Integer> animals) {
         // On trie les animaux dans l'ordre et on enlève les types qui n'ont aucune présence dans la table associative
         // ainsi que les tigres (en principe, ils ne sont pas compté)
@@ -359,8 +356,6 @@ public final class TextMakerFr implements TextMaker {
         return animalMessage.toString();
     }
 
-     */
-
     /**
      * Méthode d'aide qui permet de créer une chaîne de caractères indiquant le nombre d'animaux si cette chaîne est
      * précédé du mot "entourée"
@@ -419,6 +414,6 @@ public final class TextMakerFr implements TextMaker {
      * @return une chaîne de caractères indiquant le nombre de tuiles
      */
     private String tiles(int tileCount) {
-        return STR."\{tiles(tileCount)} tuiles}";
+        return STR."\{tileCount} tuiles}";
     }
 }

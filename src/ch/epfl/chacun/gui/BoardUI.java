@@ -27,15 +27,26 @@ import java.util.function.Consumer;
  */
 public class BoardUI {
     /**
-     *
      * @param scope
+     *         portée
      * @param currentGameState
+     *         l'état du jeu
      * @param tileRotation
+     *         la rotation à appliquer à la tuile à placer
      * @param visibleOccupants
+     *         l'ensemble des occupants visibles
      * @param highlightedTiles
+     *         l'ensemble des identifiants des tuiles mises en évidence
      * @param tileRotates
+     *         un gestionnaire prenant une valeur de type Rotation, à appeler lorsque le joueur courant
+     *         désire effectuer une rotation de la tuile à placer, c.-à-d. qu'il effectue un clic droit
+     *         sur une case de la frange
      * @param tileMoves
+     *         un gestionnaire prenant une valeur de type Pos, à appeler lorsque le joueur courant désire
+     *         poser la tuile à placer, c.-à-d. qu'il effectue un clic gauche sur une case de la frange
      * @param occupantConsumer
+     *         un gestionnaire prenant une valeur de type Occupant, à appeler lorsque le joueur courant
+     *         sélectionne un occupant, c.-à-d. qu'il clique sur l'un d'entre eux
      * @return La Node qui contient le plateau du jeu en forme de grille avec des cases correspondant à des tuiles
      */
     public static Node create(int scope,
@@ -104,10 +115,17 @@ public class BoardUI {
                             // Gérer la rotation de l'occupant. La rotation doit être inversée pour les occupants
                             occupantIcon.setRotate(-group.getRotate());
 
-                            occupantIcon.setOnMouseClicked(event -> {
-                                if (event.getButton() == MouseButton.PRIMARY) {
-                                    //&& visibleOccupants.getValue().contains(occupant)) {
-                                    occupantConsumer.accept(occupant);
+                            occupantIcon.setOnMouseClicked(event -> { // todo there are quite a lot of checks here, see if we can cut corners, by any chance?
+                                if (event.getButton() == MouseButton.PRIMARY
+                                        && event.isStillSincePress()
+                                        && (newGameState.lastTilePotentialOccupants().contains(occupant)
+                                        || newGameState.nextAction() == GameState.Action.RETAKE_PAWN)) {
+                                    PlayerColor currentPlayer = newGameState.currentPlayer();
+                                    if (currentPlayer != null
+                                            && occupantIcon.fillProperty().getValue()
+                                            .equals(ColorMap.fillColor(currentPlayer))) {
+                                        occupantConsumer.accept(occupant);
+                                    }
                                 }
                             });
 
@@ -183,14 +201,15 @@ public class BoardUI {
                     // Gérer la rotation de la tuile
                     group.setOnMouseClicked(event -> {
                         if (board.getValue().insertionPositions().contains(pos)
-                                && nextAction == GameState.Action.PLACE_TILE) {
+                                && nextAction == GameState.Action.PLACE_TILE
+                                && event.isStillSincePress()) {
                             // Si c'est un click droit, alors tourner la tuile dans le sens anti-horaire
                             // Ou dans le sens horaire si le bouton ALT (Option sur MacOS) est appuyée
                             if (event.getButton() == MouseButton.SECONDARY) {
                                 tileRotates.accept(event.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
                                 fringeCheck(newGameState.board(), group, newGameState, placer, tileRotation.getValue(), pos);
                                 group.setRotate(tileRotation.getValue().degreesCW());
-                            // Si c'est un click gauche, alors poser la tuile si cela est permis
+                                // Si c'est un click gauche, alors poser la tuile si cela est permis
                             } else if (event.getButton() == MouseButton.PRIMARY) {
                                 final PlacedTile tileToPlace =
                                         new PlacedTile(newGameState.tileToPlace(), placer, tileRotation.getValue(), pos);
@@ -226,6 +245,8 @@ public class BoardUI {
         scrollPane.setId("board-scroll-pane");
         scrollPane.getStylesheets().add("board.css");
         scrollPane.setContent(boardGridPane);
+        scrollPane.setHvalue(0.5);
+        scrollPane.setVvalue(0.5);
 
         return scrollPane;
     }
@@ -233,8 +254,10 @@ public class BoardUI {
     /**
      * Méthode d'aide qui permet de gérer les voiles
      *
-     * @param group groupe
-     * @param color couleur de l'avant plan
+     * @param group
+     *         groupe
+     * @param color
+     *         couleur de l'avant plan
      */
     private static void veil(Group group, Color color) {
         ColorInput veil = new ColorInput();
