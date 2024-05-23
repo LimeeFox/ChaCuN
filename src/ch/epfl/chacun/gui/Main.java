@@ -117,9 +117,12 @@ public class Main extends Application {
         Node Actions = ActionUI.create(base32Codes, handler -> {
             List<String> codes = new ArrayList<>(base32Codes.getValue());
             try {
-                gameState.setValue(Objects.requireNonNull(ActionEncoder.decodeAndApply(gameState.getValue(), handler))
-                        .gameState());
-                codes.add(handler);
+                ActionEncoder.StateAction updatedStateAction = ActionEncoder.decodeAndApply(gameState.getValue(),
+                        handler);
+
+                assert updatedStateAction != null;
+                gameState.setValue(updatedStateAction.gameState());
+                codes.add(updatedStateAction.base32Code());
                 base32Codes.setValue(codes);
             } catch (Exception e) {
                 //todo maybe indicate that code is invalid
@@ -171,7 +174,7 @@ public class Main extends Application {
 
                             List<String> codes = new ArrayList<>(base32Codes.getValue());
 
-                            ActionEncoder.ActionState action = ActionEncoder.withPlacedTile(currentGameState,
+                            ActionEncoder.StateAction action = ActionEncoder.withPlacedTile(currentGameState,
                                     new PlacedTile(tileToPlace.getValue(),
 
                                             currentGameState.currentPlayer(),
@@ -200,7 +203,7 @@ public class Main extends Application {
                             List<String> codes = new ArrayList<>(base32Codes.getValue());
 
                             if (nextAction == GameState.Action.OCCUPY_TILE) {
-                                ActionEncoder.ActionState action = ActionEncoder.withNewOccupant(currentGameState,
+                                ActionEncoder.StateAction action = ActionEncoder.withNewOccupant(currentGameState,
                                         occupant);
 
                                 codes.add(action.base32Code());
@@ -210,7 +213,7 @@ public class Main extends Application {
 
                             } else if (nextAction == GameState.Action.RETAKE_PAWN
                                     && occupant.kind() == Occupant.Kind.PAWN) {
-                                ActionEncoder.ActionState action = ActionEncoder.withOccupantRemoved(currentGameState,
+                                ActionEncoder.StateAction action = ActionEncoder.withOccupantRemoved(currentGameState,
                                         occupant);
 
                                 codes.add(action.base32Code());

@@ -25,7 +25,7 @@ public class ActionEncoder {
      * @return  une paire composée d'un nouvel état de jeu contenant le tuile ajouté,
      *          et d'une chaîne de charactèrs représentant le code en base32 de l'ajout de la tuile
      */
-    public static ActionState withPlacedTile(GameState initialGameState, PlacedTile tileToPlace) {
+    public static StateAction withPlacedTile(GameState initialGameState, PlacedTile tileToPlace) {
         GameState currentGameState = initialGameState.withPlacedTile(tileToPlace);
 
         // Encodage de la pose d'une tuile
@@ -38,7 +38,7 @@ public class ActionEncoder {
 
         String code = Base32.encodeBits10(n);
 
-        return new ActionState(currentGameState, code);
+        return new StateAction(currentGameState, code);
     }
 
     /**
@@ -51,7 +51,7 @@ public class ActionEncoder {
      * @return une paire composée d'un nouvel état de jeu avec l'occupant ajouté,
      *         et d'une chaîne de charactèrs représentant le code en base32 de l'ajout de l'occupant
      */
-    public static ActionState withNewOccupant(GameState initialCameState, Occupant occupant) {
+    public static StateAction withNewOccupant(GameState initialCameState, Occupant occupant) {
         GameState currentGameState = initialCameState.withNewOccupant(occupant);
 
         // Encodage de l'ajout d'un occupant
@@ -68,7 +68,7 @@ public class ActionEncoder {
 
         String code = Base32.encodeBits5(n);
 
-        return new ActionState(currentGameState, code);
+        return new StateAction(currentGameState, code);
     }
 
     /**
@@ -82,7 +82,7 @@ public class ActionEncoder {
      *         et d'une chaîne de charactèrs représentant le code en base32 de la reprise du pion
      */
     //todo find out why occupant allegedly can never be null
-    public static ActionState withOccupantRemoved(GameState initialGameState, Occupant removedOccupant) {
+    public static StateAction withOccupantRemoved(GameState initialGameState, Occupant removedOccupant) {
         Preconditions.checkArgument(removedOccupant.kind().equals(Occupant.Kind.PAWN)
                 || removedOccupant == null);
         GameState currentGameState = initialGameState.withOccupantRemoved(removedOccupant);
@@ -94,7 +94,7 @@ public class ActionEncoder {
         }
         String code = Base32.encodeBits5(o);
 
-        return new ActionState(currentGameState, code);
+        return new StateAction(currentGameState, code);
     }
 
     /**
@@ -107,7 +107,7 @@ public class ActionEncoder {
      * @return une paire composée d'un nouvel état de jeu et le code base32 qu'on lui a appliqué,
      *         ou null si au cas où ces paramètres lancent une erreur à l'appel de decodeAndApplyThrows
      */
-    public static ActionState decodeAndApply(GameState initialGameSate, String code) {
+    public static StateAction decodeAndApply(GameState initialGameSate, String code) {
         try {
             return decodeAndApplyThrows(initialGameSate, code);
         }
@@ -133,7 +133,7 @@ public class ActionEncoder {
      * @throws NullPointerException
      *          si la dernière tuile placée dans l'état de jeu est null
      */
-    private static ActionState decodeAndApplyThrows(GameState initialGameState, String code) {
+    private static StateAction decodeAndApplyThrows(GameState initialGameState, String code) {
         Preconditions.checkArgument(Base32.isValid(code));
 
         GameState.Action nextAction = initialGameState.nextAction();
@@ -186,7 +186,7 @@ public class ActionEncoder {
                 updatedGameState = initialGameState.withOccupantRemoved(occupantToRemove);
             }
         }
-        return new ActionState(updatedGameState, code);
+        return new StateAction(updatedGameState, code);
     }
 
     /**
@@ -232,5 +232,5 @@ public class ActionEncoder {
      *          chaîne de charactèrs représentant le code en base 32 qui a produit l'état de jeu auquel la chaîne est
      *          associée
      */
-    public record ActionState(GameState gameState, String base32Code) {}
+    public record StateAction(GameState gameState, String base32Code) {}
 }
