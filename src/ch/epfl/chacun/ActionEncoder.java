@@ -34,7 +34,7 @@ public class ActionEncoder {
         // Entier correspondant à la rotation de la tuile à placer
         int r = tileToPlace.rotation().ordinal();
         // Concatenation des deux morceaux d'information sous la forme "ppppp ppprr"
-        int n = (p << 2) + r;
+        int n = (p << 2) | r;
 
         String code = Base32.encodeBits10(n);
 
@@ -64,7 +64,7 @@ public class ActionEncoder {
             z = occupant.zoneId() % 10;
         }
         // Concatenation sous forme "kzzzz"
-        int n = (k << 4) + z;
+        int n = (k << 4) | z;
 
         String code = Base32.encodeBits5(n);
 

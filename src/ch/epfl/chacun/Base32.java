@@ -60,7 +60,7 @@ public class Base32 {
         if (codeLength == 1) {
             return ALPHABET.indexOf(encoded);
         } else {
-            return (ALPHABET.indexOf(encoded.charAt(0)) << 5) + ALPHABET.indexOf(encoded.charAt(1));
+            return (ALPHABET.indexOf(encoded.charAt(0)) << 5) | ALPHABET.indexOf(encoded.charAt(1));
         }
     }
 }
