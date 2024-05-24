@@ -112,15 +112,20 @@ public class Main extends Application {
 
         // Interface graphique des codes en base 32 pour le jeu à distance
         Node Actions = ActionUI.create(base32Codes, handler -> {
-            List<String> codes = new ArrayList<>(base32Codes.getValue());
+//            List<String> codes = new ArrayList<>(base32Codes.getValue());
             try {
-                ActionEncoder.StateAction updatedStateAction = ActionEncoder.decodeAndApply(gameState.getValue(),
-                        handler);
+//                ActionEncoder.StateAction updatedStateAction = ActionEncoder.decodeAndApply(gameState.getValue(),
+//                        handler);
+//
+//                assert updatedStateAction != null;
+//                gameState.setValue(updatedStateAction.gameState());
+//                codes.add(updatedStateAction.base32Code());
+//                base32Codes.setValue(codes);
 
-                assert updatedStateAction != null;
-                gameState.setValue(updatedStateAction.gameState());
-                codes.add(updatedStateAction.base32Code());
-                base32Codes.setValue(codes);
+                updateStateAndCodes(ActionEncoder.decodeAndApply(gameState.getValue(), handler),
+                        gameState,
+                        base32Codes);
+
             } catch (Exception _) {
                 //todo possible catch
             }
