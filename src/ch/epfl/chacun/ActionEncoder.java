@@ -82,11 +82,9 @@ public class ActionEncoder {
      *         et d'une chaîne de charactèrs représentant le code en base32 de la reprise du pion
      */
     public static StateAction withOccupantRemoved(GameState initialGameState, Occupant removedOccupant) {
-        // On vérifie que l'occupant a retiré est un PION, ou est null
+        // On vérifie que l'occupant a retiré est un PION, ou est nul
         // On vérifie que le code ne tente pas de retirer un occupant qui n'appartient pas au joueur courant
-        Preconditions.checkArgument((removedOccupant.kind().equals(Occupant.Kind.PAWN)
-                && initialGameState.board().tileWithId(removedOccupant.zoneId() % 10)
-                .placer() == initialGameState.currentPlayer())
+        Preconditions.checkArgument(removedOccupant.kind().equals(Occupant.Kind.PAWN)
                 || removedOccupant == null);
 
         GameState currentGameState = initialGameState.withOccupantRemoved(removedOccupant);
@@ -182,9 +180,13 @@ public class ActionEncoder {
             }
             case RETAKE_PAWN -> {
                 Preconditions.checkArgument(code.length() == 1);
+
                 Occupant occupantToRemove = null;
                 if (decoded != 0b11111) {
-                    occupantToRemove = getIndexedPawns(initialGameState).get(decoded);
+                    occupantToRemove = getIndexedPawns(initialGameState).keySet().stream().toList().get(decoded);
+                    Preconditions.checkArgument(initialGameState.board()
+                            .tileWithId(occupantToRemove.zoneId() % 10).placer()
+                            == initialGameState.currentPlayer());
                 }
                 // Lance une "IllegalArgumentException" si l'occupant ne peut pas être retiré
                 updatedGameState = initialGameState.withOccupantRemoved(occupantToRemove);
@@ -216,10 +218,14 @@ public class ActionEncoder {
      *          état de jeu dont on souhaite obtenir les pions
      * @return une table associant les pions à leur index selon l'ordre des identifiants
      */
-    private static List<Occupant> getIndexedPawns(GameState gameState) {
-        return gameState.board().occupants().stream()
+    private static Map<Occupant, Integer> getIndexedPawns(GameState gameState) {
+        List<Occupant> sortedPawns = gameState.board().occupants().stream()
                 .filter(occupant ->  occupant.kind().equals(Occupant.Kind.PAWN))
                 .sorted(Comparator.comparing(Occupant::zoneId)).toList();
+
+        return IntStream.range(0, sortedPawns.size())
+                .boxed()
+                .collect(Collectors.toMap(sortedPawns::get, i -> i));
     }
 
     /**
