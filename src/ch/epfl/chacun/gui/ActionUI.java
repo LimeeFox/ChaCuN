@@ -90,7 +90,6 @@ public class ActionUI {
                 codesBuilder.append(", ");
             }
         }
-        System.out.println("ended");
         return codesBuilder.toString();
     }
 }

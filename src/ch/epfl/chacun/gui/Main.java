@@ -10,11 +10,8 @@ import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.random.RandomGenerator;
 import java.util.random.RandomGeneratorFactory;
 import java.util.stream.Collectors;
 
@@ -124,9 +121,8 @@ public class Main extends Application {
                 gameState.setValue(updatedStateAction.gameState());
                 codes.add(updatedStateAction.base32Code());
                 base32Codes.setValue(codes);
-            } catch (Exception e) {
-                //todo maybe indicate that code is invalid
-                System.out.println("Ce code ne peux pas être appliqué. Écrivez-en un nouveau.");
+            } catch (Exception _) {
+                //todo possible catch
             }
         });
 
