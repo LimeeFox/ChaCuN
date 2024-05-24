@@ -129,16 +129,7 @@ public class Main extends Application {
 
 
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
-
-                occupant -> {
-                    GameState currentGameState = gameState.getValue();
-                    GameState.Action nextAction = currentGameState.nextAction();
-
-                    if (nextAction == GameState.Action.OCCUPY_TILE) {
-                        gameState.set(currentGameState.withNewOccupant(occupant));
-
-                    }
-                });
+                occupant -> occupantConsumer(gameState, occupant));
         decksAndActions.getChildren().add(Actions);
         decksAndActions.getChildren().add(Decks);
 

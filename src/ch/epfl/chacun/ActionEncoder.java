@@ -81,10 +81,12 @@ public class ActionEncoder {
      * @return une paire composée du nouvel état de jeu avec l'occupant retiré,
      *         et d'une chaîne de charactèrs représentant le code en base32 de la reprise du pion
      */
-    //todo find out why occupant allegedly can never be null
     public static StateAction withOccupantRemoved(GameState initialGameState, Occupant removedOccupant) {
+        // On vérifie que l'occupant a retiré est un PION, ou est nul
+        // On vérifie que le code ne tente pas de retirer un occupant qui n'appartient pas au joueur courant
         Preconditions.checkArgument(removedOccupant.kind().equals(Occupant.Kind.PAWN)
                 || removedOccupant == null);
+
         GameState currentGameState = initialGameState.withOccupantRemoved(removedOccupant);
 
         // Encodage de la reprise d'un pion
@@ -178,9 +180,13 @@ public class ActionEncoder {
             }
             case RETAKE_PAWN -> {
                 Preconditions.checkArgument(code.length() == 1);
+
                 Occupant occupantToRemove = null;
                 if (decoded != 0b11111) {
                     occupantToRemove = getIndexedPawns(initialGameState).keySet().stream().toList().get(decoded);
+                    Preconditions.checkArgument(initialGameState.board()
+                            .tileWithId(occupantToRemove.zoneId() % 10).placer()
+                            == initialGameState.currentPlayer());
                 }
                 // Lance une "IllegalArgumentException" si l'occupant ne peut pas être retiré
                 updatedGameState = initialGameState.withOccupantRemoved(occupantToRemove);
