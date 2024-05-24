@@ -158,20 +158,28 @@ public class Main extends Application {
                         },
                         pos -> {
                             GameState gs = gameState.getValue();
+//
+//                            List<String> codes = new ArrayList<>(base32Codes.getValue());
+//
+//                            ActionEncoder.StateAction action = ActionEncoder.withPlacedTile(gs,
+//                                    new PlacedTile(tileToPlace.getValue(),
+//
+//                                            gs.currentPlayer(),
+//                                            tileRotation.getValue(),
+//                                            pos));
+//
+//                            codes.add(action.base32Code());
+//                            base32Codes.setValue(codes);
+//
+//                            gameState.set(action.gameState());
 
-                            List<String> codes = new ArrayList<>(base32Codes.getValue());
-
-                            ActionEncoder.StateAction action = ActionEncoder.withPlacedTile(gs,
+                            updateStateAndCodes(ActionEncoder.withPlacedTile(gs,
                                     new PlacedTile(tileToPlace.getValue(),
-
                                             gs.currentPlayer(),
                                             tileRotation.getValue(),
-                                            pos));
-
-                            codes.add(action.base32Code());
-                            base32Codes.setValue(codes);
-
-                            gameState.set(action.gameState());
+                                            pos)),
+                                    gameState,
+                                    base32Codes);
 
                             if (gameState.getValue().nextAction() == GameState.Action.OCCUPY_TILE) {
                                 Set<Occupant> newVisibleOccupants = gameState.getValue().board().occupants();
@@ -183,26 +191,34 @@ public class Main extends Application {
                             GameState gs = gameState.getValue();
                             GameState.Action nextAction = gs.nextAction();
 
-                            List<String> codes = new ArrayList<>(base32Codes.getValue());
+//                            List<String> codes = new ArrayList<>(base32Codes.getValue());
 
                             if (nextAction == GameState.Action.OCCUPY_TILE) {
-                                ActionEncoder.StateAction action = ActionEncoder.withNewOccupant(gs,
-                                        occupant);
+//                                ActionEncoder.StateAction action = ActionEncoder.withNewOccupant(gs,
+//                                        occupant);
+//
+//                                codes.add(action.base32Code());
+//                                base32Codes.setValue(codes);
+//
+//                                gameState.set(action.gameState());
 
-                                codes.add(action.base32Code());
-                                base32Codes.setValue(codes);
+                                updateStateAndCodes(ActionEncoder.withNewOccupant(gs, occupant),
+                                        gameState,
+                                        base32Codes);
 
-                                gameState.set(action.gameState());
-                                
                             } else if (nextAction == GameState.Action.RETAKE_PAWN
                                     && occupant.kind() == Occupant.Kind.PAWN) {
-                                ActionEncoder.StateAction action = ActionEncoder.withOccupantRemoved(gs,
-                                        occupant);
+//                                ActionEncoder.StateAction action = ActionEncoder.withOccupantRemoved(gs,
+//                                        occupant);
+//
+//                                codes.add(action.base32Code());
+//                                base32Codes.setValue(codes);
+//
+//                                gameState.set(action.gameState());
 
-                                codes.add(action.base32Code());
-                                base32Codes.setValue(codes);
-
-                                gameState.set(action.gameState());
+                                updateStateAndCodes(ActionEncoder.withOccupantRemoved(gs, occupant),
+                                        gameState,
+                                        base32Codes);
                             }
                         });
 
@@ -248,5 +264,17 @@ public class Main extends Application {
                 && (occupant == null || occupant.kind() == Occupant.Kind.PAWN)) {
             gameState.set(gs.withOccupantRemoved(occupant));
         }
+    }
+
+    private void updateStateAndCodes(ActionEncoder.StateAction action,
+                                     ObjectProperty<GameState> state,
+                                     ObjectProperty<List<String>> base32Codes
+                                     ) {
+        List<String> codes = new ArrayList<>(base32Codes.getValue());
+
+        codes.add(action.base32Code());
+        base32Codes.setValue(codes);
+
+        state.set(action.gameState());
     }
 }
