@@ -1,6 +1,8 @@
 package ch.epfl.chacun.gui;
 
 import ch.epfl.chacun.*;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -29,7 +31,7 @@ public class BoardUI {
     /**
      * @param scope
      *         portée
-     * @param currentGameState
+     * @param gameState
      *         l'état du jeu
      * @param tileRotation
      *         la rotation à appliquer à la tuile à placer
@@ -50,7 +52,7 @@ public class BoardUI {
      * @return La Node qui contient le plateau du jeu en forme de grille avec des cases correspondant à des tuiles
      */
     public static Node create(int scope,
-                              ObservableValue<GameState> currentGameState,
+                              ObservableValue<GameState> gameState,
                               ObservableValue<Rotation> tileRotation,
                               ObservableValue<Set<Occupant>> visibleOccupants,
                               ObservableValue<Set<Integer>> highlightedTiles,
@@ -74,165 +76,146 @@ public class BoardUI {
         GridPane boardGridPane = new GridPane();
         boardGridPane.setId("board-grid");
 
-        ObservableValue<Board> board = currentGameState.map(GameState::board);
-        // Rotation de la tuile à poser
-        ObservableValue<Integer> rotation = tileRotation.map(Rotation::degreesCW);
+        ObservableValue<Board> board = gameState.map(GameState::board);
+        ObservableValue<Tile> tileToPlace = gameState.map(GameState::tileToPlace);
+        ObservableValue<GameState.Action> nextAction = gameState.map(GameState::nextAction);
+        ObservableValue<PlayerColor> currentPlayer = gameState.map(GameState::currentPlayer);
         for (int x = -scope; x <= scope; x++) {
             for (int y = -scope; y <= scope; y++) {
                 final Pos pos = new Pos(x, y);
+                ObservableValue<PlacedTile> tile = board.map(b -> b.tileAt(pos));
 
                 Group group = new Group();
                 ImageView tileFace = new ImageView();
 
+                // Création du container avec toutes les propriétés nécessaires à la création d'une tuile
+                ObservableValue<CellData> cell = Bindings.createObjectBinding(
+                        () -> {
+                            PlacedTile currentTile = tile.getValue();
+                            GameState.Action currentAction = nextAction.getValue();
+                            Board currentBoard = board.getValue();
+
+                            Image image = currentTile == null ?
+                                    emptyTileImage : cache.computeIfAbsent(currentTile.id(), ImageLoader::normalImageForTile); //todo voir si on peut merge avec le todo #69
+
+                            Rotation currentRotation = currentTile == null ? tileRotation.getValue() : currentTile.rotation();
+
+                            PlayerColor placer = currentPlayer.getValue();
+                            Color veilColour = Color.TRANSPARENT;
+                            if (currentBoard.insertionPositions().contains(pos)
+                                    && currentAction == GameState.Action.PLACE_TILE) {
+                                if (placer != null) {
+                                    veilColour = ColorMap.fillColor(placer);
+                                }
+                                if (tileFace.isHover()) {
+                                    image = cache.computeIfAbsent(tileToPlace.getValue().id(), ImageLoader::normalImageForTile); //todo #69
+
+                                    PlacedTile tileToPlace0 = new PlacedTile(tileToPlace.getValue(),
+                                            currentPlayer.getValue(), tileRotation.getValue(), pos);
+                                    veilColour = currentBoard.canAddTile(tileToPlace0) ? Color.TRANSPARENT : Color.WHITE;
+                                }
+                            }
+                            if (currentTile != null
+                                    && !highlightedTiles.getValue().isEmpty()
+                                    && !highlightedTiles.getValue().contains(currentTile.id())) {
+                                veilColour = Color.BLACK;
+                            }
+
+                            return new CellData(image, currentRotation, veilColour);
+                        },
+                        gameState,
+                        tileRotation,
+                        board,
+                        tileToPlace,
+                        nextAction,
+                        highlightedTiles,
+                        tileFace.hoverProperty());
+
                 tileFace.setFitHeight(ImageLoader.NORMAL_TILE_FIT_SIZE);
                 tileFace.setFitWidth(ImageLoader.NORMAL_TILE_FIT_SIZE);
+                tileFace.imageProperty().bind(cell.map(CellData::image));
 
-                // Gérer tous les changements pour chaque case du tableau
-                currentGameState.addListener((o, oldGameState, newGameState) -> {
-                    GameState.Action nextAction = newGameState.nextAction();
-                    PlacedTile tile = board.getValue().tileAt(pos);
-                    PlayerColor placer = newGameState.currentPlayer();
+                // Manipulation de la rotation de la tuile
+                group.rotateProperty().bind(cell.map(CellData::rotation).map(Rotation::degreesCW));
 
-                    // L'image de la tuile (soit "vide", soit celle de la tuile)
-                    tileFace.setImage(tile == null
-                            ? emptyTileImage : cache.computeIfAbsent(tile.id(), ImageLoader::normalImageForTile));
-                    veil(group, nextAction == GameState.Action.PLACE_TILE &&
-                            board.getValue().insertionPositions().contains(pos) && placer != null ?
-                            ColorMap.fillColor(placer) : Color.TRANSPARENT);
+                // Manipulation de la voile de la tuile
+                group.setEffect(veil(cell.map(CellData::veilColour)));
 
-                    // Gérer les occupants
-                    if (tile != null && tile.kind() != Tile.Kind.START) {
-                        for (Occupant occupant : tile.potentialOccupants()) {
-                            // On a besoin de créer un occupant pour CHAQUE joueur, qu'on va en premier temps, cacher,
-                            // et en deuxième temps, le refaire apparaître au cas oû la tuile se fait occuper
-                            SVGPath occupantIcon = (SVGPath) Icon
-                                    .newFor(tile.placer(), occupant.kind());
-                            occupantIcon.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
+                /*
+                Manipulation des occupants et les jetons d'annulation
+                 */
+                tile.addListener((o, oldValue, newValue) -> {
+                    if (newValue == null || newValue.kind() == Tile.Kind.START) return;
 
-                            occupantIcon.visibleProperty()
-                                    .bind(visibleOccupants.map(occupants -> occupants.contains(occupant)));
+                    PlayerColor placer = tile.getValue().placer();
+                    for (Occupant occupant : newValue.potentialOccupants()) {
+                        // On a besoin de créer un occupant pour CHAQUE joueur, qu'on va en premier temps, cacher,
+                        // et en deuxième temps, le refaire apparaître au cas oû la tuile se fait occuper
+                        SVGPath occupantIcon = (SVGPath) Icon
+                                .newFor(placer, occupant.kind());
+                        occupantIcon.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
 
-                            // Gérer la rotation de l'occupant. La rotation doit être inversée pour les occupants
-                            occupantIcon.setRotate(-group.getRotate());
+                        occupantIcon
+                                .visibleProperty()
+                                .bind(visibleOccupants.map(occupants -> occupants.contains(occupant)));
 
-                            occupantIcon.setOnMouseClicked(event -> { // todo there are quite a lot of checks here, see if we can cut corners, by any chance?
-                                if (event.getButton() == MouseButton.PRIMARY
-                                        && event.isStillSincePress()
-                                        && (newGameState.lastTilePotentialOccupants().contains(occupant)
-                                        || newGameState.nextAction() == GameState.Action.RETAKE_PAWN)) {
-                                    PlayerColor currentPlayer = newGameState.currentPlayer();
-                                    if (currentPlayer != null
-                                            && occupantIcon.fillProperty().getValue()
-                                            .equals(ColorMap.fillColor(currentPlayer))) {
-                                        occupantConsumer.accept(occupant);
-                                    }
+                        // Gérer la rotation de l'occupant. La rotation doit être inversée pour les occupants
+                        occupantIcon.rotateProperty()
+                                .bind(cell.map(CellData::rotation).map(rotation -> - rotation.degreesCW()));
+
+                        // Auditeur qui va gérer le
+                        occupantIcon.setOnMouseClicked(event -> { // todo there are quite a lot of checks here, see if we can cut corners, by any chance?
+                            if (event.getButton() == MouseButton.PRIMARY
+                                    && event.isStillSincePress()
+                                    && (gameState.getValue().lastTilePotentialOccupants().contains(occupant)
+                                    || nextAction.getValue() == GameState.Action.RETAKE_PAWN)) {
+                                if (placer != null
+                                        && occupantIcon.fillProperty().getValue()
+                                        .equals(ColorMap.fillColor(placer))) {
+                                    occupantConsumer.accept(occupant);
                                 }
-                            });
+                            }
+                        });
 
-                            group.getChildren().add(occupantIcon);
-                        }
-
-                        // Gérer les jetons d'annulation
-                        tile.meadowZones().forEach(meadowZone -> meadowZone.animals().forEach(animal -> {
-                            ImageView cancellationToken = new ImageView();
-                            cancellationToken.setImage(marker);
-                            cancellationToken.setId(STR."marker_\{animal.id()}");
-                            cancellationToken.getStyleClass().add("marker");
-                            cancellationToken.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
-                            cancellationToken.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
-
-                            ObservableValue<Boolean> isCancelled = board
-                                    .map(b -> b.cancelledAnimals().contains(animal));
-                            cancellationToken.visibleProperty().bind(isCancelled);
-
-                            group.getChildren().add(cancellationToken);
-                        }));
+                        group.getChildren().add(occupantIcon);
                     }
 
-                    // Gérer l'affichage de la tuile si elle est prête à être posée
-                    // C-à-d, la souris survole une case de frange
-                    /* todo experimental feature that uses one listener for hovering instead of two
-                    (even though in the source code implementation, they use the other two to define this one lol)
-                    tileFace.hoverProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean isHovering) -> {
-                        Tile tileToPlace = newGameState.tileToPlace();
-                        if (board.getValue().insertionPositions().contains(pos) && nextAction == GameState.Action.PLACE_TILE) {
-                            if (isHovering) {
-                                // Si la case contient une tuile, et que certaines tuiles sont mises en évidence
-                                // mais pas celle de la case, alors elle est recouverte d'un voile noir qui l'assombrit
-                                if (board.getValue().canAddTile(new PlacedTile(tileToPlace, placer, tileRotation.getValue(), pos))) {
-                                    veil(group, Color.TRANSPARENT);
-                                } else {
-                                    // Si la case fait partie de la frange, que le curseur de la souris la survole
-                                    // et que la tuile courante, avec sa rotation actuelle, ne peut pas y être placée,
-                                    // alors elle est recouverte d'un voile blanc
-                                    veil(group, Color.WHITE);
-                                }
-                                tileFace.setImage(cache.get(tileToPlace.id()));
-                                group.rotateProperty().set(tileRotation.getValue().degreesCW());
-                            } else {
-                                // This is equivalent to setOnMouseExited
-                                if (placer != null) {
-                                    tileFace.setImage(emptyTileImage);
-                                    veil(group, ColorMap.fillColor(placer));
-                                }
-                            }
-                        }
-                    });
+                    // Gérer les jetons d'annulation
+                    newValue.meadowZones().forEach(meadowZone -> meadowZone.animals().forEach(animal -> {
+                        ImageView cancellationToken = new ImageView();
+                        cancellationToken.setImage(marker);
+                        cancellationToken.setId(STR."marker_\{animal.id()}");
+                        cancellationToken.getStyleClass().add("marker");
+                        cancellationToken.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
+                        cancellationToken.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
 
-                     */
+                        ObservableValue<Boolean> isCancelled = board
+                                .map(b -> b.cancelledAnimals().contains(animal));
+                        cancellationToken.visibleProperty().bind(isCancelled);
 
-                    tileFace.setOnMouseEntered(event -> {
-                        if (board.getValue().insertionPositions().contains(pos) && nextAction == GameState.Action.PLACE_TILE) {
-                            Tile tileToPlace = newGameState.tileToPlace(); //todo we're using tileToPlace many times
-                            fringeCheck(newGameState.board(), group, newGameState, placer, tileRotation.getValue(), pos); //todo check if we can use board instead of newGameState
-                            tileFace.setImage(cache.computeIfAbsent(tileToPlace.id(), ImageLoader::normalImageForTile));
-                            group.rotateProperty().set(rotation.getValue());
-                        }
-                    });
-
-                    tileFace.setOnMouseExited(event -> {
-                        if (board.getValue().insertionPositions().contains(pos) && placer != null
-                                && nextAction == GameState.Action.PLACE_TILE) {
-                            tileFace.setImage(emptyTileImage);
-                            veil(group, ColorMap.fillColor(placer));
-                        }
-                    });
-
-                    // Gérer la rotation de la tuile
-                    group.setOnMouseClicked(event -> {
-                        if (board.getValue().insertionPositions().contains(pos)
-                                && nextAction == GameState.Action.PLACE_TILE
-                                && event.isStillSincePress()) {
-                            // Si c'est un click droit, alors tourner la tuile dans le sens anti-horaire
-                            // Ou dans le sens horaire si le bouton ALT (Option sur MacOS) est appuyée
-                            if (event.getButton() == MouseButton.SECONDARY) {
-                                tileRotates.accept(event.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
-                                fringeCheck(newGameState.board(), group, newGameState, placer, tileRotation.getValue(), pos);
-                                group.setRotate(tileRotation.getValue().degreesCW());
-                                // Si c'est un click gauche, alors poser la tuile si cela est permis
-                            } else if (event.getButton() == MouseButton.PRIMARY) {
-                                final PlacedTile tileToPlace =
-                                        new PlacedTile(newGameState.tileToPlace(), placer, tileRotation.getValue(), pos);
-                                if (board.getValue().canAddTile(tileToPlace)) {
-                                    tileMoves.accept(pos);
-                                    tileFace.setImage(cache.computeIfAbsent(tileToPlace.id(), ImageLoader::normalImageForTile));
-                                }
-                            }
-                        }
-                    });
+                        group.getChildren().add(cancellationToken);
+                    }));
                 });
 
-                // Auditeur qui gère la mise en évidence des tuiles lorsqu'un joueur survole un texte
-                // Qui concerne une zone avec cette tuile avec sa souris
-                highlightedTiles.addListener((o, oldValue, newValue) -> {
-                    PlacedTile placedTile = board.getValue().tileAt(pos);
-                    if (placedTile != null) {
-                        if (newValue.isEmpty() || newValue.contains(placedTile.id()))
-                            veil(group, Color.TRANSPARENT);
-                            // Si la case contient une tuile, et que certaines tuiles sont mises en évidence
-                            // mais pas celle de la case, alors elle est recouverte d'un voile noir qui l'assombrit
-                        else if (!newValue.contains(placedTile.id()))
-                            veil(group, Color.BLACK);
+
+                group.setOnMouseClicked(event -> {
+                    Board currentBoard = board.getValue();
+                    if (currentBoard.insertionPositions().contains(pos)
+                            && nextAction.getValue() == GameState.Action.PLACE_TILE
+                            && event.isStillSincePress()) {
+                        // Si c'est un click droit, alors tourner la tuile dans le sens anti-horaire
+                        // Ou dans le sens horaire si le bouton ALT (Option sur MacOS) est appuyée
+                        if (event.getButton() == MouseButton.SECONDARY) {
+                            tileRotates.accept(event.isAltDown() ? Rotation.RIGHT : Rotation.LEFT);
+                            // group.setRotate(rotation.getValue());
+                            // Si c'est un click gauche, alors poser la tuile si cela est permis
+                        } else if (event.getButton() == MouseButton.PRIMARY) {
+                            final PlacedTile tileToPlace1 =
+                                    new PlacedTile(tileToPlace.getValue(), currentPlayer.getValue(), tileRotation.getValue(), pos);
+                            if (currentBoard.canAddTile(tileToPlace1)) {
+                                tileMoves.accept(pos);
+                            }
+                        }
                     }
                 });
 
@@ -254,39 +237,21 @@ public class BoardUI {
     /**
      * Méthode d'aide qui permet de gérer les voiles
      *
-     * @param group
-     *         groupe
      * @param color
      *         couleur de l'avant plan
      */
-    private static void veil(Group group, Color color) {
+    private static Blend veil(ObservableValue<Color> color) {
         ColorInput veil = new ColorInput();
         veil.setHeight(ImageLoader.NORMAL_TILE_FIT_SIZE);
         veil.setWidth(ImageLoader.NORMAL_TILE_FIT_SIZE);
-        veil.setPaint(color);
+        veil.paintProperty().bind(color);
 
         Blend blend = new Blend(BlendMode.SRC_OVER);
         blend.setOpacity(0.5);
         blend.setTopInput(veil);
 
-        group.setEffect(blend);
+        return blend;
     }
 
-    private static void fringeCheck(Board board,
-                                    Group group,
-                                    GameState gameState,
-                                    PlayerColor placer,
-                                    Rotation rotation,
-                                    Pos pos) {
-        Tile tileToPlace = gameState.tileToPlace();
-        // Si le joueur parcours la case avec sa souris, on fait un preview de la tuile à cette case
-        if (board.canAddTile(new PlacedTile(tileToPlace, placer, rotation, pos))) {
-            veil(group, Color.TRANSPARENT);
-        } else {
-            // Si la case fait partie de la frange, que le curseur de la souris la survole
-            // et que la tuile courante, avec sa rotation actuelle, ne peut pas y être placée,
-            // alors elle est recouverte d'un voile blanc
-            veil(group, Color.WHITE);
-        }
-    }
+    private record CellData(Image image, Rotation rotation, Color veilColour) {}
 }
