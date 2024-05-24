@@ -81,7 +81,6 @@ public class ActionUI {
      *          base32
      */
     private static String formatBase32Codes(List<String> codes) {
-//        System.out.println("formatting...");
         StringBuilder codesBuilder = new StringBuilder();
         int startIndex = Math.max(0, codes.size() - 4);
         // On affiche que (au plus) les 4 derniers codes

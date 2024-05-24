@@ -183,12 +183,8 @@ public class Main extends Application {
 
                             codes.add(action.base32Code());
                             base32Codes.setValue(codes);
-                            System.out.println(base32Codes.getValue());
-                            System.out.println("codes");
 
                             gameState.set(action.gameState());
-                            System.out.println("game");
-
 
                             if (gameState.getValue().nextAction() == GameState.Action.OCCUPY_TILE) {
                                 Set<Occupant> newVisibleOccupants = gameState.getValue().board().occupants();
@@ -221,7 +217,6 @@ public class Main extends Application {
 
                                 gameState.set(action.gameState());
                             }
-                            //todo add code to base32Codes or sth
                         });
 
 
