@@ -62,16 +62,16 @@ public class Main extends Application {
         ObjectProperty<Rotation> tileRotation = new SimpleObjectProperty<>(Rotation.NONE);
 
         // Les occupants qui doivent s'afficher (ceux à placer ainsi que ceux déjà placés)
-        ObservableValue<Set<Occupant>> visibleOccupants = gameState.map(currentGameState -> {
+        ObservableValue<Set<Occupant>> visibleOccupants = gameState.map(gs -> {
             Set<Occupant> occupants = new HashSet<>();
 
-            if (currentGameState.nextAction() == GameState.Action.OCCUPY_TILE) {
-                occupants.addAll(currentGameState.lastTilePotentialOccupants());
+            if (gs.nextAction() == GameState.Action.OCCUPY_TILE) {
+                occupants.addAll(gs.lastTilePotentialOccupants());
             } else {
-                occupants.removeAll(currentGameState.lastTilePotentialOccupants());
+                occupants.removeAll(gs.lastTilePotentialOccupants());
             }
 
-            occupants.addAll(currentGameState.board().occupants());
+            occupants.addAll(gs.board().occupants());
             return occupants;
         });
 
@@ -157,14 +157,14 @@ public class Main extends Application {
                             tileRotation.set(tileRotation.get().add(rotation));
                         },
                         pos -> {
-                            GameState currentGameState = gameState.getValue();
+                            GameState gs = gameState.getValue();
 
                             List<String> codes = new ArrayList<>(base32Codes.getValue());
 
-                            ActionEncoder.StateAction action = ActionEncoder.withPlacedTile(currentGameState,
+                            ActionEncoder.StateAction action = ActionEncoder.withPlacedTile(gs,
                                     new PlacedTile(tileToPlace.getValue(),
 
-                                            currentGameState.currentPlayer(),
+                                            gs.currentPlayer(),
                                             tileRotation.getValue(),
                                             pos));
 
@@ -180,23 +180,23 @@ public class Main extends Application {
                         },
 
                         occupant -> {
-                            GameState currentGameState = gameState.getValue();
-                            GameState.Action nextAction = currentGameState.nextAction();
+                            GameState gs = gameState.getValue();
+                            GameState.Action nextAction = gs.nextAction();
 
                             List<String> codes = new ArrayList<>(base32Codes.getValue());
 
                             if (nextAction == GameState.Action.OCCUPY_TILE) {
-                                ActionEncoder.StateAction action = ActionEncoder.withNewOccupant(currentGameState,
+                                ActionEncoder.StateAction action = ActionEncoder.withNewOccupant(gs,
                                         occupant);
 
                                 codes.add(action.base32Code());
                                 base32Codes.setValue(codes);
 
                                 gameState.set(action.gameState());
-
+                                
                             } else if (nextAction == GameState.Action.RETAKE_PAWN
                                     && occupant.kind() == Occupant.Kind.PAWN) {
-                                ActionEncoder.StateAction action = ActionEncoder.withOccupantRemoved(currentGameState,
+                                ActionEncoder.StateAction action = ActionEncoder.withOccupantRemoved(gs,
                                         occupant);
 
                                 codes.add(action.base32Code());
