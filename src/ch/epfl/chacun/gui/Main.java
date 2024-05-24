@@ -122,7 +122,7 @@ public class Main extends Application {
                 codes.add(updatedStateAction.base32Code());
                 base32Codes.setValue(codes);
             } catch (Exception _) {
-                //todo possible reaction
+                //todo possible catch
             }
         });
 
