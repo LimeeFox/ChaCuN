@@ -1217,10 +1217,10 @@ class ActionEncoderTest {
         //todo seems about right
         String expectedCode = "AB";
 
-        Pair<GameState, String> pair = ActionEncoder.withPlacedTile(initialGameState, tileToPlace);
+        ActionEncoder.StateAction pair = ActionEncoder.withPlacedTile(initialGameState, tileToPlace);
 
-        assertTrue(expectedGameState.equals(pair.getKey()));
-        assertEquals(expectedCode, pair.getValue());
+        assertTrue(expectedGameState.equals(pair.gameState()));
+        assertEquals(expectedCode, pair.base32Code());
     }
 
     @Test
@@ -1239,10 +1239,10 @@ class ActionEncoderTest {
         GameState expectedGameState = initialGameState.withNewOccupant(occupantToPlace);
         String expectedCode = "A";
 
-        Pair<GameState, String> pair = ActionEncoder.withNewOccupant(initialGameState, occupantToPlace);
+        ActionEncoder.StateAction pair = ActionEncoder.withNewOccupant(initialGameState, occupantToPlace);
 
-        assertTrue(expectedGameState.equals(pair.getKey()));
-        assertEquals(expectedCode, pair.getValue());
+        assertTrue(expectedGameState.equals(pair.gameState()));
+        assertEquals(expectedCode, pair.base32Code());
     }
 
     @Test
@@ -1273,15 +1273,15 @@ class ActionEncoderTest {
         String expectedCode2 = "7";
 
 
-        Pair<GameState, String> pair1 = ActionEncoder.withOccupantRemoved(initialGameState, occupantToPlace);
-        Pair<GameState, String> pair2 = ActionEncoder.withOccupantRemoved(initialGameState, null);
+        ActionEncoder.StateAction pair1 = ActionEncoder.withOccupantRemoved(initialGameState, occupantToPlace);
+        ActionEncoder.StateAction pair2 = ActionEncoder.withOccupantRemoved(initialGameState, null);
 
 
-        assertTrue(expectedGameState.equals(pair1.getKey()));
-        assertEquals(expectedCode1, pair1.getValue());
+        assertTrue(expectedGameState.equals(pair1.gameState()));
+        assertEquals(expectedCode1, pair1.base32Code());
 
-        assertTrue(noRemoveGaveState.equals(pair2.getKey()));
-        assertEquals(expectedCode2, pair2.getValue());
+        assertTrue(noRemoveGaveState.equals(pair2.gameState()));
+        assertEquals(expectedCode2, pair2.base32Code());
     }
 
     @Test

@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -64,16 +65,16 @@ public class Main extends Application {
         ObjectProperty<Rotation> tileRotation = new SimpleObjectProperty<>(Rotation.NONE);
 
         // Les occupants qui doivent s'afficher (ceux à placer ainsi que ceux déjà placés)
-        ObservableValue<Set<Occupant>> visibleOccupants = gameState.map(gs -> {
+        ObservableValue<Set<Occupant>> visibleOccupants = gameState.map(currentGameState -> {
             Set<Occupant> occupants = new HashSet<>();
 
-            if (gs.nextAction() == GameState.Action.OCCUPY_TILE) {
-                occupants.addAll(gs.lastTilePotentialOccupants());
+            if (currentGameState.nextAction() == GameState.Action.OCCUPY_TILE) {
+                occupants.addAll(currentGameState.lastTilePotentialOccupants());
             } else {
-                occupants.removeAll(gs.lastTilePotentialOccupants());
+                occupants.removeAll(currentGameState.lastTilePotentialOccupants());
             }
 
-            occupants.addAll(gs.board().occupants());
+            occupants.addAll(currentGameState.board().occupants());
             return occupants;
         });
 
@@ -100,19 +101,49 @@ public class Main extends Application {
             return "";
         });
 
-        // un autre truc de messageboard que jai pas trop compris todo rewrite comment lmao
+        // un autre truc de MessageBoard que jai pas trop compris todo rewrite comment lmao
         ObservableValue<List<MessageBoard.Message>> messages = gameState.map(g -> g.messageBoard().messages());
+
+        // Liste chronologique des actions encodées en base 32 de la partie
+        ObjectProperty<List<String>> base32Codes = new SimpleObjectProperty<>(List.of());
 
         /*
         L'interface graphique de droite
         */
-        ObjectProperty<List<String>> actions = new SimpleObjectProperty<>();
         // La Node d'Actions et des Piles du jeu
         VBox decksAndActions = new VBox();
-        //Node Actions = ActionUI.create();
+
+        // Interface graphique des codes en base 32 pour le jeu à distance
+        Node Actions = ActionUI.create(base32Codes, handler -> {
+            List<String> codes = new ArrayList<>(base32Codes.getValue());
+            try {
+                ActionEncoder.StateAction updatedStateAction = ActionEncoder.decodeAndApply(gameState.getValue(),
+                        handler);
+
+                assert updatedStateAction != null;
+                gameState.setValue(updatedStateAction.gameState());
+                codes.add(updatedStateAction.base32Code());
+                base32Codes.setValue(codes);
+            } catch (Exception e) {
+                //todo maybe indicate that code is invalid
+                System.out.println("Ce code ne peux pas être appliqué. Écrivez-en un nouveau.");
+            }
+        });
+
+
+
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
-                occupant -> occupantConsumer(gameState, occupant));
-        //decksAndActions.getChildren().add(Actions);
+
+                occupant -> {
+                    GameState currentGameState = gameState.getValue();
+                    GameState.Action nextAction = currentGameState.nextAction();
+
+                    if (nextAction == GameState.Action.OCCUPY_TILE) {
+                        gameState.set(currentGameState.withNewOccupant(occupant));
+
+                    }
+                });
+        decksAndActions.getChildren().add(Actions);
         decksAndActions.getChildren().add(Decks);
 
         // La Node de l'interface des joueurs et l'interface du tableau de messages
@@ -138,21 +169,56 @@ public class Main extends Application {
                         rotation -> {
                             tileRotation.set(tileRotation.get().add(rotation));
                         },
-                        move -> {
-                            GameState gs = gameState.getValue();
-                            gameState.set(gs.withPlacedTile(
+                        pos -> {
+                            GameState currentGameState = gameState.getValue();
+
+                            List<String> codes = new ArrayList<>(base32Codes.getValue());
+
+                            ActionEncoder.StateAction action = ActionEncoder.withPlacedTile(currentGameState,
                                     new PlacedTile(tileToPlace.getValue(),
-                                            gs.currentPlayer(),
+
+                                            currentGameState.currentPlayer(),
                                             tileRotation.getValue(),
-                                            move)
-                            ));
+                                            pos));
+
+                            codes.add(action.base32Code());
+                            base32Codes.setValue(codes);
+
+                            gameState.set(action.gameState());
 
                             if (gameState.getValue().nextAction() == GameState.Action.OCCUPY_TILE) {
                                 Set<Occupant> newVisibleOccupants = gameState.getValue().board().occupants();
                                 newVisibleOccupants.addAll(gameState.getValue().lastTilePotentialOccupants());
                             }
                         },
-                        occupant -> occupantConsumer(gameState, occupant));
+
+                        occupant -> {
+                            GameState currentGameState = gameState.getValue();
+                            GameState.Action nextAction = currentGameState.nextAction();
+
+                            List<String> codes = new ArrayList<>(base32Codes.getValue());
+
+                            if (nextAction == GameState.Action.OCCUPY_TILE) {
+                                ActionEncoder.StateAction action = ActionEncoder.withNewOccupant(currentGameState,
+                                        occupant);
+
+                                codes.add(action.base32Code());
+                                base32Codes.setValue(codes);
+
+                                gameState.set(action.gameState());
+
+                            } else if (nextAction == GameState.Action.RETAKE_PAWN
+                                    && occupant.kind() == Occupant.Kind.PAWN) {
+                                ActionEncoder.StateAction action = ActionEncoder.withOccupantRemoved(currentGameState,
+                                        occupant);
+
+                                codes.add(action.base32Code());
+                                base32Codes.setValue(codes);
+
+                                gameState.set(action.gameState());
+                            }
+                        });
+
 
         /*
         Mise en commun de toutes les interfaces

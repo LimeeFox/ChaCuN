@@ -40,7 +40,7 @@ public class Base32 {
      */
     public static String encodeBits10(int n) {
         int n1 = n >>> 5;
-        int n2 = n & 0b1111;
+        int n2 = n & 0b11111;
         return encodeBits5(n1) + encodeBits5(n2);
     }
 
@@ -60,7 +60,7 @@ public class Base32 {
         if (codeLength == 1) {
             return ALPHABET.indexOf(encoded);
         } else {
-            return (ALPHABET.indexOf(encoded.charAt(0)) << 5) + ALPHABET.indexOf(encoded.charAt(1));
+            return (ALPHABET.indexOf(encoded.charAt(0)) << 5) | ALPHABET.indexOf(encoded.charAt(1));
         }
     }
 }

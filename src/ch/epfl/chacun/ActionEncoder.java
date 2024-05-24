@@ -23,9 +23,9 @@ public class ActionEncoder {
      * @param tileToPlace
      *          tuile que l'on souhaite ajouter à l'état de jeu
      * @return  une paire composée d'un nouvel état de jeu contenant le tuile ajouté,
-     *          et d'une chaîne de charactèrs représentant le code en base32 de l'ajout de le tuile
+     *          et d'une chaîne de charactèrs représentant le code en base32 de l'ajout de la tuile
      */
-    public static Pair<GameState, String> withPlacedTile(GameState initialGameState, PlacedTile tileToPlace) {
+    public static StateAction withPlacedTile(GameState initialGameState, PlacedTile tileToPlace) {
         GameState currentGameState = initialGameState.withPlacedTile(tileToPlace);
 
         // Encodage de la pose d'une tuile
@@ -34,11 +34,11 @@ public class ActionEncoder {
         // Entier correspondant à la rotation de la tuile à placer
         int r = tileToPlace.rotation().ordinal();
         // Concatenation des deux morceaux d'information sous la forme "ppppp ppprr"
-        int n = (p << 2) + r;
+        int n = (p << 2) | r;
 
         String code = Base32.encodeBits10(n);
 
-        return new Pair<>(currentGameState, code);
+        return new StateAction(currentGameState, code);
     }
 
     /**
@@ -51,23 +51,24 @@ public class ActionEncoder {
      * @return une paire composée d'un nouvel état de jeu avec l'occupant ajouté,
      *         et d'une chaîne de charactèrs représentant le code en base32 de l'ajout de l'occupant
      */
-    public static Pair<GameState, String> withNewOccupant(GameState initialCameState, Occupant occupant) {
+    public static StateAction withNewOccupant(GameState initialCameState, Occupant occupant) {
         GameState currentGameState = initialCameState.withNewOccupant(occupant);
 
         // Encodage de l'ajout d'un occupant
         // Type d'occupant
-        int k = occupant.kind().ordinal();
+        int k = 0b1;
         // Identifiant de la zone occupé
-        int z = 0b11111;
+        int z = 0b01111;
         if (occupant != null) {
-            z = occupant.zoneId();
+            k = occupant.kind().ordinal();
+            z = occupant.zoneId() % 10;
         }
         // Concatenation sous forme "kzzzz"
-        int n = (k << 4) + z;
+        int n = (k << 4) | z;
 
         String code = Base32.encodeBits5(n);
 
-        return new Pair<>(currentGameState, code);
+        return new StateAction(currentGameState, code);
     }
 
     /**
@@ -81,7 +82,7 @@ public class ActionEncoder {
      *         et d'une chaîne de charactèrs représentant le code en base32 de la reprise du pion
      */
     //todo find out why occupant allegedly can never be null
-    public static Pair<GameState, String> withOccupantRemoved(GameState initialGameState, Occupant removedOccupant) {
+    public static StateAction withOccupantRemoved(GameState initialGameState, Occupant removedOccupant) {
         Preconditions.checkArgument(removedOccupant.kind().equals(Occupant.Kind.PAWN)
                 || removedOccupant == null);
         GameState currentGameState = initialGameState.withOccupantRemoved(removedOccupant);
@@ -93,11 +94,11 @@ public class ActionEncoder {
         }
         String code = Base32.encodeBits5(o);
 
-        return new Pair<>(currentGameState, code);
+        return new StateAction(currentGameState, code);
     }
 
     /**
-     * Decode et applique une action passé en base32 à notre état de jeu
+     * Decode et applique une action passée en base32 à notre état de jeu
      *
      * @param initialGameSate
      *          état de jeu initial
@@ -106,14 +107,13 @@ public class ActionEncoder {
      * @return une paire composée d'un nouvel état de jeu et le code base32 qu'on lui a appliqué,
      *         ou null si au cas où ces paramètres lancent une erreur à l'appel de decodeAndApplyThrows
      */
-    public static Pair<GameState, String> decodeAndApply(GameState initialGameSate, String code) {
+    public static StateAction decodeAndApply(GameState initialGameSate, String code) {
         try {
-            Pair<GameState, String> testDecoder = decodeAndApplyThrows(initialGameSate, code);
+            return decodeAndApplyThrows(initialGameSate, code);
         }
         catch(IllegalArgumentException | NullPointerException e) {
             return null;
         }
-        return  decodeAndApplyThrows(initialGameSate, code);
     }
 
     /**
@@ -133,7 +133,7 @@ public class ActionEncoder {
      * @throws NullPointerException
      *          si la dernière tuile placée dans l'état de jeu est null
      */
-    private static Pair<GameState, String> decodeAndApplyThrows(GameState initialGameState, String code) {
+    private static StateAction decodeAndApplyThrows(GameState initialGameState, String code) {
         Preconditions.checkArgument(Base32.isValid(code));
 
         GameState.Action nextAction = initialGameState.nextAction();
@@ -150,7 +150,7 @@ public class ActionEncoder {
 
                 List<Pos> fringe = getIndexedFringe(initialGameState).keySet().stream().toList();
 
-                // On vérifie que la position de a la tuile est bien compris dans la frange
+                // On vérifie que la position de à la tuile est bien compris dans la frange
                 Preconditions.checkArgument(p <= fringe.size() - 1);
 
                 Pos tilePos = fringe.get(p);
@@ -186,7 +186,7 @@ public class ActionEncoder {
                 updatedGameState = initialGameState.withOccupantRemoved(occupantToRemove);
             }
         }
-        return new Pair<>(updatedGameState, code);
+        return new StateAction(updatedGameState, code);
     }
 
     /**
@@ -194,11 +194,11 @@ public class ActionEncoder {
      *
      * @param gameState
      *          état de jeu dont on souhaite obtenir la frange
-     * @return une table associant les positions comprises sur la frange à leur index selon l'ordre x,y
+     * @return une table associant les positions comprises sur la frange à leur index selon l'ordre x, y
      */
     private static Map<Pos, Integer> getIndexedFringe(GameState gameState) {
         List<Pos> sortedPositions = gameState.board().insertionPositions().stream()
-                .sorted(Comparator.comparing(Pos::x).thenComparing(Pos::y)).toList();
+                .sorted(Comparator.comparing(Pos::y).thenComparing(Pos::x)).toList();
 
         return IntStream.range(0, sortedPositions.size())
                 .boxed()
@@ -221,4 +221,16 @@ public class ActionEncoder {
                 .boxed()
                 .collect(Collectors.toMap(sortedPawns::get, i -> i));
     }
+
+    /**
+     * Enregistrement représentant une paire composée de l'état du jeu résultant du code en base 32 auquel il est
+     * associé
+     *
+     * @param gameState
+     *          état de jeu résultant du code en base 32 auquel il est associé
+     * @param base32Code
+     *          chaîne de charactèrs représentant le code en base 32 qui a produit l'état de jeu auquel la chaîne est
+     *          associée
+     */
+    public record StateAction(GameState gameState, String base32Code) {}
 }
