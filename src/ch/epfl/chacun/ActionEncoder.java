@@ -3,9 +3,6 @@ package ch.epfl.chacun;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Contient des méthodes permettant d'encoder et de décoder des actions et les appliquer à un état de jeu
@@ -90,7 +87,7 @@ public class ActionEncoder {
         // Encodage de la reprise d'un pion
         int o = 0b11111;
         if (removedOccupant != null) {
-            o = getIndexedPawns(initialGameState).get(removedOccupant);
+            o = getIndexedPawns(initialGameState).indexOf(removedOccupant);
         }
         String code = Base32.encodeBits5(o);
 
@@ -181,7 +178,7 @@ public class ActionEncoder {
 
                 Occupant occupantToRemove = null;
                 if (decoded != 0b11111) {
-                    occupantToRemove = getIndexedPawns(initialGameState).keySet().stream().toList().get(decoded);
+                    occupantToRemove = getIndexedPawns(initialGameState).get(decoded);
                     Preconditions.checkArgument(initialGameState.board()
                             .tileWithId(occupantToRemove.zoneId() % 10).placer()
                             == initialGameState.currentPlayer());
@@ -194,16 +191,15 @@ public class ActionEncoder {
     }
 
     /**
-     * Méthode d'aide qui permet d'obtenir la frange d'un état de jeu, triée et indexée
+     * Méthode d'aide qui permet d'obtenir la frange d'un état de jeu, triée
      *
      * @param gameState
      *          état de jeu dont on souhaite obtenir la frange
-     * @return une table associant les positions comprises sur la frange à leur index selon l'ordre x, y
+     * @return la liste des positions d'insertions triée avec une priorité x
      */
     private static List<Pos> getIndexedFringe(GameState gameState) {
        return gameState.board().insertionPositions().stream()
                 .sorted(Comparator.comparing(Pos::x).thenComparing(Pos::y)).toList();
-
     }
 
     /**
@@ -213,14 +209,10 @@ public class ActionEncoder {
      *          état de jeu dont on souhaite obtenir les pions
      * @return une table associant les pions à leur index selon l'ordre des identifiants
      */
-    private static Map<Occupant, Integer> getIndexedPawns(GameState gameState) {
-        List<Occupant> sortedPawns = gameState.board().occupants().stream()
+    private static List<Occupant> getIndexedPawns(GameState gameState) {
+        return gameState.board().occupants().stream()
                 .filter(occupant ->  occupant.kind().equals(Occupant.Kind.PAWN))
                 .sorted(Comparator.comparing(Occupant::zoneId)).toList();
-
-        return IntStream.range(0, sortedPawns.size())
-                .boxed()
-                .collect(Collectors.toMap(sortedPawns::get, i -> i));
     }
 
     /**
