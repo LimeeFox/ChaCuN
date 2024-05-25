@@ -1,7 +1,6 @@
 package ch.epfl.chacun;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.lang.StringTemplate.STR;
@@ -64,18 +63,18 @@ public final class TextMakerFr implements TextMaker {
 
         // On vérifie si la forêt concernée par le message contient des groupes de champignons
         if (mushroomGroupCount > 0) {
-            mushroomMessage = "et de "
+            mushroomMessage = " et de "
                     + STR."+\{mushroomGroupCount} groupe\{plurality(mushroomGroupCount, false)} "
                     + "de champignons.";
         }
 
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
                 + STR."qu'occupant·e\{plurality(scorers.size(), true)} majoritaires d'une forêt composée de "
-                + STR."\{tiles(tileCount)} \{mushroomMessage}";
+                + STR."\{tiles(tileCount)}\{mushroomMessage}";
     }
 
     /**
-     * Affichage du nombre de points obtenus pour des joueurs donnés pour la fermeture d'un rivière
+     * Affichage du nombre de points obtenus pour des joueurs donnés pour la fermeture d'une rivière
      *
      * @param scorers
      *         les occupants majoritaires de la rivière
@@ -98,7 +97,7 @@ public final class TextMakerFr implements TextMaker {
         }
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
                 + STR."qu'occupant·e\{plurality(scorers.size(), true)} majoritaire d'une composée de "
-                + STR."\{tiles(tileCount)}\{fishMessage}.";
+                + STR."\{tiles(tileCount)}\{fishMessage}";
     }
 
     /**
@@ -169,7 +168,7 @@ public final class TextMakerFr implements TextMaker {
      *         les points remportés
      * @param fishCount
      *         le nombre de poissons nageant dans le réseau hydrographique
-     * @return une chaîne de caractères indiquant les joueurs ayant remportés de points,
+     * @return une chaîne de caractères indiquant les joueurs ayant remporté de points,
      * le nombre de points remportés,
      * le nombre de poissons ayant rapporté des points
      */
@@ -189,7 +188,7 @@ public final class TextMakerFr implements TextMaker {
      *         les points remportés
      * @param animals
      *         les animaux présents sur les tuiles voisines de la fosse (sans ceux ayant été précédemment annulés)
-     * @return une chaîne de caractères indiquant les joueurs ayant remportés de points,
+     * @return une chaîne de caractères indiquant les joueurs ayant remporté de points,
      * le nombre de points remportés,
      * les animaux ayant rapporté des points
      */
@@ -283,14 +282,14 @@ public final class TextMakerFr implements TextMaker {
         }
 
         /*
-        Sinon, on construit la chaîne de caractères de nom en faisant bien attention à lier les deux dernier noms
+        Sinon, on construit la chaîne de caractères de nom en faisant bien attention à lier les deux derniers noms
         d'un "et".
         */
         StringJoiner joiner = new StringJoiner(", ");
         for (int i = 0; i < playerNames.size() - 1; i++) {
             joiner.add(playerNames.get(i));
         }
-        return STR."\{joiner} et \{playerNames.getLast()} ont";
+        return STR."\{joiner.toString()} et \{playerNames.getLast()} ont";
     }
 
     /**
@@ -349,7 +348,7 @@ public final class TextMakerFr implements TextMaker {
                 plurality = plurality(animalCount, false);
             }
 
-            // On ajoute à notre bâtisseur les animaux qui sont présent dans la table associative triée
+            // On ajoute à notre bâtisseur les animaux qui sont présents dans la table associative triée
             animalMessage.append(STR."\{animalCount} \{animalsAsString.get(animalKind)}\{plurality}");
 
             // En principe, on sépare l'énumération des animaux par une virgule, sauf si l'animal en question est
@@ -372,7 +371,7 @@ public final class TextMakerFr implements TextMaker {
      *         table associative associant les types d'animaux à leur nombre
      * @return une chaîne de caractères indiquant le nombre d'animaux
      * précédée de "de" s'il y a au moins 1 animal,
-     * où précédée de "d'" s'il y en a "aucun"
+     * ou précédée de "d'" s'il y en a "aucun"
      */
     private String animalMessage(Map<Animal.Kind, Integer> animals) {
         StringBuilder animalMessage = new StringBuilder();
@@ -413,7 +412,7 @@ public final class TextMakerFr implements TextMaker {
     }
 
     /**
-     * Méthode d'aide qui affiche le nombre de tuiles pour un nombre donnée
+     * Méthode d'aide qui affiche le nombre de tuiles pour un nombre donné
      *
      * @param tileCount
      *         nombre de tuiles à afficher
