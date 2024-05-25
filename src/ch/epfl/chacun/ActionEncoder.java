@@ -25,7 +25,7 @@ public class ActionEncoder {
 
         // Encodage de la pose d'une tuile
         // Index de position sur la frange de la tuile à placer
-        int p = getIndexedFringe(initialGameState).indexOf(tileToPlace.pos());
+        int p = getSortedFringe(initialGameState).indexOf(tileToPlace.pos());
         // Entier correspondant à la rotation de la tuile à placer
         int r = tileToPlace.rotation().ordinal();
         // Concatenation des deux morceaux d'information sous la forme "ppppp ppprr"
@@ -87,7 +87,7 @@ public class ActionEncoder {
         // Encodage de la reprise d'un pion
         int o = 0b11111;
         if (removedOccupant != null) {
-            o = getIndexedPawns(initialGameState).indexOf(removedOccupant);
+            o = getSortedPawns(initialGameState).indexOf(removedOccupant);
         }
         String code = Base32.encodeBits5(o);
 
@@ -145,7 +145,7 @@ public class ActionEncoder {
                 int p = decoded >>> 2;
                 int r = decoded & 0b11;
 
-                List<Pos> fringe = getIndexedFringe(initialGameState);
+                List<Pos> fringe = getSortedFringe(initialGameState);
 
                 // On vérifie que la position de à la tuile est bien compris dans la frange
                 Preconditions.checkArgument(p <= fringe.size() - 1);
@@ -178,7 +178,7 @@ public class ActionEncoder {
 
                 Occupant occupantToRemove = null;
                 if (decoded != 0b11111) {
-                    occupantToRemove = getIndexedPawns(initialGameState).get(decoded);
+                    occupantToRemove = getSortedPawns(initialGameState).get(decoded);
                     Preconditions.checkArgument(initialGameState.board()
                             .tileWithId(occupantToRemove.zoneId() % 10).placer()
                             == initialGameState.currentPlayer());
@@ -197,7 +197,7 @@ public class ActionEncoder {
      *          état de jeu dont on souhaite obtenir la frange
      * @return la liste des positions d'insertions triée avec une priorité x
      */
-    private static List<Pos> getIndexedFringe(GameState gameState) {
+    private static List<Pos> getSortedFringe(GameState gameState) {
        return gameState.board().insertionPositions().stream()
                 .sorted(Comparator.comparing(Pos::x).thenComparing(Pos::y)).toList();
     }
@@ -209,7 +209,7 @@ public class ActionEncoder {
      *          état de jeu dont on souhaite obtenir les pions
      * @return une table associant les pions à leur index selon l'ordre des identifiants
      */
-    private static List<Occupant> getIndexedPawns(GameState gameState) {
+    private static List<Occupant> getSortedPawns(GameState gameState) {
         return gameState.board().occupants().stream()
                 .filter(occupant ->  occupant.kind().equals(Occupant.Kind.PAWN))
                 .sorted(Comparator.comparing(Occupant::zoneId)).toList();
