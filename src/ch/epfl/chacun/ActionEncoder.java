@@ -207,7 +207,7 @@ public class ActionEncoder {
      *
      * @param gameState
      *          état de jeu dont on souhaite obtenir les pions
-     * @return une table associant les pions à leur index selon l'ordre des identifiants
+     * @return une liste des pions présents sur le plateau triée selon l'ordre des identifiants
      */
     private static List<Occupant> getSortedPawns(GameState gameState) {
         return gameState.board().occupants().stream()
