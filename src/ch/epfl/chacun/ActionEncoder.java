@@ -1,13 +1,8 @@
 package ch.epfl.chacun;
 
-import javafx.util.Pair;
-
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Contient des méthodes permettant d'encoder et de décoder des actions et les appliquer à un état de jeu
@@ -30,7 +25,7 @@ public class ActionEncoder {
 
         // Encodage de la pose d'une tuile
         // Index de position sur la frange de la tuile à placer
-        int p = getIndexedFringe(initialGameState).get(tileToPlace.pos());
+        int p = getSortedFringe(initialGameState).indexOf(tileToPlace.pos());
         // Entier correspondant à la rotation de la tuile à placer
         int r = tileToPlace.rotation().ordinal();
         // Concatenation des deux morceaux d'information sous la forme "ppppp ppprr"
@@ -92,7 +87,7 @@ public class ActionEncoder {
         // Encodage de la reprise d'un pion
         int o = 0b11111;
         if (removedOccupant != null) {
-            o = getIndexedPawns(initialGameState).get(removedOccupant);
+            o = getSortedPawns(initialGameState).indexOf(removedOccupant);
         }
         String code = Base32.encodeBits5(o);
 
@@ -150,7 +145,7 @@ public class ActionEncoder {
                 int p = decoded >>> 2;
                 int r = decoded & 0b11;
 
-                List<Pos> fringe = getIndexedFringe(initialGameState).keySet().stream().toList();
+                List<Pos> fringe = getSortedFringe(initialGameState);
 
                 // On vérifie que la position de à la tuile est bien compris dans la frange
                 Preconditions.checkArgument(p <= fringe.size() - 1);
@@ -183,7 +178,7 @@ public class ActionEncoder {
 
                 Occupant occupantToRemove = null;
                 if (decoded != 0b11111) {
-                    occupantToRemove = getIndexedPawns(initialGameState).keySet().stream().toList().get(decoded);
+                    occupantToRemove = getSortedPawns(initialGameState).get(decoded);
                     Preconditions.checkArgument(initialGameState.board()
                             .tileWithId(occupantToRemove.zoneId() % 10).placer()
                             == initialGameState.currentPlayer());
@@ -196,19 +191,15 @@ public class ActionEncoder {
     }
 
     /**
-     * Méthode d'aide qui permet d'obtenir la frange d'un état de jeu, triée et indexée
+     * Méthode d'aide qui permet d'obtenir la frange d'un état de jeu, triée
      *
      * @param gameState
      *          état de jeu dont on souhaite obtenir la frange
-     * @return une table associant les positions comprises sur la frange à leur index selon l'ordre x, y
+     * @return la liste des positions d'insertions triée avec une priorité x
      */
-    private static Map<Pos, Integer> getIndexedFringe(GameState gameState) {
-        List<Pos> sortedPositions = gameState.board().insertionPositions().stream()
-                .sorted(Comparator.comparing(Pos::y).thenComparing(Pos::x)).toList();
-
-        return IntStream.range(0, sortedPositions.size())
-                .boxed()
-                .collect(Collectors.toMap(sortedPositions::get, i -> i));
+    private static List<Pos> getSortedFringe(GameState gameState) {
+       return gameState.board().insertionPositions().stream()
+                .sorted(Comparator.comparing(Pos::x).thenComparing(Pos::y)).toList();
     }
 
     /**
@@ -216,16 +207,12 @@ public class ActionEncoder {
      *
      * @param gameState
      *          état de jeu dont on souhaite obtenir les pions
-     * @return une table associant les pions à leur index selon l'ordre des identifiants
+     * @return une liste des pions présents sur le plateau triée selon l'ordre des identifiants
      */
-    private static Map<Occupant, Integer> getIndexedPawns(GameState gameState) {
-        List<Occupant> sortedPawns = gameState.board().occupants().stream()
+    private static List<Occupant> getSortedPawns(GameState gameState) {
+        return gameState.board().occupants().stream()
                 .filter(occupant ->  occupant.kind().equals(Occupant.Kind.PAWN))
                 .sorted(Comparator.comparing(Occupant::zoneId)).toList();
-
-        return IntStream.range(0, sortedPawns.size())
-                .boxed()
-                .collect(Collectors.toMap(sortedPawns::get, i -> i));
     }
 
     /**
