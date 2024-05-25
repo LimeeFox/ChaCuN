@@ -29,13 +29,9 @@ public class Main extends Application {
         Map<PlayerColor, String> players = new TreeMap<>();
         List<String> playerNames = getParameters().getUnnamed();
 
-        // todo check if others did it like that too, cuz this feels too complicated (bazooka squirrel)
+
         final Iterator<PlayerColor> colorIterator = Arrays.asList(PlayerColor.values()).iterator();
-        playerNames.forEach(name -> {
-            //if (colorIterator.hasNext()) { // fixme dans la consigne, ils disent que par soucis de simplicité on peut juste laisser le programme planter si il y a trop de joueurs, ducoup j'enleve ce if mais je le garde au cas ou
-            players.put(colorIterator.next(), name); // todo ducoup ecrire un commentaire au dessus ici mentionnant ça ^^^
-            //}
-        });
+        playerNames.forEach(name -> players.put(colorIterator.next(), name));
 
         Map<String, String> seedArgument = getParameters().getNamed();
         TextMakerFr textMakerFr = new TextMakerFr(players);
@@ -62,16 +58,16 @@ public class Main extends Application {
         ObjectProperty<Rotation> tileRotation = new SimpleObjectProperty<>(Rotation.NONE);
 
         // Les occupants qui doivent s'afficher (ceux à placer ainsi que ceux déjà placés)
-        ObservableValue<Set<Occupant>> visibleOccupants = gameState.map(currentGameState -> {
+        ObservableValue<Set<Occupant>> visibleOccupants = gameState.map(gs -> {
             Set<Occupant> occupants = new HashSet<>();
 
-            if (currentGameState.nextAction() == GameState.Action.OCCUPY_TILE) {
-                occupants.addAll(currentGameState.lastTilePotentialOccupants());
+            if (gs.nextAction() == GameState.Action.OCCUPY_TILE) {
+                occupants.addAll(gs.lastTilePotentialOccupants());
             } else {
-                occupants.removeAll(currentGameState.lastTilePotentialOccupants());
+                occupants.removeAll(gs.lastTilePotentialOccupants());
             }
 
-            occupants.addAll(currentGameState.board().occupants());
+            occupants.addAll(gs.board().occupants());
             return occupants;
         });
 
@@ -112,24 +108,15 @@ public class Main extends Application {
 
         // Interface graphique des codes en base 32 pour le jeu à distance
         Node Actions = ActionUI.create(base32Codes, handler -> {
-            List<String> codes = new ArrayList<>(base32Codes.getValue());
             try {
-                ActionEncoder.StateAction updatedStateAction = ActionEncoder.decodeAndApply(gameState.getValue(),
-                        handler);
-
-                assert updatedStateAction != null;
-                gameState.setValue(updatedStateAction.gameState());
-                codes.add(updatedStateAction.base32Code());
-                base32Codes.setValue(codes);
-            } catch (Exception _) {
-                //todo possible catch
-            }
+                updateStateAndCodes(Objects.requireNonNull(ActionEncoder.decodeAndApply(gameState.getValue(), handler)),
+                        gameState,
+                        base32Codes);
+            } catch (Exception _) {}
         });
 
-
-
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
-                occupant -> occupantConsumer(gameState, occupant));
+                occupant -> occupantConsumer(gameState, base32Codes, occupant));
         decksAndActions.getChildren().add(Actions);
         decksAndActions.getChildren().add(Decks);
 
@@ -153,59 +140,24 @@ public class Main extends Application {
                         tileRotation,
                         visibleOccupants,
                         highlightedTiles,
-                        rotation -> {
-                            tileRotation.set(tileRotation.get().add(rotation));
-                        },
+                        rotation -> tileRotation.set(tileRotation.get().add(rotation)),
                         pos -> {
                             GameState currentGameState = gameState.getValue();
 
-                            List<String> codes = new ArrayList<>(base32Codes.getValue());
-
-                            ActionEncoder.StateAction action = ActionEncoder.withPlacedTile(currentGameState,
+                            updateStateAndCodes(ActionEncoder.withPlacedTile(currentGameState,
                                     new PlacedTile(tileToPlace.getValue(),
-
                                             currentGameState.currentPlayer(),
                                             tileRotation.getValue(),
-                                            pos));
-
-                            codes.add(action.base32Code());
-                            base32Codes.setValue(codes);
-
-                            gameState.set(action.gameState());
+                                            pos)),
+                                    gameState,
+                                    base32Codes);
 
                             if (gameState.getValue().nextAction() == GameState.Action.OCCUPY_TILE) {
                                 Set<Occupant> newVisibleOccupants = gameState.getValue().board().occupants();
                                 newVisibleOccupants.addAll(gameState.getValue().lastTilePotentialOccupants());
                             }
                         },
-
-                        occupant -> {
-                            GameState currentGameState = gameState.getValue();
-                            GameState.Action nextAction = currentGameState.nextAction();
-
-                            List<String> codes = new ArrayList<>(base32Codes.getValue());
-
-                            if (nextAction == GameState.Action.OCCUPY_TILE) {
-                                ActionEncoder.StateAction action = ActionEncoder.withNewOccupant(currentGameState,
-                                        occupant);
-
-                                codes.add(action.base32Code());
-                                base32Codes.setValue(codes);
-
-                                gameState.set(action.gameState());
-
-                            } else if (nextAction == GameState.Action.RETAKE_PAWN
-                                    && occupant.kind() == Occupant.Kind.PAWN) {
-                                ActionEncoder.StateAction action = ActionEncoder.withOccupantRemoved(currentGameState,
-                                        occupant);
-
-                                codes.add(action.base32Code());
-                                base32Codes.setValue(codes);
-
-                                gameState.set(action.gameState());
-                            }
-                        });
-
+                        occupant -> occupantConsumer(gameState, base32Codes, occupant));
 
         /*
         Mise en commun de toutes les interfaces
@@ -214,7 +166,6 @@ public class Main extends Application {
 
         root.setRight(sideUI);
         root.setCenter(Board);
-
 
         Scene scene = new Scene(root, 250, 400);
         stage.setTitle("ChaCuN");
@@ -238,15 +189,36 @@ public class Main extends Application {
      * @param occupant
      *         l'occupant qui est à mettre sur le plateau ou à y retirer.
      */
-    private void occupantConsumer(ObjectProperty<GameState> gameState, Occupant occupant) {
-        GameState gs = gameState.getValue();
-        GameState.Action nextAction = gs.nextAction();
+    private void occupantConsumer(ObjectProperty<GameState> gameState,
+                                  ObjectProperty<List<String>> base32Codes,
+                                  Occupant occupant) {
+        GameState currentGameState = gameState.getValue();
+        GameState.Action nextAction = currentGameState.nextAction();
 
         if (nextAction == GameState.Action.OCCUPY_TILE) {
-            gameState.set(gs.withNewOccupant(occupant));
+
+            updateStateAndCodes(ActionEncoder.withNewOccupant(currentGameState, occupant),
+                    gameState,
+                    base32Codes);
+
         } else if (nextAction == GameState.Action.RETAKE_PAWN
-                && (occupant == null || occupant.kind() == Occupant.Kind.PAWN)) {
-            gameState.set(gs.withOccupantRemoved(occupant));
+                && occupant.kind() == Occupant.Kind.PAWN) {
+
+            updateStateAndCodes(ActionEncoder.withOccupantRemoved(currentGameState, occupant),
+                    gameState,
+                    base32Codes);
         }
+    }
+
+    private void updateStateAndCodes(ActionEncoder.StateAction action,
+                                     ObjectProperty<GameState> state,
+                                     ObjectProperty<List<String>> base32Codes
+                                     ) {
+        List<String> codes = new ArrayList<>(base32Codes.getValue());
+
+        codes.add(action.base32Code());
+        base32Codes.setValue(codes);
+
+        state.set(action.gameState());
     }
 }
