@@ -118,8 +118,8 @@ public abstract class PlayersUI {
                     }
                     return 0.1;
                 }));
-
             }
+
             for (int i = HUTS ; i < HUTS + PAWNS ; i++) {
                 final int index = i;
                 occupants.get(i).opacityProperty().bind(freePawnsCount.map(freePawns -> {

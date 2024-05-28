@@ -36,6 +36,9 @@ public abstract class DecksUI {
      *         qu'il ne désire pas de poser ou reprendre un occupant, en cliquant sur @message
      * @return l'interface graphique des piles de tuiles avec un aperçu de la tuile à poser
      */
+    private static final double DECKS_SCALE = 0.5;
+    private static final double PREVIEW_SCALE = 0.8;
+
     public static Node create(
             ObservableValue<Tile> tileToPlace,
             ObservableValue<Integer> normalTilesLeft,
@@ -49,19 +52,7 @@ public abstract class DecksUI {
         StackPane normalTilesPane = new StackPane();
 
         // On a besoin de mettre à jour le texte qui affiche le nombre de tuiles restantes dans la pile
-        Text normalTilesText = new Text();
-        ObservableValue<String> normalTilesCount = normalTilesLeft.map(Object::toString);
-        normalTilesText.textProperty().bind(normalTilesCount);
-
-        ImageView normalTilesImageView = new ImageView();
-        normalTilesImageView.setId("NORMAL");
-        Image normalImage = new Image(STR."/256/NORMAL.jpg");
-        normalTilesImageView.setImage(normalImage);
-        normalTilesImageView.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE * 0.5);
-        normalTilesImageView.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE * 0.5);
-
-        normalTilesPane.getChildren().add(normalTilesImageView);
-        normalTilesPane.getChildren().add(normalTilesText);
+        createPane(normalTilesPane, "NORMAL", normalTilesLeft);
 
         //
         // Menhir tiles display
@@ -69,19 +60,7 @@ public abstract class DecksUI {
         StackPane menhirTilesPane = new StackPane();
 
         // On a besoin de mettre à jour le texte qui affiche le nombre de tuiles restantes dans la pile
-        Text menhirTilesText = new Text();
-        ObservableValue<String> menhirTilesCount = menhirTilesLeft.map(Object::toString);
-        menhirTilesText.textProperty().bind(menhirTilesCount);
-
-        ImageView menhirTilesImageView = new ImageView();
-        menhirTilesImageView.setId("MENHIR");
-        Image menhirImage = new Image(STR."/256/MENHIR.jpg");
-        menhirTilesImageView.setImage(menhirImage);
-        menhirTilesImageView.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE * 0.5);
-        menhirTilesImageView.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE * 0.5);
-
-        menhirTilesPane.getChildren().add(menhirTilesImageView);
-        menhirTilesPane.getChildren().add(menhirTilesText);
+        createPane(menhirTilesPane, "MENHIR", menhirTilesLeft);
 
         //
         // Display of both tile types
@@ -107,10 +86,13 @@ public abstract class DecksUI {
         ObservableValue<Image> tileToPlaceImage = tileToPlace.map(Tile::id).map(ImageLoader::normalImageForTile);
         tileToPlaceImageView.imageProperty().bind(tileToPlaceImage);
 
-        occupantInfoText.setWrappingWidth(ImageLoader.LARGE_TILE_FIT_SIZE * 0.8);
+        // On modifie le texte en fonction du message à afficher
+        occupantInfoText.setWrappingWidth(ImageLoader.LARGE_TILE_FIT_SIZE * PREVIEW_SCALE);
         occupantInfoText.textProperty().bind(message);
 
         ObservableValue<Boolean> messageIsNull = message.map(String::isEmpty);
+        // Si il y a un message à afficher, c'est que le joueur peut executer (ou pas) une action en cliquant sur
+        // le texte
         tileToPlaceImageView.visibleProperty().bind(messageIsNull);
 
         occupantInfoText.setOnMouseClicked(e -> {
@@ -131,5 +113,21 @@ public abstract class DecksUI {
         decksBox.getChildren().add(tileToPlacePane);
 
         return decksBox;
+    }
+
+    private static void createPane(StackPane pane, String type, ObservableValue<Integer> tilesLeft) {
+        Text tilesText = new Text();
+        ObservableValue<String> tileCount = tilesLeft.map(Object::toString);
+        tilesText.textProperty().bind(tileCount);
+
+        ImageView tilesImageView = new ImageView();
+        tilesImageView.setId(type);
+        Image menhirImage = new Image(STR."/256/\{type}.jpg");
+        tilesImageView.setImage(menhirImage);
+        tilesImageView.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE * DECKS_SCALE);
+        tilesImageView.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE * DECKS_SCALE);
+
+        pane.getChildren().add(tilesImageView);
+        pane.getChildren().add(tilesText);
     }
 }
