@@ -337,7 +337,8 @@ public record GameState(
                 if (lastPlacedTile != null
                         && Area.hasMenhir(closedForest)
                         && !lastPlacedTile.tile().kind().equals(Tile.Kind.MENHIR)
-                        && !playerGetsMenhir) {
+                        && !playerGetsMenhir
+                        && !tileDecks.menhirTiles().isEmpty()) {
 
                     playerGetsMenhir = true;
                     //Màj du tableau de message pour indiquer que le joueur courant puisse piocher une tuile menhir
