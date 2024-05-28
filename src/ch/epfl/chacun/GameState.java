@@ -245,10 +245,10 @@ public record GameState(
                         Area<Zone.Meadow> adjacentMeadow = updatedBoard.adjacentMeadow(tile.pos(), meadowZone);
 
                         // Compter les animaux
-                        Set<Animal> animals = new HashSet<>();
-                        for (Zone.Meadow meadow : adjacentMeadow.zones()) {
-                            animals.addAll(meadow.animals());
-                        }
+                        Set<Animal> animals = adjacentMeadow.zones().stream()
+                                .flatMap(meadow -> meadow.animals().stream())
+                                .collect(Collectors.toSet());
+
                         Map<Animal.Kind, Long> animalCount = animals.stream()
                                 .collect(Collectors.groupingBy(Animal::kind, Collectors.counting()));
 
@@ -258,13 +258,19 @@ public record GameState(
                         long deerCount = animalCount.getOrDefault(Animal.Kind.DEER, 0L);
                         // Compter le nombre de cerfs à annuler en fonction du nombre de tigres (qui les mangent)
                         int deerToCancel = (int) Math.min(deerCount, tigerCount);
+//                        System.out.println(deerCount);
+//                        System.out.println(deerToCancel);
                         // Ajout dès cerfs annulés aux animaux annulés
                         animals.stream()
                                 .filter(animal -> animal.kind() == Animal.Kind.DEER)
                                 .limit(deerToCancel)
                                 .forEach(cancelledAnimals::add);
 
-                        updatedMessageBoard = updatedMessageBoard.withScoredHuntingTrap(scorer, adjacentMeadow);
+//                        System.out.println(cancelledAnimals);
+//                        System.out.println(animals);
+
+                        updatedMessageBoard = updatedMessageBoard.withScoredHuntingTrap(scorer, adjacentMeadow,
+                                cancelledAnimals);
                         // Annule tous les animaux du plateau de jeu, y compris les cerfs "mangés"
                         cancelledAnimals.addAll(animals);
                         updatedBoard = updatedBoard.withMoreCancelledAnimals(cancelledAnimals);
