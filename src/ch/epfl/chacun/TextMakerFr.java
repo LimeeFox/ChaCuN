@@ -155,8 +155,8 @@ public final class TextMakerFr implements TextMaker {
     @Override
     public String playersScoredMeadow(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant que "
-                + STR."qu'occupant·e\{plurality(scorers.size(), true)} d'un pré contenant";
-                //+ STR."\{organiseAnimalsAsString(animals)}.";
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} d'un pré contenant "
+                + STR."\{organiseAnimalsAsString(animals)}.";
     }
 
     /**
@@ -338,8 +338,10 @@ public final class TextMakerFr implements TextMaker {
         final int filteredAnimalsSize = filteredAnimals.size();
         for (int i = 0; i < filteredAnimalsSize; i++) {
             Animal.Kind animalKind = Animal.Kind.values()[i];
-            int animalCount = filteredAnimals.get(animalKind);
-
+            int animalCount = 0;
+            if (filteredAnimals.containsKey(animalKind)) {
+                animalCount = filteredAnimals.get(animalKind);
+            }
             // On vérifie le pluriel du type d'animal
             String plurality = "";
 
