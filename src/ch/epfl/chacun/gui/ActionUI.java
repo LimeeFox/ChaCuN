@@ -58,9 +58,15 @@ public class ActionUI {
     private static TextField getTextField(Consumer<String> handler) {
         TextField actionField = new TextField();
         actionField.setTextFormatter(new TextFormatter<>(change -> {
+            if (change.getControlNewText().length() > 2) {
+                return null;
+            }
             change.setText(change.getText().toUpperCase());
             return  change.getControlNewText().matches(STR."[\{Base32.ALPHABET}]*") ? change : null;
         }));
+
+        // Restriction de la taille du champ de text à, au plus, 2 charactèrs
+        actionField.setPrefColumnCount(2);
 
         actionField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) {
