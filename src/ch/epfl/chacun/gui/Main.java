@@ -40,7 +40,9 @@ public class Main extends Application {
         Mélange de tuiles
          */
         final long seed = Long.parseUnsignedLong(seedArgument.get("seed"));
-        final List<Tile> tiles = new ArrayList<>(Tiles.TILES);
+        final List<Tile> tiles = new ArrayList<>(Tiles.TILES.stream().filter(tile -> (((tile.kind() == Tile.Kind.NORMAL && tile.id() % 3 == 0) ||
+        (tile.kind() == Tile.Kind.MENHIR) || tile.kind() == Tile.Kind.START)))
+                .toList());
         Collections.shuffle(tiles, RandomGeneratorFactory.getDefault().create(seed));
 
         Map<Tile.Kind, List<Tile>> decks = tiles.stream().collect(Collectors.groupingBy(Tile::kind));
