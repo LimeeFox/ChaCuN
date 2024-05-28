@@ -97,12 +97,12 @@ public class BoardUI {
                             GameState.Action currentAction = nextAction.getValue();
                             Board currentBoard = board.getValue();
 
-                            Image image = currentTile == null ?
-                                    emptyTileImage :
-                                    cache.computeIfAbsent(currentTile.id(), ImageLoader::normalImageForTile);
+                            Image image = currentTile == null
+                                    ? emptyTileImage
+                                    : cache.computeIfAbsent(currentTile.id(), ImageLoader::normalImageForTile);
 
-                            Rotation currentRotation = currentTile == null ?
-                                    tileRotation.getValue() : currentTile.rotation();
+                            Rotation currentRotation = currentTile == null
+                                    ? tileRotation.getValue() : currentTile.rotation();
 
                             PlayerColor placer = currentPlayer.getValue();
                             Color veilColour = null;
@@ -154,17 +154,11 @@ public class BoardUI {
                 veil.setHeight(ImageLoader.NORMAL_TILE_FIT_SIZE);
                 veil.setWidth(ImageLoader.NORMAL_TILE_FIT_SIZE);
                 veil.paintProperty().bind(cell.map(CellData::veilColour));
-
                 Blend blend = new Blend(BlendMode.SRC_OVER);
                 blend.setOpacity(0.5);
                 blend.setTopInput(veil);
 
-                group.effectProperty().bind(cell.map(CellData::veilColour).map(color -> {
-                    if (color != null) {
-                        return blend;
-                    }
-                    return null;
-                }));
+                group.effectProperty().bind(cell.map(CellData::veilColour).map(color -> color != null ? blend : null));
 
                 /*
                 Manipulation des occupants et les jetons d'annulation
