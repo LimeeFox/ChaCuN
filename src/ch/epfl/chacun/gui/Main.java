@@ -196,17 +196,11 @@ public class Main extends Application {
         GameState.Action nextAction = currentGameState.nextAction();
 
         if (nextAction == GameState.Action.OCCUPY_TILE) {
-
-            updateStateAndCodes(ActionEncoder.withNewOccupant(currentGameState, occupant),
-                    gameState,
-                    base32Codes);
+            updateStateAndCodes(ActionEncoder.withNewOccupant(currentGameState, occupant), gameState, base32Codes);
 
         } else if (nextAction == GameState.Action.RETAKE_PAWN
-                && occupant.kind() == Occupant.Kind.PAWN) {
-
-            updateStateAndCodes(ActionEncoder.withOccupantRemoved(currentGameState, occupant),
-                    gameState,
-                    base32Codes);
+                && (occupant == null || occupant.kind() == Occupant.Kind.PAWN)) {
+            updateStateAndCodes(ActionEncoder.withOccupantRemoved(currentGameState, occupant), gameState, base32Codes);
         }
     }
 

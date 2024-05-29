@@ -79,8 +79,9 @@ public class ActionEncoder {
     public static StateAction withOccupantRemoved(GameState initialGameState, Occupant removedOccupant) {
         // On vérifie que l'occupant a retiré est un PION, ou est nul
         // On vérifie que le code ne tente pas de retirer un occupant qui n'appartient pas au joueur courant
-        Preconditions.checkArgument(removedOccupant.kind().equals(Occupant.Kind.PAWN)
-                || removedOccupant == null);
+        if (removedOccupant != null) {
+            Preconditions.checkArgument(removedOccupant.kind().equals(Occupant.Kind.PAWN));
+        }
 
         GameState currentGameState = initialGameState.withOccupantRemoved(removedOccupant);
 
