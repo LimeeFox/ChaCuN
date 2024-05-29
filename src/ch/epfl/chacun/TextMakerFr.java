@@ -73,10 +73,12 @@ public final class TextMakerFr implements TextMaker {
     @Override
     public String playersScoredForest(Set<PlayerColor> scorers, int points, int mushroomGroupCount, int tileCount) {
         String mushroomMessage = mushroomGroupCount > 0
-                ? " et de " + STR."\{mushroomGroupCount} groupe\{plurality(mushroomGroupCount, false)} de champignons."
+                ? " et de "
+                + STR."\{mushroomGroupCount} groupe\{plurality(mushroomGroupCount, false)} de champignons."
                 : ".";
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant qu'occupant·e"
-                + STR."\{plurality(scorers.size(), true)} majoritaires d'une forêt composée de "
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
+                + STR."majoritaire\{plurality(scorers.size(), false)} d'une forêt composée de "
                 + STR."\{tiles(tileCount)}\{mushroomMessage}";
     }
 
@@ -99,8 +101,9 @@ public final class TextMakerFr implements TextMaker {
     public String playersScoredRiver(Set<PlayerColor> scorers, int points, int fishCount, int tileCount) {
         String fishMessage = fishCount > 0
                 ? STR." et contenant \{fishCount} poisson\{plurality(fishCount, false)}." : "";
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant qu'occupant·e"
-                + STR."\{plurality(scorers.size(), true)} majoritaire d'une rivière composée de "
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
+                + STR."majoritaire\{plurality(scorers.size(), false)} d'une rivière composée de "
                 + STR."\{tiles(tileCount)}\{fishMessage}";
     }
 
@@ -157,8 +160,9 @@ public final class TextMakerFr implements TextMaker {
      */
     @Override
     public String playersScoredMeadow(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant que qu'occupant·e"
-                + STR."\{plurality(scorers.size(), true)} d'un pré contenant "
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
+                + STR."majoritaire\{plurality(scorers.size(), false)} d'un pré contenant "
                 + STR."\{organiseAnimalsAsString(animals)}.";
     }
 
@@ -177,8 +181,9 @@ public final class TextMakerFr implements TextMaker {
      */
     @Override
     public String playersScoredRiverSystem(Set<PlayerColor> scorers, int points, int fishCount) {
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant qu'occupant·e"
-                + STR."\{plurality(scorers.size(), true)} d'un réseau hydrographique contenant "
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
+                + STR."majoritaire\{plurality(scorers.size(), false)} d'un réseau hydrographique contenant "
                 + STR."\{fishCount} poisson\{plurality(fishCount, false)}.";
     }
 
@@ -197,10 +202,10 @@ public final class TextMakerFr implements TextMaker {
      */
     @Override
     public String playersScoredPitTrap(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant qu'occupant·e"
-                + STR."\{plurality(scorers.size(), true)} majoritaire"
-                + STR."\{plurality(scorers.size(), false)} d'un pré contenant la grande fosse à pieux "
-                + STR."entourée \{animalMessage(animals)}.";
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
+                + STR."majoritaire\{plurality(scorers.size(), false)} d'un pré contenant la grande "
+                + STR."fosse à pieux entourée \{animalMessage(animals)}.";
     }
 
     /**
@@ -217,9 +222,9 @@ public final class TextMakerFr implements TextMaker {
      */
     @Override
     public String playersScoredRaft(Set<PlayerColor> scorers, int points, int lakeCount) {
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant qu'occupant·e"
-                + STR."\{plurality(scorers.size(), true)} majoritaire"
-                + STR."\{plurality(scorers.size(), false)} contenant le radeau et "
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
+                + STR."majoritaire\{plurality(scorers.size(), false)} contenant le radeau et "
                 + STR."\{lakeCount} lac\{plurality(lakeCount, false)}";
     }
 
