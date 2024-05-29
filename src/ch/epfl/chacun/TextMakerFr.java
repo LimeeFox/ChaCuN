@@ -1,7 +1,7 @@
 package ch.epfl.chacun;
 
 import java.util.*;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import static java.lang.StringTemplate.STR;
 
@@ -31,15 +31,28 @@ public final class TextMakerFr implements TextMaker {
         return playerNamesAndColors.get(playerColor);
     }
 
+    /**
+     * Retourne une chaîne de caractères indiquant le nombre de points.
+     *
+     * @param points
+     *         le nombre de points
+     * @return une chaîne de caractères indiquant le nombre de points
+     */
     @Override
     public String points(int points) {
         return STR."\{points} point\{plurality(points, false)}";
     }
 
+    /**
+     * Retourne une chaîne de caractères indiquant qu'un joueur a fermé une forêt contenant un menhir.
+     *
+     * @param player
+     *         le joueur qui a fermé la forêt
+     * @return une chaîne de caractères indiquant la fermeture d'une forêt avec un menhir par le joueur
+     */
     @Override
     public String playerClosedForestWithMenhir(PlayerColor player) {
-        return STR."\{playerName(player)} a fermé une forêt contenant un menhir et peut donc placer une "
-                + "tuile menhir.";
+        return STR."\{playerName(player)} a fermé une forêt contenant un menhir et peut donc placer une tuile menhir.";
     }
 
     /**
@@ -59,17 +72,13 @@ public final class TextMakerFr implements TextMaker {
      */
     @Override
     public String playersScoredForest(Set<PlayerColor> scorers, int points, int mushroomGroupCount, int tileCount) {
-        String mushroomMessage = ".";
-
-        // On vérifie si la forêt concernée par le message contient des groupes de champignons
-        if (mushroomGroupCount > 0) {
-            mushroomMessage = " et de "
-                    + STR."+\{mushroomGroupCount} groupe\{plurality(mushroomGroupCount, false)} "
-                    + "de champignons.";
-        }
-
+        String mushroomMessage = mushroomGroupCount > 0
+                ? " et de "
+                + STR."\{mushroomGroupCount} groupe\{plurality(mushroomGroupCount, false)} de champignons."
+                : ".";
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
-                + STR."qu'occupant·e\{plurality(scorers.size(), true)} majoritaires d'une forêt composée de "
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
+                + STR."majoritaire\{plurality(scorers.size(), false)} d'une forêt composée de "
                 + STR."\{tiles(tileCount)}\{mushroomMessage}";
     }
 
@@ -84,19 +93,17 @@ public final class TextMakerFr implements TextMaker {
      *         le nombre de poissons nageant dans la rivière ou les lacs adjacents
      * @param tileCount
      *         le nombre de tuiles qui constitue la rivière
-     * @return une chaîne de caractère indiquant les joueurs ayant remporté des points,
+     * @return une chaîne de caractères indiquant les joueurs ayant remporté des points,
      * le nombre de points remportés,
      * les raisons pour lesquels les joueurs ont remporté des points
      */
     @Override
     public String playersScoredRiver(Set<PlayerColor> scorers, int points, int fishCount, int tileCount) {
-        String fishMessage = "";
-
-        if (fishCount > 0) {
-            fishMessage = STR." et contenant \{fishCount} poisson\{plurality(fishCount, false)}.";
-        }
+        String fishMessage = fishCount > 0
+                ? STR." et contenant \{fishCount} poisson\{plurality(fishCount, false)}." : "";
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
-                + STR."qu'occupant·e\{plurality(scorers.size(), true)} majoritaire d'une rivière composée de "
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
+                + STR."majoritaire\{plurality(scorers.size(), false)} d'une rivière composée de "
                 + STR."\{tiles(tileCount)}\{fishMessage}";
     }
 
@@ -115,9 +122,8 @@ public final class TextMakerFr implements TextMaker {
      */
     @Override
     public String playerScoredHuntingTrap(PlayerColor scorer, int points, Map<Animal.Kind, Integer> animals) {
-
-        return STR."\{playerName(scorer)} a remporté \{points(points)} en plaçant la fosse à pieux dans un "
-                + STR."pré dans lequel elle est entourée \{animalMessage(animals)}.";
+        return STR."\{playerName(scorer)} a remporté \{points(points)} "
+                + STR."en plaçant la fosse à pieux dans un pré entourée \{animalMessage(animals)}.";
     }
 
     /**
@@ -148,14 +154,15 @@ public final class TextMakerFr implements TextMaker {
      *         les points remportés
      * @param animals
      *         les animaux présents dans le pré (sans ceux ayant été précédemment annulés)
-     * @return une châine de caractères indiquant le joueur ayant remporté des points,
+     * @return une chaîne de caractères indiquant le joueur ayant remporté des points,
      * le nombre de points remportés,
      * le nombre d'animaux ayant rapporté des points
      */
     @Override
     public String playersScoredMeadow(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
-        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant que "
-                + STR."qu'occupant·e\{plurality(scorers.size(), true)} d'un pré contenant "
+        return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
+                + STR."majoritaire\{plurality(scorers.size(), false)} d'un pré contenant "
                 + STR."\{organiseAnimalsAsString(animals)}.";
     }
 
@@ -175,7 +182,8 @@ public final class TextMakerFr implements TextMaker {
     @Override
     public String playersScoredRiverSystem(Set<PlayerColor> scorers, int points, int fishCount) {
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
-                + STR."qu'occupant·e\{plurality(scorers.size(), true)} d'un réseau hydrographique contenant "
+                + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
+                + STR."majoritaire\{plurality(scorers.size(), false)} d'un réseau hydrographique contenant "
                 + STR."\{fishCount} poisson\{plurality(fishCount, false)}.";
     }
 
@@ -196,8 +204,8 @@ public final class TextMakerFr implements TextMaker {
     public String playersScoredPitTrap(Set<PlayerColor> scorers, int points, Map<Animal.Kind, Integer> animals) {
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
                 + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
-                + STR."majoritaire\{plurality(scorers.size(), false)} d'un pré contenant la grande fosse "
-                + STR."à pieux entourée \{animalMessage(animals)}.";
+                + STR."majoritaire\{plurality(scorers.size(), false)} d'un pré contenant la grande "
+                + STR."fosse à pieux entourée \{animalMessage(animals)}.";
     }
 
     /**
@@ -209,9 +217,8 @@ public final class TextMakerFr implements TextMaker {
      *         les points remportés
      * @param lakeCount
      *         le nombre de lacs contenus dans le réseau hydrographique du radeau
-     * @return une chaîne de charactèrs indiquant :
-     *          les joueurs ayant marqué des points,
-     *          le nombre de points remportés
+     * @return une chaîne de caractères indiquant les joueurs ayant marqué des points,
+     * le nombre de points remportés
      */
     @Override
     public String playersScoredRaft(Set<PlayerColor> scorers, int points, int lakeCount) {
@@ -269,22 +276,15 @@ public final class TextMakerFr implements TextMaker {
     private String organisePlayersAsString(Set<PlayerColor> players) {
         Preconditions.checkArgument(!players.isEmpty());
 
-        // On organise les "players" selon l'ordre prédéfini RBGYP
-        Stream<PlayerColor> sortedColors = new TreeSet<>(players).stream();
-
-        // On associe chaque couleur à son joueur correspondant
-        List<String> playerNames = sortedColors.map(this::playerName)
+        List<String> playerNames = players.stream()
+                .sorted()
+                .map(this::playerName)
                 .toList();
 
-        // S'il y a moins de deux joueurs, on ne retourne que le nom de l'unique joueur concerné
         if (playerNames.size() == 1) {
             return STR."\{playerNames.getFirst()} a";
         }
 
-        /*
-        Sinon, on construit la chaîne de caractères de nom en faisant bien attention à lier les deux derniers noms
-        d'un "et".
-        */
         StringJoiner joiner = new StringJoiner(", ");
         for (int i = 0; i < playerNames.size() - 1; i++) {
             joiner.add(playerNames.get(i));
@@ -293,104 +293,71 @@ public final class TextMakerFr implements TextMaker {
     }
 
     /**
-     * Méthode d'aide qui permet de créer une chaîne de caractères indiquant le nombre d'animaux d'une table d'animaux
-     * donnée, selon l'ordre prédéfini : mammouths, aurochs, cerfs
+     * Méthode qui génère une chaîne de caractères décrivant le nombre et le type d'animaux présents,
+     * dans un ordre prédéfini : mammouths, aurochs, cerfs.
      *
      * @param animals
-     *         tableau associant des types d'animaux à leur quantité
-     * @return une chaîne de caractères indiquant la présence d'animaux et leur quantité
+     *         table associative associant chaque type d'animal à son nombre.
+     * @return une chaîne de caractères décrivant les animaux présents et leur quantité,
+     * ou "aucun animal." si aucun animal n'est présent.
      */
     private String organiseAnimalsAsString(Map<Animal.Kind, Integer> animals) {
-        // On trie les animaux dans l'ordre et on enlève les types qui n'ont aucune présence dans la table associative
-        // ainsi que les tigres (en principe, ils ne sont pas compté)
-        Map<Animal.Kind, Integer> filteredAnimals = new TreeMap<>();
-        for (Animal.Kind animal : Animal.Kind.values()) {
-            if (animals.getOrDefault(animal, 0) > 0 && animal != Animal.Kind.TIGER) {
-                filteredAnimals.put(animal, animals.get(animal));
-            }
-        }
+        // Association des types d'animaux à leur nom en français
+        Map<Animal.Kind, String> animalsAsString = Map.of(
+                Animal.Kind.MAMMOTH, "mammouth",
+                Animal.Kind.AUROCHS, "aurochs",
+                Animal.Kind.DEER, "cerf"
+        );
 
-        // Si aucun animal n'est présent, on envoie le message suivant
+        // Filtrage des animaux avec une quantité supérieure à 0 et exclusion des tigres. Ce sont les animaux qui
+        // sont importants lors du comptage des points
+        Map<Animal.Kind, Integer> filteredAnimals = animals.entrySet().stream()
+                .filter(entry -> entry.getValue() > 0 && entry.getKey() != Animal.Kind.TIGER)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        // Aucun animal n'est présent
         if (filteredAnimals.isEmpty()) {
             return "aucun animal.";
         }
 
-        // On associe chaque type d'animal à son écriture en français
-        Map<Animal.Kind, String> animalsAsString = Map.of(Animal.Kind.MAMMOTH, "mammouth",
-                Animal.Kind.AUROCHS, "aurochs",
-                Animal.Kind.DEER, "cerf");
-
-        // Si notre table associative triée ne contient qu'un seul type d'animal, on envoie un message particulier
+        // Si un seul type d'animal est présent, on aura un message spécial
         if (filteredAnimals.size() == 1) {
-            Animal.Kind animalKind = (Animal.Kind) filteredAnimals.keySet().toArray()[0];
-            int animalCount = filteredAnimals.get(animalKind);
-
-            String plurality = "";
-            if (animalKind != Animal.Kind.AUROCHS) plurality = plurality(animalCount, false);
-
-            return STR."\{animalCount} \{animalsAsString.get(animalKind)}\{plurality}";
+            Map.Entry<Animal.Kind, Integer> entry = filteredAnimals.entrySet().iterator().next();
+            // "Aurochs" ne s'accorde pas au pluriel
+            String plurality = entry.getKey() != Animal.Kind.AUROCHS
+                    ? plurality(entry.getValue(), false) : "";
+            return STR."\{entry.getValue()} \{animalsAsString.get(entry.getKey())}\{plurality}";
         }
 
-        // On construit une chaîne de caractères qui s'adapte aux nombres d'animaux
-        StringBuilder animalMessage = new StringBuilder();
-
-        // On construit notre chaîne de caractères à partir de notre table associative triée
-        final int filteredAnimalsSize = filteredAnimals.size();
-        for (int i = 0; i < filteredAnimalsSize; i++) {
-            Animal.Kind animalKind = Animal.Kind.values()[i];
-            int animalCount = 0;
-            if (filteredAnimals.containsKey(animalKind)) {
-                animalCount = filteredAnimals.get(animalKind);
-            }
-            // On vérifie le pluriel du type d'animal
-            String plurality = "";
-
-            // Le mot "aurochs" est invariable en français donc on ne lui ajoute pas de "s"
-            if (animalKind != Animal.Kind.AUROCHS) {
-                plurality = plurality(animalCount, false);
-            }
-
-            // On ajoute à notre bâtisseur les animaux qui sont présents dans la table associative triée
-            animalMessage.append(STR."\{animalCount} \{animalsAsString.get(animalKind)}\{plurality}");
-
-            // En principe, on sépare l'énumération des animaux par une virgule, sauf si l'animal en question est
-            // l'avant-dernier de notre table associative triée, dans ce cas, on utilise un "et".
-            if (i < filteredAnimalsSize - 2) {
-                animalMessage.append(", ");
-            } else if (i == filteredAnimalsSize - 2) {
-                animalMessage.append(" et ");
-            }
+        // Construction de la chaîne pour plusieurs types d'animaux
+        StringJoiner joiner = new StringJoiner(", ");
+        List<Map.Entry<Animal.Kind, Integer>> entries = new ArrayList<>(filteredAnimals.entrySet());
+        for (int i = 0; i < entries.size() - 1; i++) {
+            Map.Entry<Animal.Kind, Integer> entry = entries.get(i);
+            String plurality = entry.getKey() != Animal.Kind.AUROCHS
+                    ? plurality(entry.getValue(), false) : "";
+            joiner.add(STR."\{entry.getValue()} \{animalsAsString.get(entry.getKey())}\{plurality}");
         }
-
-        return animalMessage.toString();
+        Map.Entry<Animal.Kind, Integer> lastEntry = entries.getLast();
+        String lastPlurality = lastEntry.getKey() != Animal.Kind.AUROCHS
+                ? plurality(lastEntry.getValue(), false) : "";
+        return joiner + " et " + STR."\{lastEntry.getValue()} \{animalsAsString.get(lastEntry.getKey())}\{lastPlurality}";
     }
 
     /**
      * Méthode d'aide qui permet de créer une chaîne de caractères indiquant le nombre d'animaux si cette chaîne est
-     * précédé du mot "entourée"
+     * précédée du mot "entourée"
      *
      * @param animals
      *         table associative associant les types d'animaux à leur nombre
      * @return une chaîne de caractères indiquant le nombre d'animaux
      * précédée de "de" s'il y a au moins 1 animal,
-     * ou précédée de "d'" s'il y en a "aucun"
+     * ou précédée de "d'" s'il n'y en a aucun
      */
     private String animalMessage(Map<Animal.Kind, Integer> animals) {
-        StringBuilder animalMessage = new StringBuilder();
-        boolean animalPresence = false;
-        for (Animal.Kind kind : animals.keySet()) {
-            if (animals.getOrDefault(kind, 0) > 0 && !animalPresence) {
-                animalPresence = true;
-            }
-        }
-        // S'il y a des animaux, on affiche "de [nombres d'animaux pour chaque type]"
-        if (animalPresence) {
-            animalMessage.append("de ");
-        } else {
-            // Sinon on affiche "d'aucun animal"
-            animalMessage.append("d'");
-        }
-        return animalMessage.append(organiseAnimalsAsString(animals)).toString();
+        boolean animalPresence = animals.values().stream().anyMatch(count -> count > 0);
+        String prefix = animalPresence ? "de " : "d'";
+        return prefix + organiseAnimalsAsString(animals);
     }
 
     /**
@@ -399,18 +366,11 @@ public final class TextMakerFr implements TextMaker {
      * @param count
      *         nombre de l'objet qu'on souhaite compter
      * @param isGendered
-     *         indique si le la pluralité doit prendre en compte le format d'écriture inclusive
+     *         indique si la pluralité doit prendre en compte le format d'écriture inclusive
      * @return une chaîne de caractères ajoutant la lettre "s" si count est pluriel
      */
     private String plurality(int count, boolean isGendered) {
-        StringBuilder builder = new StringBuilder();
-
-        if (count > 1) {
-            if (isGendered) builder.append("·");
-            builder.append("s");
-        }
-
-        return builder.toString();
+        return count > 1 ? (isGendered ? "·s" : "s") : "";
     }
 
     /**
@@ -421,6 +381,6 @@ public final class TextMakerFr implements TextMaker {
      * @return une chaîne de caractères indiquant le nombre de tuiles
      */
     private String tiles(int tileCount) {
-        return STR."\{tileCount} tuiles";
+        return STR."\{tileCount} tuile\{plurality(tileCount, false)}";
     }
 }
