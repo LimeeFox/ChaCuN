@@ -268,9 +268,7 @@ public record GameState(
                         updatedMessageBoard = updatedMessageBoard.withScoredHuntingTrap(scorer, adjacentMeadow,
                                 cancelledAnimals);
                         // Annule tous les animaux du plateau de jeu, y compris les cerfs "mangés"
-                        animals.stream()
-                                .filter(animal -> !cancelledAnimals.contains(animal))
-                                .forEach(cancelledAnimals::add);
+                        cancelledAnimals.addAll(animals);
                         updatedBoard = updatedBoard.withMoreCancelledAnimals(cancelledAnimals);
                     }
                 }
