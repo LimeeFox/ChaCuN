@@ -432,23 +432,29 @@ public record GameState(
                 if (pitTrapZone != null) {
                     Area<Zone.Meadow> pitTrapArea = updatedBoard
                             .adjacentMeadow(updatedBoard.tileWithId(pitTrapZone.tileId()).pos(), pitTrapZone);
+
                     Set<Animal> adjacentDeer = pitTrapArea.zones().stream()
-                            .flatMap(zone -> zone.animals().stream()
-                                    .filter(animal -> animal.kind() == Animal.Kind.DEER))
+                            .flatMap(zone -> zone.animals().stream())
+                            .filter(animal -> animal.kind() == Animal.Kind.DEER)
                             .collect(Collectors.toSet());
 
-                    deerToCancel = Math.min(tigerCount,deerCount - adjacentDeer.size());
+                    deerToCancel = Math.min(tigerCount, deerCount - adjacentDeer.size());
 
                     Set<Animal> cancelledDeer = animals.stream()
                             .filter(animal -> animal.kind() == Animal.Kind.DEER && !adjacentDeer.contains(animal))
-                            .limit(deerToCancel).collect(Collectors.toSet());
-                    cancelledAnimals.addAll(cancelledDeer);
+                            .limit(deerToCancel)
+                            .collect(Collectors.toSet());
 
                     tigerCount -= deerToCancel;
-                    deerToCancel = adjacentDeer.size();
+                    deerToCancel = Math.min(tigerCount, adjacentDeer.size());
 
-                    updatedMessageBoard = updatedMessageBoard.withScoredPitTrap(pitTrapArea,
-                            cancelledAnimals);
+                    adjacentDeer.stream()
+                            .limit(deerToCancel)
+                            .forEach(cancelledAnimals::add);
+
+                    cancelledAnimals.addAll(cancelledDeer);
+
+                    updatedMessageBoard = updatedMessageBoard.withScoredPitTrap(pitTrapArea, cancelledAnimals);
                 }
                 deerToCancel = Math.min(tigerCount, deerToCancel);
 
