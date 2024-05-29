@@ -166,6 +166,22 @@ public class BoardUI {
                 tile.addListener((o, oldValue, newValue) -> {
                     if (newValue == null) return;
 
+                    // Gérer les jetons d'annulation
+                    newValue.meadowZones().forEach(meadowZone -> meadowZone.animals().forEach(animal -> {
+                        ImageView cancellationToken = new ImageView();
+                        cancellationToken.setImage(marker);
+                        cancellationToken.setId(STR."marker_\{animal.id()}");
+                        cancellationToken.getStyleClass().add("marker");
+                        cancellationToken.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
+                        cancellationToken.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
+
+                        ObservableValue<Boolean> isCancelled = board
+                                .map(b -> b.cancelledAnimals().contains(animal));
+                        cancellationToken.visibleProperty().bind(isCancelled);
+
+                        group.getChildren().add(cancellationToken);
+                    }));
+
                     if (newValue.kind() != Tile.Kind.START) {
                         PlayerColor placer = tile.getValue().placer();
                         for (Occupant occupant : newValue.potentialOccupants()) {
@@ -199,23 +215,6 @@ public class BoardUI {
                             group.getChildren().add(occupantIcon);
                         }
                     }
-
-
-                    // Gérer les jetons d'annulation
-                    newValue.meadowZones().forEach(meadowZone -> meadowZone.animals().forEach(animal -> {
-                        ImageView cancellationToken = new ImageView();
-                        cancellationToken.setImage(marker);
-                        cancellationToken.setId(STR."marker_\{animal.id()}");
-                        cancellationToken.getStyleClass().add("marker");
-                        cancellationToken.setFitWidth(ImageLoader.MARKER_FIT_SIZE);
-                        cancellationToken.setFitHeight(ImageLoader.MARKER_FIT_SIZE);
-
-                        ObservableValue<Boolean> isCancelled = board
-                                .map(b -> b.cancelledAnimals().contains(animal));
-                        cancellationToken.visibleProperty().bind(isCancelled);
-
-                        group.getChildren().add(cancellationToken);
-                    }));
                 });
 
                 // On définit le compertement à suivre lors de clics de souris sur les cases
