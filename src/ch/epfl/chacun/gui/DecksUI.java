@@ -10,7 +10,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -82,17 +81,16 @@ public abstract class DecksUI {
         ImageView tileToPlaceImageView = new ImageView();
         tileToPlaceImageView.setFitHeight(ImageLoader.LARGE_TILE_FIT_SIZE);
         tileToPlaceImageView.setFitWidth(ImageLoader.LARGE_TILE_FIT_SIZE);
-
-        ObservableValue<Image> tileToPlaceImage = tileToPlace.map(Tile::id).map(ImageLoader::normalImageForTile);
+        ObservableValue<Image> tileToPlaceImage = tileToPlace.map(Tile::id).map(ImageLoader::largeImageForTile);
         tileToPlaceImageView.imageProperty().bind(tileToPlaceImage);
 
         // On modifie le texte en fonction du message à afficher
         occupantInfoText.setWrappingWidth(ImageLoader.LARGE_TILE_FIT_SIZE * PREVIEW_SCALE);
         occupantInfoText.textProperty().bind(message);
 
-        ObservableValue<Boolean> messageIsNull = message.map(String::isEmpty);
         // Si il y a un message à afficher, c'est que le joueur peut executer (ou pas) une action en cliquant sur
         // le texte
+        ObservableValue<Boolean> messageIsNull = message.map(String::isEmpty);
         tileToPlaceImageView.visibleProperty().bind(messageIsNull);
 
         occupantInfoText.setOnMouseClicked(e -> {
