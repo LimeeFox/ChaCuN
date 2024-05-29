@@ -182,6 +182,7 @@ public class BoardUI {
                         group.getChildren().add(cancellationToken);
                     }));
 
+                    // Gérer les jetons des occupants
                     if (newValue.kind() != Tile.Kind.START) {
                         PlayerColor placer = tile.getValue().placer();
                         for (Occupant occupant : newValue.potentialOccupants()) {
