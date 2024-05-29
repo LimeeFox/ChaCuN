@@ -164,38 +164,42 @@ public class BoardUI {
                 Manipulation des occupants et les jetons d'annulation
                  */
                 tile.addListener((o, oldValue, newValue) -> {
-                    if (newValue == null || newValue.kind() == Tile.Kind.START) return;
+                    if (newValue == null) return;
 
-                    PlayerColor placer = tile.getValue().placer();
-                    for (Occupant occupant : newValue.potentialOccupants()) {
-                        // On a besoin de créer un occupant pour CHAQUE joueur, qu'on va en premier temps, cacher,
-                        // et en deuxième temps, le refaire apparaître au cas oû la tuile se fait occuper
-                        SVGPath occupantIcon = (SVGPath) Icon
-                                .newFor(placer, occupant.kind());
-                        occupantIcon.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
+                    if (newValue.kind() != Tile.Kind.START) {
+                        PlayerColor placer = tile.getValue().placer();
+                        for (Occupant occupant : newValue.potentialOccupants()) {
+                            // On a besoin de créer un occupant pour CHAQUE joueur, qu'on va en premier temps, cacher,
+                            // et en deuxième temps, le refaire apparaître au cas oû la tuile se fait occuper
+                            SVGPath occupantIcon = (SVGPath) Icon
+                                    .newFor(placer, occupant.kind());
+                            occupantIcon.setId(STR."\{occupant.kind().toString().toLowerCase()}_\{occupant.zoneId()}");
 
-                        occupantIcon.visibleProperty()
-                                .bind(visibleOccupants.map(occupants -> occupants.contains(occupant)));
+                            occupantIcon.visibleProperty()
+                                    .bind(visibleOccupants.map(occupants -> occupants.contains(occupant)));
 
-                        // Gérer la rotation de l'occupant. La rotation doit être inversée pour les occupants
-                        occupantIcon.rotateProperty()
-                                .bind(cell.map(CellData::rotation).map(rotation -> -rotation.degreesCW()));
+                            // Gérer la rotation de l'occupant. La rotation doit être inversée pour les occupants
+                            occupantIcon.rotateProperty()
+                                    .bind(cell.map(CellData::rotation).map(rotation -> -rotation.degreesCW()));
 
-                        // Auditeur qui va gérer les clics sur les occupants
-                        occupantIcon.setOnMouseClicked(event -> {
-                            if (event.getButton() == MouseButton.PRIMARY
-                                    && event.isStillSincePress()
-                                    && (gameState.getValue().lastTilePotentialOccupants().contains(occupant)
-                                    || nextAction.getValue() == GameState.Action.RETAKE_PAWN)) {
-                                if (placer != null
-                                        && occupantIcon.fillProperty().getValue().equals(ColorMap.fillColor(placer))) {
-                                    occupantConsumer.accept(occupant);
+                            // Auditeur qui va gérer les clics sur les occupants
+                            occupantIcon.setOnMouseClicked(event -> {
+                                if (event.getButton() == MouseButton.PRIMARY
+                                        && event.isStillSincePress()
+                                        && (gameState.getValue().lastTilePotentialOccupants().contains(occupant)
+                                        || nextAction.getValue() == GameState.Action.RETAKE_PAWN)) {
+                                    if (placer != null
+                                            && occupantIcon
+                                            .fillProperty().getValue().equals(ColorMap.fillColor(placer))) {
+                                        occupantConsumer.accept(occupant);
+                                    }
                                 }
-                            }
-                        });
+                            });
 
-                        group.getChildren().add(occupantIcon);
+                            group.getChildren().add(occupantIcon);
+                        }
                     }
+
 
                     // Gérer les jetons d'annulation
                     newValue.meadowZones().forEach(meadowZone -> meadowZone.animals().forEach(animal -> {
