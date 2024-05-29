@@ -245,10 +245,10 @@ public record GameState(
                         Area<Zone.Meadow> adjacentMeadow = updatedBoard.adjacentMeadow(tile.pos(), meadowZone);
 
                         // Compter les animaux
-                        Set<Animal> animals = new HashSet<>();
-                        for (Zone.Meadow meadow : adjacentMeadow.zones()) {
-                            animals.addAll(meadow.animals());
-                        }
+                        Set<Animal> animals = adjacentMeadow.zones().stream()
+                                .flatMap(meadow -> meadow.animals().stream())
+                                .collect(Collectors.toSet());
+
                         Map<Animal.Kind, Long> animalCount = animals.stream()
                                 .collect(Collectors.groupingBy(Animal::kind, Collectors.counting()));
 
@@ -264,7 +264,8 @@ public record GameState(
                                 .limit(deerToCancel)
                                 .forEach(cancelledAnimals::add);
 
-                        updatedMessageBoard = updatedMessageBoard.withScoredHuntingTrap(scorer, adjacentMeadow);
+                        updatedMessageBoard = updatedMessageBoard.withScoredHuntingTrap(scorer, adjacentMeadow,
+                                cancelledAnimals);
                         // Annule tous les animaux du plateau de jeu, y compris les cerfs "mangés"
                         cancelledAnimals.addAll(animals);
                         updatedBoard = updatedBoard.withMoreCancelledAnimals(cancelledAnimals);
@@ -406,53 +407,57 @@ public record GameState(
             }
 
             // Si la zone possède le pouvoir spécial du feu, alors les tigres dans l'aire doivent être annulés
-            Zone.Meadow wildFire = (Zone.Meadow) meadowArea.zoneWithSpecialPower(Zone.SpecialPower.WILD_FIRE);
-            if (wildFire != null) {
-                updatedBoard = updatedBoard.withMoreCancelledAnimals(tigers);
-                cancelledAnimals.addAll(tigers);
+            Zone.Meadow wildFireZone = (Zone.Meadow) meadowArea.zoneWithSpecialPower(Zone.SpecialPower.WILD_FIRE);
+            if (wildFireZone != null) {
+                Set<Animal> cancelledTigers = animals.stream()
+                        .filter(animal -> animal.kind() == Animal.Kind.TIGER && !cancelledAnimals.contains(animal))
+                        .collect(Collectors.toSet());
+                cancelledAnimals.addAll(cancelledTigers);
+                tigers.removeAll(cancelledTigers);
             }
 
-            // Récupération des cerfs des zones adjacentes
-            Zone.Meadow trapZone = (Zone.Meadow) meadowArea.zoneWithSpecialPower(Zone.SpecialPower.PIT_TRAP);
-            Area<Zone.Meadow> adjacentArea = new Area<>(Set.of(), List.of(), 0);
-            if (trapZone != null) {
-                adjacentArea = updatedBoard
-                        .adjacentMeadow(updatedBoard.tileWithId(Zone.tileId(trapZone.id())).pos(), trapZone);
-            }
-            Set<Animal> adjacentAnimals = Area.animals(adjacentArea, cancelledAnimals);
+            Zone.Meadow pitTrapZone = (Zone.Meadow) meadowArea.zoneWithSpecialPower(Zone.SpecialPower.PIT_TRAP);
 
-            List<Animal> adjacentDeer = new ArrayList<>();
-            adjacentAnimals.forEach(animal -> {
-                if (animal.kind() == Animal.Kind.DEER) adjacentDeer.add(animal);
-            });
+            // Les tigres mangent les cerfs dans le même pré qu'eux,
+            // en priorité hors de l'aire adjacente de la grande fosse à pieux
+            if (!tigers.isEmpty()) {
+                int tigerCount = tigers.size();
+                int deerCount = deer.size();
 
-            List<Animal> nonAdjacentDeer = new ArrayList<>();
-            animals.forEach(animal -> {
-                if (animal.kind() == Animal.Kind.DEER && !adjacentAnimals.contains(animal)) nonAdjacentDeer.add(animal);
-            });
+                int deerToCancel = deerCount;
 
-            // Annulation des animaux qui ne sont pas dans les zones pré adjacentes
-            if (wildFire == null) {
-                if (tigers.size() < deer.size()) {
-                    Set<Animal> toCancel = new HashSet<>();
-                    for (Animal tiger : tigers) {
-                        if (!nonAdjacentDeer.isEmpty())
-                            toCancel.add(nonAdjacentDeer.removeFirst());
-                        else
-                            toCancel.add(adjacentDeer.removeFirst());
-                        toCancel.add(tiger);
-                    }
-                    updatedBoard = updatedBoard.withMoreCancelledAnimals(toCancel);
-                } else {
-                    updatedBoard = updatedBoard.withMoreCancelledAnimals(deer);
-                    updatedBoard = updatedBoard.withMoreCancelledAnimals(tigers);
+                if (pitTrapZone != null) {
+                    Area<Zone.Meadow> pitTrapArea = updatedBoard
+                            .adjacentMeadow(updatedBoard.tileWithId(pitTrapZone.tileId()).pos(), pitTrapZone);
+                    Set<Animal> adjacentDeer = pitTrapArea.zones().stream()
+                            .flatMap(zone -> zone.animals().stream()
+                                    .filter(animal -> animal.kind() == Animal.Kind.DEER))
+                            .collect(Collectors.toSet());
+
+                    deerToCancel = Math.min(tigerCount,deerCount - adjacentDeer.size());
+
+                    Set<Animal> cancelledDeer = animals.stream()
+                            .filter(animal -> animal.kind() == Animal.Kind.DEER && !adjacentDeer.contains(animal))
+                            .limit(deerToCancel).collect(Collectors.toSet());
+                    cancelledAnimals.addAll(cancelledDeer);
+
+                    tigerCount -= deerToCancel;
+                    deerToCancel = adjacentDeer.size();
+
+                    updatedMessageBoard = updatedMessageBoard.withScoredPitTrap(pitTrapArea,
+                            cancelledAnimals);
                 }
+                deerToCancel = Math.min(tigerCount, deerToCancel);
+
+                animals.stream()
+                        .filter(animal -> animal.kind() == Animal.Kind.DEER)
+                        .limit(deerToCancel)
+                        .forEach(cancelledAnimals::add);
             }
 
             // Màj du plateau de jeu pour l'obtention de points
-            if (trapZone != null)
-                updatedMessageBoard = updatedMessageBoard.withScoredPitTrap(adjacentArea, updatedBoard.cancelledAnimals());
-            updatedMessageBoard = updatedMessageBoard.withScoredMeadow(meadowArea, updatedBoard.cancelledAnimals());
+            updatedMessageBoard = updatedMessageBoard.withScoredMeadow(meadowArea, cancelledAnimals);
+            updatedBoard = updatedBoard.withMoreCancelledAnimals(cancelledAnimals);
         }
 
         // Points pour les systèmes hydrographiques
