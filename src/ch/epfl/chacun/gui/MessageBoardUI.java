@@ -23,6 +23,9 @@ import static javafx.application.Platform.runLater;
 
 /**
  * Gestion de l'interface graphique du tableau d'affichage de messages
+ *
+ * @Cyriac Philippe (360553)
+ * @author Vladislav Yarkovoy (362242)
  */
 public class MessageBoardUI {
 
@@ -30,9 +33,9 @@ public class MessageBoardUI {
      * Création et mis à jour de l'affichage du tableau d'affichage de messages du jeu
      *
      * @param messages
-     *          messages à faire afficher sur notre tableau d'affichage
+     *         messages à faire afficher sur notre tableau d'affichage
      * @param tileIds
-     *          identifiant des tuiles concernées par les messages (mis à jour ultérieurement)
+     *         identifiant des tuiles concernées par les messages (mis à jour ultérieurement)
      * @return un tableau d'affichage de messages défilable et mis à jour
      */
     public static Node create(ObservableValue<List<MessageBoard.Message>> messages,
@@ -58,15 +61,9 @@ public class MessageBoardUI {
                     root.getChildren().add(text);
 
                     // Lorsque la souris survole un message, on ajoute l'identifiant des tuiles concernées aux
-                    // identifiants des tuiles qu'on souhaite surligner (highlight)
-                    text.setOnMouseEntered(event -> {
-                        tileIds.set(message.tileIds());
-                    });
-
-                    // Set on mouse exited event
-                    text.setOnMouseExited(event -> {
-                        tileIds.set(new HashSet<>());
-                    });
+                    // identifiants des tuiles qu'on souhaite mettre en évidence
+                    text.setOnMouseEntered(event -> tileIds.set(message.tileIds()));
+                    text.setOnMouseExited(event -> tileIds.set(new HashSet<>()));
                 }
             }
             runLater(() -> scrollPane.setVvalue(1));

@@ -7,6 +7,9 @@ import javafx.scene.shape.SVGPath;
 
 /**
  * Classe qui permet de dessiner des icones comme PION ou HUTTE
+ *
+ * @author Cyriac Philippe (360553)
+ * @author Vladislav Yarkovoy (362242)
  */
 public abstract class Icon {
     /**

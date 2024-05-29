@@ -8,17 +8,18 @@ import java.util.List;
  * Contient des méthodes permettant d'encoder et de décoder des actions et les appliquer à un état de jeu
  *
  * @author Cyriac Philippe (360553)
+ * @author Vladislav Yarkovoy (362242)
  */
 public class ActionEncoder {
     /**
      * Ajoute une tuile à notre état de jeu et encode cette action
      *
      * @param initialGameState
-     *          état de jeu initial, avant l'ajout de la tuile
+     *         état de jeu initial, avant l'ajout de la tuile
      * @param tileToPlace
-     *          tuile que l'on souhaite ajouter à l'état de jeu
-     * @return  une paire composée d'un nouvel état de jeu contenant le tuile ajouté,
-     *          et d'une chaîne de charactèrs représentant le code en base32 de l'ajout de la tuile
+     *         tuile que l'on souhaite ajouter à l'état de jeu
+     * @return une paire composée d'un nouvel état de jeu contenant le tuile ajouté,
+     * et d'une chaîne de charactèrs représentant le code en base32 de l'ajout de la tuile
      */
     public static StateAction withPlacedTile(GameState initialGameState, PlacedTile tileToPlace) {
         GameState currentGameState = initialGameState.withPlacedTile(tileToPlace);
@@ -40,11 +41,11 @@ public class ActionEncoder {
      * Ajoute un occupant à notre état de jeu et encode cette action
      *
      * @param initialCameState
-     *          état de jeu initial, avant l'ajout de l'occupant
+     *         état de jeu initial, avant l'ajout de l'occupant
      * @param occupant
-     *          occupant que l'on souhaite ajouter à l'état de jeu
+     *         occupant que l'on souhaite ajouter à l'état de jeu
      * @return une paire composée d'un nouvel état de jeu avec l'occupant ajouté,
-     *         et d'une chaîne de charactèrs représentant le code en base32 de l'ajout de l'occupant
+     * et d'une chaîne de charactèrs représentant le code en base32 de l'ajout de l'occupant
      */
     public static StateAction withNewOccupant(GameState initialCameState, Occupant occupant) {
         GameState currentGameState = initialCameState.withNewOccupant(occupant);
@@ -70,11 +71,11 @@ public class ActionEncoder {
      * Retire un pion de notre état de jeu et encode de cette action
      *
      * @param initialGameState
-     *          état de jeu initial, avant la reprise de la tuile
+     *         état de jeu initial, avant la reprise de la tuile
      * @param removedOccupant
-     *          occupant que l'on souhaite réprendre à l'état de jeu
+     *         occupant que l'on souhaite réprendre à l'état de jeu
      * @return une paire composée du nouvel état de jeu avec l'occupant retiré,
-     *         et d'une chaîne de charactèrs représentant le code en base32 de la reprise du pion
+     * et d'une chaîne de charactèrs représentant le code en base32 de la reprise du pion
      */
     public static StateAction withOccupantRemoved(GameState initialGameState, Occupant removedOccupant) {
         // On vérifie que l'occupant a retiré est un PION, ou est nul
@@ -99,17 +100,16 @@ public class ActionEncoder {
      * Decode et applique une action passée en base32 à notre état de jeu
      *
      * @param initialGameSate
-     *          état de jeu initial
+     *         état de jeu initial
      * @param code
-     *          chaîne de charactèrs représentant une action en base32
+     *         chaîne de charactèrs représentant une action en base32
      * @return une paire composée d'un nouvel état de jeu et le code base32 qu'on lui a appliqué,
-     *         ou null si au cas où ces paramètres lancent une erreur à l'appel de decodeAndApplyThrows
+     * ou null si au cas où ces paramètres lancent une erreur à l'appel de decodeAndApplyThrows
      */
     public static StateAction decodeAndApply(GameState initialGameSate, String code) {
         try {
             return decodeAndApplyThrows(initialGameSate, code);
-        }
-        catch(IllegalArgumentException | NullPointerException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return null;
         }
     }
@@ -118,18 +118,17 @@ public class ActionEncoder {
      * Méthode d'aide qui gère les exceptions lors de l'appel de decodeAndApplyThrows
      *
      * @param initialGameState
-     *          état de jeu initial
+     *         état de jeu initial
      * @param code
-     *          chaîne de charactèrs correspondant au code en base32 de l'action à appliquer
+     *         chaîne de charactèrs correspondant au code en base32 de l'action à appliquer
      * @return une paire composée d'un nouvel état de jeu et le code base32 qu'on lui a appliqué
-     *
      * @throws IllegalArgumentException
-     *          si la chaîne de charactèrs en base32 passé en argument n'est pas valid
-     *          si l'index de la tuile à placer ne fait pas partie de la frange
-     *          si l'occupant qu'on souhaite placer ne fait pas partie des occupants potentiels
-     *          si l'occupant qu'on souhaite retirer ne peux pas être retirée
+     *         si la chaîne de charactèrs en base32 passé en argument n'est pas valid
+     *         si l'index de la tuile à placer ne fait pas partie de la frange
+     *         si l'occupant qu'on souhaite placer ne fait pas partie des occupants potentiels
+     *         si l'occupant qu'on souhaite retirer ne peux pas être retirée
      * @throws NullPointerException
-     *          si la dernière tuile placée dans l'état de jeu est null
+     *         si la dernière tuile placée dans l'état de jeu est null
      */
     private static StateAction decodeAndApplyThrows(GameState initialGameState, String code) {
         Preconditions.checkArgument(Base32.isValid(code));
@@ -159,7 +158,7 @@ public class ActionEncoder {
                                 Arrays.stream(Rotation.values()).toList().get(r),
                                 tilePos));
             }
-            case OCCUPY_TILE ->  {
+            case OCCUPY_TILE -> {
                 Preconditions.checkArgument(code.length() == 1);
                 Occupant occupantToPlace = null;
                 if (decoded != 0b11111) {
@@ -195,11 +194,11 @@ public class ActionEncoder {
      * Méthode d'aide qui permet d'obtenir la frange d'un état de jeu, triée
      *
      * @param gameState
-     *          état de jeu dont on souhaite obtenir la frange
+     *         état de jeu dont on souhaite obtenir la frange
      * @return la liste des positions d'insertions triée avec une priorité x
      */
     private static List<Pos> getSortedFringe(GameState gameState) {
-       return gameState.board().insertionPositions().stream()
+        return gameState.board().insertionPositions().stream()
                 .sorted(Comparator.comparing(Pos::x).thenComparing(Pos::y)).toList();
     }
 
@@ -207,12 +206,12 @@ public class ActionEncoder {
      * Méthode d'aide qui permet d'obtenir les pions d'un état de jeu, triée selon leur identifiant
      *
      * @param gameState
-     *          état de jeu dont on souhaite obtenir les pions
+     *         état de jeu dont on souhaite obtenir les pions
      * @return une liste des pions présents sur le plateau triée selon l'ordre des identifiants
      */
     private static List<Occupant> getSortedPawns(GameState gameState) {
         return gameState.board().occupants().stream()
-                .filter(occupant ->  occupant.kind().equals(Occupant.Kind.PAWN))
+                .filter(occupant -> occupant.kind().equals(Occupant.Kind.PAWN))
                 .sorted(Comparator.comparing(Occupant::zoneId)).toList();
     }
 
@@ -221,10 +220,11 @@ public class ActionEncoder {
      * associé
      *
      * @param gameState
-     *          état de jeu résultant du code en base 32 auquel il est associé
+     *         état de jeu résultant du code en base 32 auquel il est associé
      * @param base32Code
-     *          chaîne de charactèrs représentant le code en base 32 qui a produit l'état de jeu auquel la chaîne est
-     *          associée
+     *         chaîne de charactèrs représentant le code en base 32 qui a produit l'état de jeu auquel la chaîne est
+     *         associée
      */
-    public record StateAction(GameState gameState, String base32Code) {}
+    public record StateAction(GameState gameState, String base32Code) {
+    }
 }

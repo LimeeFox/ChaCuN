@@ -5,10 +5,13 @@ import javafx.scene.paint.Color;
 
 /**
  * Classe qui permet d'associer chaque couleur PlayerColor à une couleur
+ *
+ * @author Cyriac Philippe (360553)
+ * @author Vladislav Yarkovoy (362242)
  */
 public abstract class ColorMap {
     /**
-     * Obtenir la couleur de remplissage en fonction de @PlayerColor
+     * Obtenir la couleur de remplissage en fonction de @playerColor
      *
      * @param playerColor
      *         couleur du joueur à convertir
@@ -25,7 +28,7 @@ public abstract class ColorMap {
     }
 
     /**
-     * Obtenir la couleur du contour en fonction de @PlayerColor
+     * Obtenir la couleur du contour en fonction de @playerColor
      *
      * @param playerColor
      *         couleur du joueur à convertir

@@ -1,7 +1,6 @@
 package ch.epfl.chacun.gui;
 
 import ch.epfl.chacun.*;
-import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.layout.VBox;
@@ -41,7 +40,9 @@ public abstract class PlayersUI {
         playersBox.setId("players");
         playersBox.getStylesheets().add("players.css");
 
-        // Creation de nodes pour chaque joueur
+        /*
+        Creation de noeuds pour chaque joueur
+        */
         GameState gameState = currentGameState.getValue();
         Set<PlayerColor> p = new TreeSet<>(gameState.players());
         for (PlayerColor playerColor : p) {
@@ -68,7 +69,7 @@ public abstract class PlayersUI {
             TextFlow player = new TextFlow(circle, pointsText);
             player.getStyleClass().add("player");
 
-            // On a besoin de ses huttes
+            // Création de toutes les huttes
             for (int i = 0; i < Occupant.occupantsCount(Occupant.Kind.HUT); i++) {
                 player.getChildren().add(Icon.newFor(playerColor, Occupant.Kind.HUT));
             }
@@ -76,7 +77,7 @@ public abstract class PlayersUI {
             // Espace pour la séparation visuelle
             player.getChildren().add(new Text("   "));
 
-            // On a besoin de ses pions
+            // Création de tous les pions
             for (int i = 0; i < Occupant.occupantsCount(Occupant.Kind.PAWN); i++) {
                 player.getChildren().add(Icon.newFor(playerColor, Occupant.Kind.PAWN));
             }
@@ -98,6 +99,9 @@ public abstract class PlayersUI {
                 }
             });
 
+            /*
+            Gérer toutes les mises à jour des occupants de chaque joueur
+             */
             // Auditeur pour mettre à jour les pions des joueurs lors des changements d'état du jeu
             ObservableValue<Integer> freeHutsCount = currentGameState
                     .map(gs -> gs.freeOccupantsCount(playerColor, Occupant.Kind.HUT));
@@ -110,24 +114,15 @@ public abstract class PlayersUI {
                     .collect(Collectors.toCollection(LinkedList::new));
 
             // On saute les n premiers occupants non placés afin de rendre ceux aux extrêmes droites opaques
-            for (int i = 0 ; i < HUTS ; i++) {
+            for (int i = 0; i < HUTS; i++) {
                 final int index = i;
-                occupants.get(i).opacityProperty().bind(freeHutsCount.map(freeHuts -> {
-                    if (index < freeHuts) {
-                        return 1.0;
-                    }
-                    return 0.1;
-                }));
+                occupants.get(i).opacityProperty().bind(freeHutsCount.map(freeHuts -> index < freeHuts ? 1.0 : 0.1));
             }
 
-            for (int i = HUTS ; i < HUTS + PAWNS ; i++) {
+            for (int i = HUTS; i < HUTS + PAWNS; i++) {
                 final int index = i;
-                occupants.get(i).opacityProperty().bind(freePawnsCount.map(freePawns -> {
-                    if (index < freePawns + HUTS) {
-                        return 1.0;
-                    }
-                    return 0.1;
-                }));
+                occupants.get(i).opacityProperty().bind(freePawnsCount.map(freePawns ->
+                        index < (freePawns + HUTS) ? 1.0 : 0.1));
             }
 
             playersBox.getChildren().add(player);
