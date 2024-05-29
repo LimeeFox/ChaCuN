@@ -95,12 +95,14 @@ public record Area<Z extends Zone>(Set<Z> zones, List<PlayerColor> occupants, in
     public static int riverFishCount(Area<Zone.River> river) {
         int fishCount = 0;
 
+        Set<Zone.Lake> lakesAlreadyCounted = new HashSet<>();
         for (Zone.River zone : river.zones()) {
             fishCount += zone.fishCount();
 
             // Verifier si on a deja compté les poissons dans ce lac
-            if (zone.hasLake()) {
+            if (zone.hasLake() && !lakesAlreadyCounted.contains(zone.lake())) {
                 Zone.Lake lake = zone.lake();
+                lakesAlreadyCounted.add(lake);
                 fishCount += lake.fishCount();
             }
         }
