@@ -244,7 +244,7 @@ public record GameState(
                         if (!(specialPowerZone instanceof Zone.Meadow meadowZone)) break;
                         Area<Zone.Meadow> adjacentMeadow = updatedBoard.adjacentMeadow(tile.pos(), meadowZone);
 
-                        // Compter les animaux
+                        // Compter les animaux dans les zones adjacentes
                         Set<Animal> animals = adjacentMeadow.zones().stream()
                                 .flatMap(meadow -> meadow.animals().stream())
                                 .collect(Collectors.toSet());
@@ -260,14 +260,17 @@ public record GameState(
                         int deerToCancel = (int) Math.min(deerCount, tigerCount);
                         // Ajout dès cerfs annulés aux animaux annulés
                         animals.stream()
-                                .filter(animal -> animal.kind() == Animal.Kind.DEER)
+                                .filter(animal -> animal.kind() == Animal.Kind.DEER
+                                        && !cancelledAnimals.contains(animal))
                                 .limit(deerToCancel)
                                 .forEach(cancelledAnimals::add);
 
                         updatedMessageBoard = updatedMessageBoard.withScoredHuntingTrap(scorer, adjacentMeadow,
                                 cancelledAnimals);
                         // Annule tous les animaux du plateau de jeu, y compris les cerfs "mangés"
-                        cancelledAnimals.addAll(animals);
+                        animals.stream()
+                                .filter(animal -> !cancelledAnimals.contains(animal))
+                                .forEach(cancelledAnimals::add);
                         updatedBoard = updatedBoard.withMoreCancelledAnimals(cancelledAnimals);
                     }
                 }
