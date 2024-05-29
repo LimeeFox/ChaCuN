@@ -43,11 +43,7 @@ public class Main extends Application {
         final List<Tile> tiles = new ArrayList<>(Tiles.TILES);
         Collections.shuffle(tiles, RandomGeneratorFactory.getDefault().create(seed));
 
-        final List<Tile> tiless = new ArrayList<>(Tiles.TILES.stream().filter(tile -> ((tile.kind() == Tile.Kind.NORMAL && tile.id() % 4 == 0 ||
-                        (tile.kind() == Tile.Kind.MENHIR && (tile.id() == 88)) || tile.kind() == Tile.Kind.START)))
-                .toList());
-
-        Map<Tile.Kind, List<Tile>> decks = tiless.stream().collect(Collectors.groupingBy(Tile::kind));
+        Map<Tile.Kind, List<Tile>> decks = tiles.stream().collect(Collectors.groupingBy(Tile::kind));
         TileDecks tileDecks =
                 new TileDecks(decks.get(Tile.Kind.START), decks.get(Tile.Kind.NORMAL), decks.get(Tile.Kind.MENHIR));
 
