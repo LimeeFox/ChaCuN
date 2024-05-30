@@ -225,7 +225,7 @@ public final class TextMakerFr implements TextMaker {
         return STR."\{organisePlayersAsString(scorers)} remporté \{points(points)} en tant "
                 + STR."qu'occupant·e\{plurality(scorers.size(), true)} "
                 + STR."majoritaire\{plurality(scorers.size(), false)} contenant le radeau et "
-                + STR."\{lakeCount} lac\{plurality(lakeCount, false)}";
+                + STR."\{lakeCount} lac\{plurality(lakeCount, false)}.";
     }
 
     /**
