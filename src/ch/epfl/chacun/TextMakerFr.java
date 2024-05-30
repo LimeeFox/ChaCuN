@@ -274,7 +274,7 @@ public final class TextMakerFr implements TextMaker {
      * derniers de la liste par "et".
      */
     private String organisePlayersAsString(Set<PlayerColor> players) {
-        if(players.isEmpty()) {
+        if (players.isEmpty()) {
             return "Personne n'a";
         }
 
