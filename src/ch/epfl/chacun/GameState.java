@@ -244,7 +244,7 @@ public record GameState(
                         if (!(specialPowerZone instanceof Zone.Meadow meadowZone)) break;
                         Area<Zone.Meadow> adjacentMeadow = updatedBoard.adjacentMeadow(tile.pos(), meadowZone);
 
-                        // Compter les animaux
+                        // Compter les animaux dans les zones adjacentes
                         Set<Animal> animals = adjacentMeadow.zones().stream()
                                 .flatMap(meadow -> meadow.animals().stream())
                                 .collect(Collectors.toSet());
@@ -260,7 +260,8 @@ public record GameState(
                         int deerToCancel = (int) Math.min(deerCount, tigerCount);
                         // Ajout dès cerfs annulés aux animaux annulés
                         animals.stream()
-                                .filter(animal -> animal.kind() == Animal.Kind.DEER)
+                                .filter(animal -> animal.kind() == Animal.Kind.DEER
+                                        && !cancelledAnimals.contains(animal))
                                 .limit(deerToCancel)
                                 .forEach(cancelledAnimals::add);
 
@@ -429,23 +430,29 @@ public record GameState(
                 if (pitTrapZone != null) {
                     Area<Zone.Meadow> pitTrapArea = updatedBoard
                             .adjacentMeadow(updatedBoard.tileWithId(pitTrapZone.tileId()).pos(), pitTrapZone);
+
                     Set<Animal> adjacentDeer = pitTrapArea.zones().stream()
-                            .flatMap(zone -> zone.animals().stream()
-                                    .filter(animal -> animal.kind() == Animal.Kind.DEER))
+                            .flatMap(zone -> zone.animals().stream())
+                            .filter(animal -> animal.kind() == Animal.Kind.DEER)
                             .collect(Collectors.toSet());
 
-                    deerToCancel = Math.min(tigerCount,deerCount - adjacentDeer.size());
+                    deerToCancel = Math.min(tigerCount, deerCount - adjacentDeer.size());
 
                     Set<Animal> cancelledDeer = animals.stream()
                             .filter(animal -> animal.kind() == Animal.Kind.DEER && !adjacentDeer.contains(animal))
-                            .limit(deerToCancel).collect(Collectors.toSet());
-                    cancelledAnimals.addAll(cancelledDeer);
+                            .limit(deerToCancel)
+                            .collect(Collectors.toSet());
 
                     tigerCount -= deerToCancel;
-                    deerToCancel = adjacentDeer.size();
+                    deerToCancel = Math.min(tigerCount, adjacentDeer.size());
 
-                    updatedMessageBoard = updatedMessageBoard.withScoredPitTrap(pitTrapArea,
-                            cancelledAnimals);
+                    adjacentDeer.stream()
+                            .limit(deerToCancel)
+                            .forEach(cancelledAnimals::add);
+
+                    cancelledAnimals.addAll(cancelledDeer);
+
+                    updatedMessageBoard = updatedMessageBoard.withScoredPitTrap(pitTrapArea, cancelledAnimals);
                 }
                 deerToCancel = Math.min(tigerCount, deerToCancel);
 
