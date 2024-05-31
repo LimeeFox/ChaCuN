@@ -15,21 +15,32 @@ import java.util.*;
 import java.util.random.RandomGeneratorFactory;
 import java.util.stream.Collectors;
 
+/**
+ * Programme principal de ChaCuN
+ *
+ * @author Cyriac Philippe (360553)
+ * @author Vladislav Yarkovoy (362242)
+ */
 public class Main extends Application {
     public static void main(String[] args) {
         launch(args);
     }
 
+    /**
+     * Le programme principal de ChaCuN, qui affiche l'interface graphique du jeu et commence le jeu.
+     *
+     * @param stage le graphe de scène contenant le jeu ChaCuN
+     * @throws Exception si le jeu fonctionne correctement, seules les exceptions pour des codes illégaux sont lancés
+     * (par exemple, les tentatives de recupérer les occupants des autres grâce aux codes passés comme Actions)
+     */
     @Override
     public void start(Stage stage) throws Exception {
-
         /*
         L'initialisation des joueurs ainsi que de la graine du jeu
          */
         Map<PlayerColor, String> players = new TreeMap<>();
+
         List<String> playerNames = getParameters().getUnnamed();
-
-
         final Iterator<PlayerColor> colorIterator = Arrays.asList(PlayerColor.values()).iterator();
         playerNames.forEach(name -> players.put(colorIterator.next(), name));
 
@@ -63,8 +74,6 @@ public class Main extends Application {
 
             if (gs.nextAction() == GameState.Action.OCCUPY_TILE) {
                 occupants.addAll(gs.lastTilePotentialOccupants());
-            } else {
-                occupants.removeAll(gs.lastTilePotentialOccupants());
             }
 
             occupants.addAll(gs.board().occupants());
@@ -94,7 +103,7 @@ public class Main extends Application {
             return "";
         });
 
-        // un autre truc de MessageBoard que jai pas trop compris todo rewrite comment lmao
+        // Les messages à afficher dans le tableau des messages
         ObservableValue<List<MessageBoard.Message>> messages = gameState.map(g -> g.messageBoard().messages());
 
         // Liste chronologique des actions encodées en base 32 de la partie
@@ -103,7 +112,7 @@ public class Main extends Application {
         /*
         L'interface graphique de droite
         */
-        // La Node d'Actions et des Piles du jeu
+        // Le noeud d'Actions et des Piles du jeu
         VBox decksAndActions = new VBox();
 
         // Interface graphique des codes en base 32 pour le jeu à distance
@@ -120,7 +129,7 @@ public class Main extends Application {
         decksAndActions.getChildren().add(Actions);
         decksAndActions.getChildren().add(Decks);
 
-        // La Node de l'interface des joueurs et l'interface du tableau de messages
+        // Le noeud de l'interface des joueurs et l'interface du tableau de messages
         Node Players = PlayersUI.create(gameState, textMakerFr);
         Node MessageBoard = MessageBoardUI.create(messages, highlightedTiles);
 
@@ -151,11 +160,6 @@ public class Main extends Application {
                                             pos)),
                                     gameState,
                                     base32Codes);
-
-                            if (gameState.getValue().nextAction() == GameState.Action.OCCUPY_TILE) {
-                                Set<Occupant> newVisibleOccupants = gameState.getValue().board().occupants();
-                                newVisibleOccupants.addAll(gameState.getValue().lastTilePotentialOccupants());
-                            }
                         },
                         occupant -> occupantConsumer(gameState, base32Codes, occupant));
 
@@ -204,10 +208,17 @@ public class Main extends Application {
         }
     }
 
+    /**
+     * Méthode d'aide qui permet d'appliquer une action de mise à jour de l'état du jeu à effectuer, puis qui l'encode
+     * pour la faire apparaître dans l'interface graphique des actions.
+     *
+     * @param action une action du joueur, encodée
+     * @param state l'état du jeu, observable
+     * @param base32Codes la liste des codes d'actions
+     */
     private void updateStateAndCodes(ActionEncoder.StateAction action,
                                      ObjectProperty<GameState> state,
-                                     ObjectProperty<List<String>> base32Codes
-                                     ) {
+                                     ObjectProperty<List<String>> base32Codes) {
         List<String> codes = new ArrayList<>(base32Codes.getValue());
 
         codes.add(action.base32Code());
