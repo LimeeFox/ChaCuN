@@ -29,9 +29,11 @@ public class Main extends Application {
     /**
      * Le programme principal de ChaCuN, qui affiche l'interface graphique du jeu et commence le jeu.
      *
-     * @param stage le graphe de scène contenant le jeu ChaCuN
-     * @throws Exception si le jeu fonctionne correctement, seules les exceptions pour des codes illégaux sont lancés
-     * (par exemple, les tentatives de recupérer les occupants des autres grâce aux codes passés comme Actions)
+     * @param stage
+     *         le graphe de scène contenant le jeu ChaCuN
+     * @throws Exception
+     *         si le jeu fonctionne correctement, seules les exceptions pour des codes illégaux sont lancés
+     *         (par exemple, les tentatives de recupérer les occupants des autres grâce aux codes passés comme Actions)
      */
     @Override
     public void start(Stage stage) throws Exception {
@@ -121,7 +123,8 @@ public class Main extends Application {
                 updateStateAndCodes(Objects.requireNonNull(ActionEncoder.decodeAndApply(gameState.getValue(), handler)),
                         gameState,
                         base32Codes);
-            } catch (Exception _) {}
+            } catch (Exception _) {
+            }
         });
 
         Node Decks = DecksUI.create(tileToPlace, normalTilesLeft, menhirTilesLeft, message,
@@ -154,10 +157,10 @@ public class Main extends Application {
                             GameState currentGameState = gameState.getValue();
 
                             updateStateAndCodes(ActionEncoder.withPlacedTile(currentGameState,
-                                    new PlacedTile(tileToPlace.getValue(),
-                                            currentGameState.currentPlayer(),
-                                            tileRotation.getValue(),
-                                            pos)),
+                                            new PlacedTile(tileToPlace.getValue(),
+                                                    currentGameState.currentPlayer(),
+                                                    tileRotation.getValue(),
+                                                    pos)),
                                     gameState,
                                     base32Codes);
                         },
@@ -212,9 +215,12 @@ public class Main extends Application {
      * Méthode d'aide qui permet d'appliquer une action de mise à jour de l'état du jeu à effectuer, puis qui l'encode
      * pour la faire apparaître dans l'interface graphique des actions.
      *
-     * @param action une action du joueur, encodée
-     * @param state l'état du jeu, observable
-     * @param base32Codes la liste des codes d'actions
+     * @param action
+     *         une action du joueur, encodée
+     * @param state
+     *         l'état du jeu, observable
+     * @param base32Codes
+     *         la liste des codes d'actions
      */
     private void updateStateAndCodes(ActionEncoder.StateAction action,
                                      ObjectProperty<GameState> state,
